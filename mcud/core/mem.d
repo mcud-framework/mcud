@@ -5,46 +5,42 @@ module mcud.core.mem;
 
 import mcud.cpu.stm32wb55.mem;
 
-import gcc.attribute;
-
-/**
-Wraps volatile memory.
-*/
-/*
-struct Volatile(T)
+version (GCC)
 {
+	import gcc.attribute;
 }
-*/
+else
+{
+	struct attribute
+	{
+		string attr;
+	}
+}
 
 /**
 Wraps volatile memory at a specific memory address.
 */
 struct Volatile(T, size_t addr)
 {
-	pragma(msg, "Address = ", addr);
 	enum T* t = cast(T*) (addr);
 
+	@attribute("forceinline")
 	T load()
 	{
 		return volatileLoad(*t);
 	}
 
+	@attribute("forceinline")
 	void store(T value)
 	{
-		volatileStore(*t, t);
+		volatileStore(*t, value);
 	}
 
 	@attribute("forceinline")
 	auto opOpAssign(string op, T)(T value)
-	if (op == "|")
 	{
-		T result = load() | value;
+		T result = mixin("load() " ~ op ~ " value");
 		store(result);
 		return result;
 	}
-}
-
-unittest
-{
-	assert("test" == "abc");
 }

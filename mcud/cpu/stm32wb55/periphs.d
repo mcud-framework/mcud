@@ -4,11 +4,17 @@ import mcud.core.mem;
 
 private struct RCC
 {
-	enum base = 0x5800_004C;
+	enum base = 0x5800_0000;
 
-	//Volatile!(uint, base + 0x4C) ahb2enr;
-	Volatile!(uint, base) ahb2enr;
+	Volatile!(uint, base + 0x4C) ahb2enr;
+}
+
+private struct GPIO
+{
+	enum base = 0x4800_0000;
+
+	Volatile!(uint, base + 0) moder;
 }
 
 enum rcc = RCC();
-pragma(msg, rcc.sizeof);
+enum gpio = GPIO();

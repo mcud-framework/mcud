@@ -2,35 +2,32 @@ module mcud.cpu.stm32wb55.cpu;
 
 import mcud.cpu.stm32wb55.mem;
 import mcud.cpu.stm32wb55.periphs;
+import mcud.cpu.stm32wb55.configurer;
+import mcud.core.mem;
 
-//@attribute("section", "start")
-private void onReset()
+version(unittest) {}
+else
 {
-	//startup();
-	//uint* ahb2enr = cast(uint*) (0x5800_0000 + 0x4C);
-	//volatileStore(*ahb2enr, volatileLoad(*ahb2enr) | 1);
-
-	rcc.ahb2enr |= 1;
-
-	//uint* 
-	uint* mode = cast(uint*) 0x4800_0000;
-	volatileStore(*mode, 0x5555_5555);
-	//*cast(uint*)(0x4800_0000 + 0x00) = 0xFFFF_FFFF;
-	//*GPIOA_MODER |= 0b01_00_00_00_00u;
-	//*GPIOA_MODER = 0xFFFF_FFFF;
-	//*GPIOA_ODR = 0xFFFF_FFFF;
-	//*GPIOA_ODR = 0;
-	uint* output = cast(uint*)(0x4800_0000 + 0x14);
-	while (1)
-	//for (;;)
+	enum cpuConfigurer = configureCPU!((CPUConfigurer options)
 	{
-		volatileStore(*output, ~volatileLoad(*output));
-		//*output = ~*output;
-		//volatileStore(output, ~volatileLoad(output));
+		options
+			.enableGPIO(GPIO.a)
+				.pin(4)
+					.asOutput();
+	});
+
+	private void onReset()
+	{
+		cpuConfigurer.configure();
+		uint* output = cast(uint*)(0x4800_0000 + 0x14);
+		while (1)
+		{
+			volatileStore(*output, ~volatileLoad(*output));
+		}
 	}
+
+
+	alias ISR = void function();
+
+	extern(C) immutable ISR _start = &onReset;
 }
-
-
-alias ISR = void function();
-
-extern(C) immutable ISR _start = &onReset;
