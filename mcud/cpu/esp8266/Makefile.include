@@ -1,0 +1,4 @@
+TARGET = xtensa-elf-
+
+.PHONY: flash
+flash: $(BIN_FILE)

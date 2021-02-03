@@ -10,8 +10,14 @@ BIN_DIR ?= bin
 # The source directory of MCUd.
 MCUD_SRC = $(MCUD)/mcud
 
-# The directory containing the sources for the standard library.
+# The directory containing the sources for the D runtime.
 LIBD_SRC = $(MCUD)/libd
+
+# The directory containing the sources for libphobos.
+LIBPHOBOS_SRC = $(MCUD)/libphobos
+
+# The directory containing CPU sources.
+CPUS = $(MCUD_SRC)/cpu
 
 # The output ELF file.
 ELF_FILE = $(BIN_DIR)/application.elf
@@ -26,7 +32,7 @@ BIN_FILE = $(ELF_FILE:%.elf=%.bin)
 OBJ_FILE = $(BIN_DIR)/application.o
 
 # The linker script to use.
-LINKER_SCRIPT = $(MCUD_SRC)/cpu/$(CPU)/linker.ld
+LINKER_SCRIPT = $(CPUS)/$(CPU)/linker.ld
 
 # The directory containing board support definitions.
 BOARD_SRC := $(wildcard boards/$(BOARD))
@@ -40,18 +46,28 @@ endif
 # Include the makefile from the BSP.
 include $(BOARD_SRC)/Makefile.include
 
+# Include the all target first.
+.PHONY: all
+all: $(ELF_FILE)
+	arm-none-eabi-size $(ELF_FILE)
+
+# Include CPU targets
+include $(CPUS)/$(CPU)/Makefile.include
+
 # Find all the sources to build.
-TESTSOURCES += $(shell find $(BOARD_SRC) -type f -iname "*.d")
-TESTSOURCES += $(shell find $(APP_SRC) -type f -iname "*.d")
-TESTSOURCES += $(shell find $(MCUD_SRC)/cpu/$(CPU) -type f -iname "*.d")
-TESTSOURCES += $(shell find $(MCUD_SRC)/core -type f -iname "*.d")
-TESTSOURCES := $(TESTSOURCES)
+# Common sources
+COMMONSOURCES += $(shell find $(APP_SRC) -type f -iname "*.d")
 
+# Test-only sources
+TESTSOURCES += $(shell find $(MCUD_SRC) -type f -iname "*.d")
+TESTSOURCES := $(COMMONSOURCES) $(TESTSOURCES)
+
+# Build-only sources
 SOURCES += $(shell find $(LIBD_SRC) -type f -iname "*.d")
-SOURCES := $(TESTSOURCES) $(SOURCES)
+SOURCES += $(shell find $(MCUD_SRC) -type f -iname "*.d")
+SOURCES += $(shell find $(LIBPHOBOS_SRC) -type f -iname "*.d")
+SOURCES := $(COMMONSOURCES) $(SOURCES)
 
-# The target to build for.
-TARGET = arm-none-eabi-
 # The host D compiler to use.
 HOSTDC = gdc
 # The D compiler to use.
@@ -59,7 +75,7 @@ DC = $(TARGET)gdc
 # The linker to use.
 LD = $(TARGET)ld
 # Flags to pass to the D compiler.
-DFLAGS = -nostdlib -Os -ggdb -ffunction-sections -fdata-sections -mcpu=cortex-m4 -mthumb -fno-moduleinfo
+DFLAGS += -nostdlib -Os -ggdb -ffunction-sections -fdata-sections -fno-moduleinfo
 # Flags to pass to the compiler when building tests.
 HOSTDFLAGS = -funittest -fmain -ggdb
 # The tool to strip binaries with.
@@ -67,13 +83,11 @@ STRIP = $(TARGET)strip
 # The tool to copy object files with.
 OBJCOPY = $(TARGET)objcopy
 
-.PHONY: all
-all: $(ELF_FILE)
-	arm-none-eabi-size $(ELF_FILE)
-
 .PHONY: test
 test: $(ELF_TEST_FILE)
-	$(ELF_TEST_FILE)
+	@echo "Running tests..."
+	@$(ELF_TEST_FILE)
+	@echo "Tests succeeded!"
 
 .PHONY: info
 info:
@@ -85,10 +99,6 @@ info:
 .PHONY: clean
 clean:
 	rm -rf $(BIN_DIR)
-
-.PHONY: flash
-flash: $(BIN_FILE)
-	st-flash write $< 0x08000000
 
 $(BIN_FILE): $(ELF_FILE)
 	$(OBJCOPY) -O binary $< $@

@@ -13,7 +13,12 @@ else
 		options
 			.enableGPIO(GPIO.a)
 				.pin(4)
-					.asOutput();
+					.asOutput()
+					.and()
+				.and()
+			.enableTimer(Timer.tim2)
+				.autoReload(100)
+		;
 	});
 
 	private void onReset()
@@ -29,5 +34,5 @@ else
 
 	alias ISR = void function();
 
-	extern(C) immutable ISR _start = &onReset;
+	private extern(C) immutable ISR _start = &onReset;
 }
