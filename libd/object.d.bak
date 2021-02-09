@@ -1,3 +1,9 @@
+/*
+module object;
+alias string = immutable(char)[];
+
+alias size_t = uint;
+*/
 /**
  * Forms the symbols available to all D programs. Includes Object, which is
  * the root of the class object hierarchy.  This module is implicitly
@@ -215,25 +221,6 @@ class TypeInfo
         return typeid(this).name;
     }
 
-    override size_t toHash() @trusted const nothrow
-    {
-        return hashOf(this.toString());
-    }
-
-    override int opCmp(Object o)
-    {
-        import core.internal.traits : externDFunc;
-        alias dstrcmp = externDFunc!("core.internal.string.dstrcmp",
-                                     int function(scope const char[] s1, scope const char[] s2) @trusted pure nothrow @nogc);
-
-        if (this is o)
-            return 0;
-        TypeInfo ti = cast(TypeInfo)o;
-        if (ti is null)
-            return 1;
-        return dstrcmp(this.toString(), ti.toString());
-    }
-
     override bool opEquals(Object o)
     {
         /* TypeInfo instances are singletons, but duplicates can exist
@@ -244,20 +231,6 @@ class TypeInfo
             return true;
         auto ti = cast(const TypeInfo)o;
         return ti && this.toString() == ti.toString();
-    }
-
-    /**
-     * Computes a hash of the instance of a type.
-     * Params:
-     *    p = pointer to start of instance of the type
-     * Returns:
-     *    the hash
-     * Bugs:
-     *    fix https://issues.dlang.org/show_bug.cgi?id=12516 e.g. by changing this to a truly safe interface.
-     */
-    size_t getHash(scope const void* p) @trusted nothrow const
-    {
-        return hashOf(p);
     }
 
     /// Compares two instances for equality.
@@ -334,8 +307,6 @@ class TypeInfo_Enum : TypeInfo
         return c && this.name == c.name &&
                     this.base == c.base;
     }
-
-    override size_t getHash(scope const void* p) const { return base.getHash(p); }
     override bool equals(in void* p1, in void* p2) const { return base.equals(p1, p2); }
     override int compare(in void* p1, in void* p2) const { return base.compare(p1, p2); }
     override @property size_t tsize() nothrow pure const { return base.tsize; }
@@ -381,12 +352,6 @@ class TypeInfo_Pointer : TypeInfo
             return true;
         auto c = cast(const TypeInfo_Pointer)o;
         return c && this.m_next == c.m_next;
-    }
-
-    override size_t getHash(scope const void* p) @trusted const
-    {
-        size_t addr = cast(size_t) *cast(const void**)p;
-        return addr ^ (addr >> 4);
     }
 
     override bool equals(in void* p1, in void* p2) const
@@ -437,12 +402,6 @@ class TypeInfo_Array : TypeInfo
             return true;
         auto c = cast(const TypeInfo_Array)o;
         return c && this.value == c.value;
-    }
-
-    override size_t getHash(scope const void* p) @trusted const
-    {
-        void[] a = *cast(void[]*)p;
-        return getArrayHash(value, a.ptr, a.length);
     }
 
     override bool equals(in void* p1, in void* p2) const
@@ -536,11 +495,6 @@ class TypeInfo_StaticArray : TypeInfo
         auto c = cast(const TypeInfo_StaticArray)o;
         return c && this.len == c.len &&
                     this.value == c.value;
-    }
-
-    override size_t getHash(scope const void* p) @trusted const
-    {
-        return getArrayHash(value, p, len);
     }
 
     override bool equals(in void* p1, in void* p2) const
@@ -664,11 +618,6 @@ class TypeInfo_AssociativeArray : TypeInfo
         return !!_aaEqual(this, *cast(const AA*) p1, *cast(const AA*) p2);
     }
 
-    override hash_t getHash(scope const void* p) nothrow @trusted const
-    {
-        return _aaGetHash(cast(AA*)p, this);
-    }
-
     // BUG: need to add the rest of the functions
 
     override @property size_t tsize() nothrow pure const
@@ -711,7 +660,6 @@ class TypeInfo_Vector : TypeInfo
         return c && this.base == c.base;
     }
 
-    override size_t getHash(scope const void* p) const { return base.getHash(p); }
     override bool equals(in void* p1, in void* p2) const { return base.equals(p1, p2); }
     override int compare(in void* p1, in void* p2) const { return base.compare(p1, p2); }
     override @property size_t tsize() nothrow pure const { return base.tsize; }
@@ -805,11 +753,6 @@ class TypeInfo_Delegate : TypeInfo
         return c && this.deco == c.deco;
     }
 
-    override size_t getHash(scope const void* p) @trusted const
-    {
-        return hashOf(*cast(void delegate()*)p);
-    }
-
     override bool equals(in void* p1, in void* p2) const
     {
         auto dg1 = *cast(void delegate()*)p1;
@@ -875,12 +818,6 @@ class TypeInfo_Class : TypeInfo
             return true;
         auto c = cast(const TypeInfo_Class)o;
         return c && this.info.name == c.info.name;
-    }
-
-    override size_t getHash(scope const void* p) @trusted const
-    {
-        auto o = *cast(Object*)p;
-        return o ? o.toHash() : 0;
     }
 
     override bool equals(in void* p1, in void* p2) const
@@ -1032,18 +969,6 @@ class TypeInfo_Interface : TypeInfo
         return c && this.info.name == typeid(c).name;
     }
 
-    override size_t getHash(scope const void* p) @trusted const
-    {
-        if (!*cast(void**)p)
-        {
-            return 0;
-        }
-        Interface* pi = **cast(Interface ***)*cast(void**)p;
-        Object o = cast(Object)(*cast(void**)p - pi.offset);
-        assert(o);
-        return o.toHash();
-    }
-
     override bool equals(in void* p1, in void* p2) const
     {
         Interface* pi = **cast(Interface ***)*cast(void**)p1;
@@ -1104,19 +1029,6 @@ class TypeInfo_Struct : TypeInfo
         auto s = cast(const TypeInfo_Struct)o;
         return s && this.name == s.name &&
                     this.initializer().length == s.initializer().length;
-    }
-
-    override size_t getHash(scope const void* p) @trusted pure nothrow const
-    {
-        assert(p);
-        if (xtoHash)
-        {
-            return (*xtoHash)(p);
-        }
-        else
-        {
-            return hashOf(p[0 .. initializer().length]);
-        }
     }
 
     override bool equals(in void* p1, in void* p2) @trusted pure nothrow const
@@ -1292,11 +1204,6 @@ class TypeInfo_Tuple : TypeInfo
         return false;
     }
 
-    override size_t getHash(scope const void* p) const
-    {
-        assert(0);
-    }
-
     override bool equals(in void* p1, in void* p2) const
     {
         assert(0);
@@ -1363,7 +1270,7 @@ class TypeInfo_Const : TypeInfo
         return base.opEquals(t.base);
     }
 
-    override size_t getHash(scope const void *p) const { return base.getHash(p); }
+    size_t getHash(scope const void *p) nothrow const { return base.getHash(p); }
     override bool equals(in void *p1, in void *p2) const { return base.equals(p1, p2); }
     override int compare(in void *p1, in void *p2) const { return base.compare(p1, p2); }
     override @property size_t tsize() nothrow pure const { return base.tsize; }
@@ -3110,45 +3017,6 @@ bool _ArrayEq(T1, T2)(T1[] a1, T2[] a2)
     return true;
 }
 
-version (D_Ddoc)
-{
-    // This lets DDoc produce better documentation.
-
-    /**
-    Calculates the hash value of `arg` with an optional `seed` initial value.
-    The result might not be equal to `typeid(T).getHash(&arg)`.
-
-    Params:
-        arg = argument to calculate the hash value of
-        seed = optional `seed` value (may be used for hash chaining)
-
-    Return: calculated hash value of `arg`
-    */
-    size_t hashOf(T)(auto ref T arg, size_t seed)
-    {
-        static import core.internal.hash;
-        return core.internal.hash.hashOf(arg, seed);
-    }
-    /// ditto
-    size_t hashOf(T)(auto ref T arg)
-    {
-        static import core.internal.hash;
-        return core.internal.hash.hashOf(arg);
-    }
-}
-else
-{
-    public import core.internal.hash : hashOf;
-}
-
-unittest
-{
-    // Issue # 16654 / 16764
-    auto a = [1];
-    auto b = a.dup;
-    assert(hashOf(a) == hashOf(b));
-}
-
 bool _xopEquals(in void*, in void*)
 {
     throw new Error("TypeInfo.equals is not implemented");
@@ -3943,24 +3811,3 @@ void __ArrayDtor(T)(T[] a)
     foreach_reverse (ref T e; a)
         e.__xdtor();
 }
-/*
-bool empty(T)(T[] arr)
-{
-    return arr.length == 0;
-}
-
-T front(T)(return ref T[] arr)
-{
-    return arr[0];
-}
-
-T[] popFront(T)(T[] arr)
-{
-    return arr[1 .. $];
-}
-
-T[] save(T)(T[] arr)
-{
-    return arr;
-}
-*/
