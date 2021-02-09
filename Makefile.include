@@ -11,25 +11,31 @@ BIN_DIR ?= bin
 MCUD_SRC = $(MCUD)/mcud
 
 # The directory containing the sources for the D runtime.
-LIBD_SRC = $(MCUD)/libd
+DIR_DRUNTIME = $(MCUD)/libd
 
 # The directory containing the sources for libphobos.
-LIBPHOBOS_SRC = $(MCUD)/libphobos
+DIR_LIBPHOBOS = $(MCUD)/libphobos
 
 # The directory containing CPU sources.
 CPUS = $(MCUD_SRC)/cpu
 
 # The output ELF file.
-ELF_FILE = $(BIN_DIR)/application.elf
+ELF_APP = $(BIN_DIR)/application.elf
 
 # The output ELF file for unit testing.
 ELF_TEST_FILE = $(BIN_DIR)/test.elf
 
 # The output BIN file.
-BIN_FILE = $(ELF_FILE:%.elf=%.bin)
+BIN_APP = $(ELF_FILE:%.elf=%.bin)
 
 # The output object file.
-OBJ_FILE = $(BIN_DIR)/application.o
+OBJ_APP = $(BIN_DIR)/application.o
+
+# The object file for the D runtime
+OBJ_DRUNTIME = $(BIN_DIR)/druntime.o
+
+# The object file for the Phobos standard library
+OBJ_PHOBOS = $(BIN_DIR)/phobos.o
 
 # The linker script to use.
 LINKER_SCRIPT = $(CPUS)/$(CPU)/linker.ld
@@ -48,8 +54,8 @@ include $(BOARD_SRC)/Makefile.include
 
 # Include the all target first.
 .PHONY: all
-all: $(ELF_FILE)
-	arm-none-eabi-size $(ELF_FILE)
+all: $(ELF_APP)
+	arm-none-eabi-size $(ELF_APP)
 
 # Include CPU targets
 include $(CPUS)/$(CPU)/Makefile.include
@@ -63,10 +69,10 @@ TESTSOURCES += $(shell find $(MCUD_SRC) -type f -iname "*.d")
 TESTSOURCES := $(COMMONSOURCES) $(TESTSOURCES)
 
 # Build-only sources
-SOURCES += $(shell find $(LIBD_SRC) -type f -iname "*.d")
 SOURCES += $(shell find $(MCUD_SRC) -type f -iname "*.d")
-SOURCES += $(shell find $(LIBPHOBOS_SRC) -type f -iname "*.d")
 SOURCES := $(COMMONSOURCES) $(SOURCES)
+SOURCES_DRUNTIME += $(shell find $(DIR_DRUNTIME) -type f -iname "*.d")
+SOURCES_LIBPHOBOS += $(shell find $(DIR_LIBPHOBOS) -type f -iname "*.d")
 
 # The host D compiler to use.
 HOSTDC = gdc
@@ -100,17 +106,26 @@ info:
 clean:
 	rm -rf $(BIN_DIR)
 
-$(BIN_FILE): $(ELF_FILE)
+$(BIN_APP): $(ELF_APP)
 	$(OBJCOPY) -O binary $< $@
 
-$(ELF_FILE): $(OBJ_FILE) $(LINKER_SCRIPT)
+$(ELF_APP): $(OBJ_APP) $(OBJ_DRUNTIME) $(OBJ_PHOBOS) $(LINKER_SCRIPT)
 	@mkdir -p $(dir $@)
-	$(LD) -T $(LINKER_SCRIPT) --gc-sections -o $@ $<
+	$(LD) -T $(LINKER_SCRIPT) --gc-sections -o $@ $< $(OBJ_PHOBOS) $(OBJ_DRUNTIME)
 
-$(OBJ_FILE): $(SOURCES) $(MCUD)/Makefile.include $(LINKER_SCRIPT)
+$(OBJ_APP): $(SOURCES) $(MCUD)/Makefile.include
 	@mkdir -p $(dir $@)
-	$(DC) $(DFLAGS) -c -o $@ $(SOURCES)
+	$(DC) $(DFLAGS) -I $(DIR_DRUNTIME) -I $(DIR_LIBPHOBOS) -c -o $@ $(SOURCES)
+
+$(OBJ_PHOBOS): $(SOURCES_LIBPHOBOS) $(MCUD)/Makefile.include
+	@mkdir -p $(dir $@)
+	$(DC) $(DFLAGS) -I $(DIR_DRUNTIME) -c -o $@ $(SOURCES_LIBPHOBOS)
+
+$(OBJ_DRUNTIME): $(SOURCES_DRUNTIME) $(MCUD)/Makefile.include
+	@mkdir -p $(dir $@)
+	$(DC) $(DFLAGS) -c -o $@ $(SOURCES_DRUNTIME)
 
 $(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/Makefile.include
 	mkdir -p $(dir $@)
 	$(HOSTDC) $(HOSTDFLAGS) -o $@ $(TESTSOURCES)
+
