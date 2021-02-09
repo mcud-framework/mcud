@@ -276,14 +276,14 @@ private struct FinalConfiguredCPU(ConfiguredCPU c)
 	@forceinline
 	static void configure() pure
 	{
-		mixin(applyRegister!("rcc", "ahb2enr"));
-		mixin(applyRegister!("rcc", "apb1enr"));
-		mixin(applyRegister!("tim2", "cr1"));
-		mixin(applyRegister!("tim2", "cr2"));
-		mixin(applyRegister!("tim2", "arr"));
 		static foreach (member; __traits(allMembers, ConfiguredCPU))
 		{
-			mixin(autoApplyRegister!(member));
+			import std.algorithm.searching : endsWith;
+			static if (member.endsWith("_value"))
+			{
+				pragma(msg, "Configuring " ~ member);
+				mixin(autoApplyRegister!(member));
+			}
 		}
 
 		static foreach (i; 0 .. ConfiguredCPU.gpio_moder_value.length)
