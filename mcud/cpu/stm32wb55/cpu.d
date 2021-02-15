@@ -16,8 +16,8 @@ else
 					.asOutput()
 					.and()
 				.and()
-			.enableTimer(Timer.tim2)
-				.autoReload(100)
+			//.enableTimer(Timer.tim2)
+			//	.autoReload(100)
 		;
 	});
 
