@@ -67,16 +67,9 @@ struct CPUConfigurer
 	/**
 	Enables a timer.
 	*/
-	TimerConfigurer enableTimer(Timer timer)
+	Timer2Configurer enableTimer2()
 	{
-		final switch (timer)
-		{
-		case Timer.tim2:
-			_cpu.rcc_apb1enr_masks |= 1;
-			_cpu.rcc_apb1enr_value |= 1;
-			break;
-		}
-		TimerConfigurer configurer = TimerConfigurer(_cpu, this, timer);
+		Timer2Configurer configurer = Timer2Configurer(_cpu, this);
 		return configurer;
 	}
 }
@@ -159,28 +152,31 @@ struct PinConfigurer
 }
 
 /**
-Configures a timer.
+Configures timer 2.
 */
-struct TimerConfigurer
+struct Timer2Configurer
 {
 	private ConfiguredCPU* _cpu;
 	private CPUConfigurer _parent;
-	private Timer _timer;
 
 	/**
 	Creates a new pin configurer.
 	*/
-	this(ConfiguredCPU* cpu, CPUConfigurer parent, Timer timer)
+	this(ConfiguredCPU* cpu, CPUConfigurer parent)
 	{
 		_cpu = cpu;
 		_parent = parent;
-		_timer = timer;
+
+		cpu.rcc_apb1enr_masks |= 1;
+		cpu.rcc_apb1enr_value |= 1;
+		cpu.tim2_cr1_masks |= 1;
+		cpu.tim2_cr1_value |= 1;
 	}
 
 	/**
 	Sets the auto reload value of the timer.
 	*/
-	TimerConfigurer autoReload(uint value)
+	Timer2Configurer autoReload(uint value)
 	{
 		_cpu.tim2_arr_masks |= 0xFFFF_FFFF;
 		_cpu.tim2_arr_value = value;
@@ -222,6 +218,10 @@ private struct ConfiguredCPU
 	mixin(register!"tim2_cr1");
 	mixin(register!"tim2_cr2");
 	mixin(register!"tim2_arr");
+	mixin(register!"tim2_ccr1");
+	mixin(register!"tim2_ccr2");
+	mixin(register!"tim2_ccr3");
+	mixin(register!"tim2_ccr4");
 
 	uint[7] gpio_moder_masks = 0;
 	uint[7] gpio_moder_value = 0;
