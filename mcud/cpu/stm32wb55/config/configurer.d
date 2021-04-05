@@ -1,4 +1,4 @@
-module mcud.cpu.stm32wb55.configurer;
+module mcud.cpu.stm32wb55.config.configurer;
 
 import mcud.core.attributes;
 import mcud.cpu.stm32wb55.periphs;

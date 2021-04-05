@@ -2,7 +2,7 @@ module mcud.cpu.stm32wb55.cpu;
 
 import mcud.cpu.stm32wb55.mem;
 import mcud.cpu.stm32wb55.periphs;
-import mcud.cpu.stm32wb55.configurer;
+import mcud.cpu.stm32wb55.config;
 import mcud.core.mem;
 
 version(unittest) {}
