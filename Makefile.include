@@ -2,13 +2,13 @@
 MCUD ?= mcud
 
 # The directory containing the application sources.
-APP_SRC ?= src
+APP_SRC ?= source
 
 # The directory which will containg compiled binaries.
 BIN_DIR ?= bin
 
 # The source directory of MCUd.
-MCUD_SRC = $(MCUD)/mcud
+MCUD_SRC = $(MCUD)/source/mcud
 
 # The directory containing the sources for the D runtime.
 DIR_DRUNTIME = $(MCUD)/libd
@@ -40,17 +40,9 @@ OBJ_PHOBOS = $(BIN_DIR)/phobos.o
 # The linker script to use.
 LINKER_SCRIPT = $(CPUS)/$(CPU)/linker.ld
 
-# The directory containing board support definitions.
-BOARD_SRC := $(wildcard boards/$(BOARD))
-ifeq ($(BOARD_SRC),)
-BOARD_SRC := $(wildcard $(MCUD_SRC)/boards/$(BOARD))
+ifeq ($(CPU),)
+$(error No CPU was set)
 endif
-ifeq ($(BOARD_SRC),)
-$(error Could not find the board '$(BOARD)')
-endif
-
-# Include the makefile from the BSP.
-include $(BOARD_SRC)/Makefile.include
 
 # Include the all target first.
 .PHONY: all

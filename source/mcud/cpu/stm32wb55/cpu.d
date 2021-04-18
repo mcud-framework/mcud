@@ -1,9 +1,10 @@
 module mcud.cpu.stm32wb55.cpu;
 
+import mcud.core.mem;
+import mcud.core.system;
+import mcud.cpu.stm32wb55.config;
 import mcud.cpu.stm32wb55.mem;
 import mcud.cpu.stm32wb55.periphs;
-import mcud.cpu.stm32wb55.config;
-import mcud.core.mem;
 
 version(unittest) {}
 else
@@ -21,12 +22,15 @@ else
 
 	private void onReset()
 	{
+		start();
+		/*
 		cpuConfigurer.configure();
 		uint* output = cast(uint*)(0x4800_0000 + 0x14);
 		while (1)
 		{
 			volatileStore(*output, ~volatileLoad(*output));
 		}
+		*/
 	}
 
 
