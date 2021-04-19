@@ -1,20 +1,19 @@
 module mcud.cpu.stm32wb55.config.configurer;
 
 import mcud.core.attributes;
-import mcud.cpu.stm32wb55.periphs;
+import mcud.cpu.stm32wb55.cpu;
+import mcud.cpu.stm32wb55.periphs.rcc;
+import mcud.mem.volatile;
+
+import std.traits;
 
 /**
 A set of all supported GPIOs.
 */
 enum GPIO
 {
-	a = 0,
-	// b,
-	// c,
-	// d,
-	// e,
-	// f,
-	// h,
+	a, b, c,
+	d, e, h
 }
 
 /**
@@ -56,8 +55,22 @@ struct CPUConfigurer
 		final switch (gpio)
 		{
 		case GPIO.a:
-			_cpu.rcc_ahb2enr_masks |= 1;
-			_cpu.rcc_ahb2enr_value |= 1;
+			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIOAEN, 1);
+			break;
+		case GPIO.b:
+			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIOBEN, 1);
+			break;
+		case GPIO.c:
+			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIOCEN, 1);
+			break;
+		case GPIO.d:
+			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIODEN, 1);
+			break;
+		case GPIO.e:
+			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIOEEN, 1);
+			break;
+		case GPIO.h:
+			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIOHEN, 1);
 			break;
 		}
 		GPIOConfigurer configurer = GPIOConfigurer(_cpu, this, gpio);
@@ -137,8 +150,29 @@ struct PinConfigurer
 	*/
 	PinConfigurer asOutput()
 	{
-		_cpu.gpio_moder_masks[_port] = 0b11 << (_pin * 2);
-		_cpu.gpio_moder_value[_port] = 0b01 << (_pin * 2);
+		final switch (_port)
+		{
+		case GPIO.a:
+			_cpu.gpioA_moder.set(0b11 << (_pin * 2), 0b01 << (_pin * 2));
+			break;
+		case GPIO.b:
+			_cpu.gpioB_moder.set(0b11 << (_pin * 2), 0b01 << (_pin * 2));
+			break;
+		case GPIO.c:
+			_cpu.gpioC_moder.set(0b11 << (_pin * 2), 0b01 << (_pin * 2));
+			break;
+		case GPIO.d:
+			_cpu.gpioD_moder.set(0b11 << (_pin * 2), 0b01 << (_pin * 2));
+			break;
+		case GPIO.e:
+			_cpu.gpioE_moder.set(0b11 << (_pin * 2), 0b01 << (_pin * 2));
+			break;
+		case GPIO.h:
+			_cpu.gpioH_moder.set(0b11 << (_pin * 2), 0b01 << (_pin * 2));
+			break;
+		}
+		//_cpu.gpio_moder_masks[_port] = 0b11 << (_pin * 2);
+		//_cpu.gpio_moder_value[_port] = 0b01 << (_pin * 2);
 		return this;
 	}
 
@@ -167,10 +201,9 @@ struct Timer2Configurer
 		_cpu = cpu;
 		_parent = parent;
 
-		cpu.rcc_apb1enr_masks |= 1;
-		cpu.rcc_apb1enr_value |= 1;
-		cpu.tim2_cr1_masks |= 1;
-		cpu.tim2_cr1_value |= 1;
+		cpu.rcc_apb1enr1.set(1, 1);
+		//cpu.tim2_cr1_masks |= 1;
+		//cpu.tim2_cr1_value |= 1;
 	}
 
 	/**
@@ -178,8 +211,8 @@ struct Timer2Configurer
 	*/
 	Timer2Configurer autoReload(uint value)
 	{
-		_cpu.tim2_arr_masks |= 0xFFFF_FFFF;
-		_cpu.tim2_arr_value = value;
+		//_cpu.tim2_arr_masks |= 0xFFFF_FFFF;
+		//_cpu.tim2_arr_value = value;
 		return this;
 	}
 }
@@ -208,40 +241,46 @@ Contains all settings of a fully configured CPU.
 */
 private struct ConfiguredCPU
 {
-	static string register(string name)()
+	struct Value
 	{
-		return "uint " ~ name ~ "_value; uint " ~ name ~ "_masks;";
-	}
+		uint mask;
+		uint value;
 
-	mixin(register!"rcc_ahb2enr");
-	mixin(register!"rcc_apb1enr");
-	mixin(register!"tim2_cr1");
-	mixin(register!"tim2_cr2");
-	mixin(register!"tim2_arr");
-	mixin(register!"tim2_ccr1");
-	mixin(register!"tim2_ccr2");
-	mixin(register!"tim2_ccr3");
-	mixin(register!"tim2_ccr4");
-
-	uint[7] gpio_moder_masks = 0;
-	uint[7] gpio_moder_value = 0;
-}
-
-string[] split(string str, char delimiter)
-{
-	string[] parts;
-	string part;
-	foreach (chr; str)
-	{
-		if (chr == delimiter)
+		void set(uint mask, uint value)
 		{
-			parts ~= part;
-			part = "";
+			this.mask |= mask;
+			this.value = (this.value & ~mask) | value;
 		}
-		else
-			part ~= chr;
 	}
-	return parts ~ part;
+
+	static string[] getRegisters(T)(string prefix = "")
+	{
+		string[] values = [];
+		static foreach (member; FieldNameTuple!T)
+		{
+			static if (isVolatile!(__traits(getMember, T, member)))
+			{
+				values ~= prefix ~ member;
+			}
+			else
+			{
+				values ~= getRegisters!(typeof(__traits(getMember, T, member)))(prefix ~ member ~ "_");
+			}
+		}
+		return values;
+	}
+
+	static string generateValues(T)()
+	{
+		string variables;
+		static foreach (register; getRegisters!T)
+		{
+			variables ~= "Value " ~ register ~ ";";
+		}
+		return variables;
+	}
+
+	mixin(generateValues!CPU);
 }
 
 /**
@@ -249,48 +288,41 @@ Uses conditional compilation to bring the CPU into the configured state.
 */
 private struct FinalConfiguredCPU(ConfiguredCPU c)
 {
-	private static string applyRegister(string peripheral, string register)()
+	private static string getPart(string reg, int index)
 	{
-		enum p = peripheral;
-		enum r = register;
-		return "static if (c."~p~"_"~r~"_masks != 0)"
-		     ~ "{"
-		     ~ "    "~p~"."~r~".store(("~p~"."~r~".load() & ~c."~p~"_"~r~"_masks) | c."~p~"_"~r~"_value);"
-			 ~ "}";
+		foreach (size_t i, char c; reg)
+		{
+			if (c == '_')
+			{
+				if (index == 0)
+					return reg[0 .. i];
+				else
+					return reg[i + 1 .. $];
+			}
+		}
+		assert(0, "No '_' found in string '" ~ reg ~ "'");
 	}
 
-	private static string autoApplyRegister(string member)()
+	private static string applyRegister(string name)()
 	{
-		static if (is(typeof(__traits(getMember, c, member)) == uint))
-		{
-			enum string[] parts = member.split('_');
-			static if (parts.length == 3u)
-				return applyRegister!(parts[0], parts[1]);
-			else
-				return "";
-		}
-		else
-			return "";
+		enum p = getPart(name, 0);
+		enum r = getPart(name, 1);
+		return "static if (c."~p~"_"~r~".mask != 0)"
+		     ~ "{"
+		     ~ "    cpu."~p~"."~r~".store((cpu."~p~"."~r~".load() & ~c."~p~"_"~r~".mask) | c."~p~"_"~r~".value);"
+			 ~ "}";
+		return "";
 	}
 
 	@forceinline
 	static void configure() pure
 	{
-		static foreach (member; __traits(allMembers, ConfiguredCPU))
+		static foreach (member; FieldNameTuple!ConfiguredCPU)
 		{
 			import std.algorithm.searching : endsWith;
-			static if (member.endsWith("_value"))
+			static if (isAggregateType!(typeof(__traits(getMember, ConfiguredCPU, member))))
 			{
-				pragma(msg, "Configuring " ~ member);
-				mixin(autoApplyRegister!(member));
-			}
-		}
-
-		static foreach (i; 0 .. ConfiguredCPU.gpio_moder_value.length)
-		{
-			static if (c.gpio_moder_masks[i] != 0)
-			{
-				gpio.moder.store((gpio.moder.load() & ~c.gpio_moder_masks[i]) | c.gpio_moder_value[i]);
+				mixin(applyRegister!(member));
 			}
 		}
 	}
@@ -306,8 +338,8 @@ unittest
 				.asOutput();
 	});
 	
-	assert(configured.gpio_moder_masks[0] == 0x0000_0300);
-	assert(configured.gpio_moder_value[0] == 0x0000_0100);
-	assert(configured.rcc_ahb2enr_masks == 1);
-	assert(configured.rcc_ahb2enr_value == 1);
+	assert(configured.gpioA_moder.mask == 0x0000_0300);
+	assert(configured.gpioA_moder.value == 0x0000_0100);
+	assert(configured.rcc_ahb2enr.mask == 1);
+	assert(configured.rcc_ahb2enr.value == 1);
 }

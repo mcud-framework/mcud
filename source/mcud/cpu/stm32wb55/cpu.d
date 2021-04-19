@@ -1,36 +1,34 @@
 module mcud.cpu.stm32wb55.cpu;
 
-import mcud.core.mem;
 import mcud.core.system;
 import mcud.cpu.stm32wb55.config;
-import mcud.cpu.stm32wb55.mem;
-import mcud.cpu.stm32wb55.periphs;
+import mcud.mem.volatile;
+
+private struct CPU
+{
+	import mcud.cpu.stm32wb55.periphs;
+
+	GPIO!0x4800_0000 gpioA;
+	GPIO!0x4800_0400 gpioB;
+	GPIO!0x4800_0800 gpioC;
+	GPIO!0x4800_0C00 gpioD;
+	GPIO!0x4800_1000 gpioE;
+	GPIO!0x4800_1C00 gpioH;
+
+	RCC!0x5800_0000 rcc;
+}
+
+/**
+The global CPU instances. This gives access to all CPU registers.
+*/
+enum cpu = CPU();
 
 version(unittest) {}
 else
 {
-	enum cpuConfigurer = configureCPU!((CPUConfigurer options)
-	{
-		options
-			.enableGPIO(GPIO.a)
-				.pin(4)
-					.asOutput()
-					.and()
-				.and()
-		;
-	});
-
 	private void onReset()
 	{
 		start();
-		/*
-		cpuConfigurer.configure();
-		uint* output = cast(uint*)(0x4800_0000 + 0x14);
-		while (1)
-		{
-			volatileStore(*output, ~volatileLoad(*output));
-		}
-		*/
 	}
 
 
