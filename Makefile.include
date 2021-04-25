@@ -26,7 +26,7 @@ ELF_APP = $(BIN_DIR)/application.elf
 ELF_TEST_FILE = $(BIN_DIR)/test.elf
 
 # The output BIN file.
-BIN_APP = $(ELF_FILE:%.elf=%.bin)
+BIN_APP = $(ELF_APP:%.elf=%.bin)
 
 # The output object file.
 OBJ_APP = $(BIN_DIR)/application.o
@@ -92,7 +92,8 @@ info:
 	@echo "Sources: $(SOURCES)"
 	@echo "App sources: $(APP_SRC)"
 	@echo "D4MCU sources: $(MCUD_SRC)"
-	@echo "Binaries: $(BIN_DIR)"
+	@echo "Binaries directory: $(BIN_DIR)"
+	@echo "Firmware binary: $(BIN_APP)"
 
 .PHONY: clean
 clean:

@@ -29,6 +29,22 @@ enum Timer
 	// irtim,
 }
 
+private auto getGPIO(GPIO gpio)()
+{
+	static if (gpio == GPIO.a)
+		return cpu.gpioA;
+	else static if (gpio == GPIO.b)
+		return cpu.gpioB;
+	else static if (gpio == GPIO.c)
+		return cpu.gpioC;
+	else static if (gpio == GPIO.d)
+		return cpu.gpioD;
+	else static if (gpio == GPIO.e)
+		return cpu.gpioE;
+	else static if (gpio == GPIO.h)
+		return cpu.gpioH;
+}
+
 /**
 Configures a CPU.
 */
@@ -171,8 +187,7 @@ struct PinConfigurer
 			_cpu.gpioH_moder.set(0b11 << (_pin * 2), 0b01 << (_pin * 2));
 			break;
 		}
-		//_cpu.gpio_moder_masks[_port] = 0b11 << (_pin * 2);
-		//_cpu.gpio_moder_value[_port] = 0b01 << (_pin * 2);
+		_cpu.markPinAsOutput(_port, _pin);
 		return this;
 	}
 
@@ -241,6 +256,29 @@ Contains all settings of a fully configured CPU.
 */
 private struct ConfiguredCPU
 {
+	bool[5][16] inputPins;
+	bool[5][16] outputPins;
+
+	void markPinAsInput(GPIO port, int pin)
+	{
+		inputPins[port][pin] = true;
+	}
+
+	void markPinAsOutput(GPIO port, int pin)
+	{
+		outputPins[port][pin] = true;
+	}
+
+	bool isPinInput(GPIO port, int pin)
+	{
+		return inputPins[port][pin];
+	}
+
+	bool isPinOutput(GPIO port, int pin)
+	{
+		return outputPins[port][pin];
+	}
+
 	struct Value
 	{
 		uint mask;
@@ -325,6 +363,20 @@ private struct FinalConfiguredCPU(ConfiguredCPU c)
 				mixin(applyRegister!(member));
 			}
 		}
+	}
+
+	static auto getInput(GPIO port, uint pin)()
+	{
+		assert(c.isPinInput(port, pin), "The desired pin is not configured as an input");
+		auto gpio = getPort!port;
+	}
+
+	static auto getOutput(GPIO port, uint pin)()
+	{
+		import mcud.cpu.stm32wb55.periphs.gpio : OutputPin;
+		assert(c.isPinOutput(port, pin), "The desired pin is not configured as an output");
+		enum gpio = getGPIO!port;
+		return OutputPin!(gpio, pin)();
 	}
 }
 

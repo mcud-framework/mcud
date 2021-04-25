@@ -19,4 +19,4 @@ interface GPO
 	Result!void off();
 }
 
-alias isLikeGPO = isLike!GPO;
+alias isGPO = isLike!GPO;

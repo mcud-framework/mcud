@@ -14,4 +14,4 @@ interface GPI
 	Result!bool isOn();
 }
 
-alias isLikeGPI = isLike!GPI;
+alias isGPI = isLike!GPI;

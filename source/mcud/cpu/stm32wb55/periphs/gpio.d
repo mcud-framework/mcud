@@ -1,6 +1,9 @@
 module mcud.cpu.stm32wb55.periphs.gpio;
 
+import mcud.core.result;
 import mcud.mem.volatile;
+import mcud.meta.like;
+import mcud.periphs.input;
 
 struct GPIO(uint base)
 {
@@ -16,3 +19,27 @@ struct GPIO(uint base)
 	Volatile!(uint, base + 0x24) afrh;
 	Volatile!(uint, base + 0x28) brr;
 }
+
+struct InputPin(periph, uint pin)
+{
+	Result!bool isOn();
+}
+
+static assert(isGPI!(InputPin!(void, 0)));
+
+struct OutputPin(alias periph, uint pin)
+{
+	Result!void on()
+	{
+		periph.bsrr.store(1 << pin);
+		return ok!void();
+	}
+
+	Result!void off()
+	{
+		periph.bsrr.store(0x0001_0000 << pin);
+		return ok!void();
+	}
+}
+
+static assert(isGPI!(InputPin!(void, 0)));

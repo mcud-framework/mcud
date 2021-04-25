@@ -2,5 +2,5 @@ TARGET = arm-none-eabi-
 DFLAGS += -mcpu=cortex-m4 -mthumb 
 
 .PHONY: flash
-flash: $(BIN_FILE)
+flash: $(BIN_APP)
 	st-flash write $< 0x08000000
