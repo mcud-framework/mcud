@@ -28,19 +28,19 @@ struct Volatile(T, size_t addr)
 	enum T* t = cast(T*) (addr);
 
 	@attribute("forceinline")
-	T load()
+	T load() nothrow
 	{
 		return volatileLoad(*t);
 	}
 
 	@attribute("forceinline")
-	void store(T value)
+	void store(T value) nothrow
 	{
 		volatileStore(*t, value);
 	}
 
 	@attribute("forceinline")
-	auto opOpAssign(string op, T)(T value)
+	auto opOpAssign(string op, T)(T value) nothrow
 	{
 		T result = mixin("load() " ~ op ~ " value");
 		store(result);

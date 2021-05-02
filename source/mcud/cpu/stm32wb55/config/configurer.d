@@ -71,22 +71,22 @@ struct CPUConfigurer
 		final switch (gpio)
 		{
 		case GPIO.a:
-			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIOAEN, 1);
+			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIOAEN);
 			break;
 		case GPIO.b:
-			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIOBEN, 1);
+			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIOBEN);
 			break;
 		case GPIO.c:
-			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIOCEN, 1);
+			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIOCEN);
 			break;
 		case GPIO.d:
-			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIODEN, 1);
+			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIODEN);
 			break;
 		case GPIO.e:
-			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIOEEN, 1);
+			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIOEEN);
 			break;
 		case GPIO.h:
-			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIOHEN, 1);
+			_cpu.rcc_ahb2enr.set(RCC_AHB2ENR.GPIOHEN);
 			break;
 		}
 		GPIOConfigurer configurer = GPIOConfigurer(_cpu, this, gpio);
@@ -161,33 +161,80 @@ struct PinConfigurer
 		_pin = pin;
 	}
 
+	auto getRegister(string register)()
+	{
+		final switch (_port)
+		{
+		case GPIO.a:
+			return mixin("_cpu.gpioA_" ~ register);
+		case GPIO.b:
+			return mixin("_cpu.gpioB_" ~ register);
+		case GPIO.c:
+			return mixin("_cpu.gpioC_" ~ register);
+		case GPIO.d:
+			return mixin("_cpu.gpioD_" ~ register);
+		case GPIO.e:
+			return mixin("_cpu.gpioE_" ~ register);
+		case GPIO.h:
+			return mixin("_cpu.gpioH_" ~ register);
+		}
+	}
+
+	/**
+	Sets the value of the MODER register for this pin.
+	*/
+	PinConfigurer setMode(uint mode)
+	{
+		assert(mode <= 0b11, "Invalid value for mode register");
+		getRegister!"moder".set(0b11 << (_pin * 2), mode << (_pin * 2));
+		return this;
+	}
+
 	/**
 	Configures the pin as an output.
 	*/
 	PinConfigurer asOutput()
 	{
-		final switch (_port)
-		{
-		case GPIO.a:
-			_cpu.gpioA_moder.set(0b11 << (_pin * 2), 0b01 << (_pin * 2));
-			break;
-		case GPIO.b:
-			_cpu.gpioB_moder.set(0b11 << (_pin * 2), 0b01 << (_pin * 2));
-			break;
-		case GPIO.c:
-			_cpu.gpioC_moder.set(0b11 << (_pin * 2), 0b01 << (_pin * 2));
-			break;
-		case GPIO.d:
-			_cpu.gpioD_moder.set(0b11 << (_pin * 2), 0b01 << (_pin * 2));
-			break;
-		case GPIO.e:
-			_cpu.gpioE_moder.set(0b11 << (_pin * 2), 0b01 << (_pin * 2));
-			break;
-		case GPIO.h:
-			_cpu.gpioH_moder.set(0b11 << (_pin * 2), 0b01 << (_pin * 2));
-			break;
-		}
+		setMode(0b01);
 		_cpu.markPinAsOutput(_port, _pin);
+		return this;
+	}
+
+	/**
+	Configures the pin as an input pin.
+	*/
+	PinConfigurer asInput()
+	{
+		setMode(0b00);
+		_cpu.markPinAsInput(_port, _pin);
+		return this;
+	}
+
+	/**
+	Sets the value of the PUPDR register for this pin.
+	*/
+	PinConfigurer setPupdr(uint mode)
+	{
+		assert(mode <= 0b11, "Invalid value for mode register");
+		getRegister!"pupdr".set(0b11 << (_pin * 2), mode << (_pin * 2));
+		return this;
+	}
+
+	/**
+	Enables pull-up resistors on the pin.
+	*/
+	PinConfigurer asPullUp()
+	{
+		setPupdr(0b01);
+		return this;
+	}
+
+	/**
+	Enables pull-down resistors on the pin.
+	*/
+	PinConfigurer asPullDown()
+	{
+		setPupdr(0b10);
 		return this;
 	}
 
@@ -256,8 +303,8 @@ Contains all settings of a fully configured CPU.
 */
 private struct ConfiguredCPU
 {
-	bool[5][16] inputPins;
-	bool[5][16] outputPins;
+	bool[16][5] inputPins;
+	bool[16][5] outputPins;
 
 	void markPinAsInput(GPIO port, int pin)
 	{
@@ -269,7 +316,7 @@ private struct ConfiguredCPU
 		outputPins[port][pin] = true;
 	}
 
-	bool isPinInput(GPIO port, int pin)
+	bool isPinInput(GPIO port, int pin) nothrow
 	{
 		return inputPins[port][pin];
 	}
@@ -288,6 +335,11 @@ private struct ConfiguredCPU
 		{
 			this.mask |= mask;
 			this.value = (this.value & ~mask) | value;
+		}
+
+		void set(uint mask)
+		{
+			set(mask, mask);
 		}
 	}
 
@@ -365,10 +417,12 @@ private struct FinalConfiguredCPU(ConfiguredCPU c)
 		}
 	}
 
-	static auto getInput(GPIO port, uint pin)()
+	static auto getInput(GPIO port, uint pin)() nothrow
 	{
+		import mcud.cpu.stm32wb55.periphs.gpio : InputPin;
 		assert(c.isPinInput(port, pin), "The desired pin is not configured as an input");
-		auto gpio = getPort!port;
+		enum gpio = getGPIO!port;
+		return InputPin!(gpio, pin)();
 	}
 
 	static auto getOutput(GPIO port, uint pin)()

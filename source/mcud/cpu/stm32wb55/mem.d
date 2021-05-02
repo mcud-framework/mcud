@@ -2,12 +2,12 @@ module mcud.cpu.stm32wb55.mem;
 
 version (unittest)
 {
-	T volatileLoad(T)(ref T v)
+	T volatileLoad(T)(ref T v) nothrow
 	{
 		return v;
 	}
 
-	T volatileStore(T)(ref T v, const T a)
+	T volatileStore(T)(ref T v, const T a) nothrow
 	{
 		return v = a;
 	}
@@ -20,7 +20,7 @@ else
 	Performs a volatile load.
 	*/
 	@attribute("forceinline")
-	T volatileLoad(T)(ref T v)
+	T volatileLoad(T)(ref T v) nothrow
 	{
 		asm { "" : "+m" v; }
 		T res = v;
@@ -32,7 +32,7 @@ else
 	Performs a volatile store.
 	*/
 	@attribute("forceinline")
-	T volatileStore(T)(ref T v, const T a)
+	T volatileStore(T)(ref T v, const T a) nothrow
 	{
 		asm { "" : : "m" v; }
 		v = a;

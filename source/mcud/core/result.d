@@ -18,6 +18,42 @@ if (!is(T == void))
 		m_value = value;
 		m_code = code;
 	}
+
+	Errors code() const
+	{
+		return m_code;
+	}
+
+	void on(alias callback)() const
+	{
+		callback(m_value);
+	}
+
+	Result!T map(T function(T) mapper)()
+	{
+		if (isSuccess())
+			return ok(mapper(m_value));
+		else
+			return this;
+	}
+
+	bool isSuccess() const
+	{
+		return m_code == Errors.ok;
+	}
+
+	bool isFail() const
+	{
+		return m_code != Errors.ok;
+	}
+
+	T or(T other) const
+	{
+		if (isSuccess())
+			return m_value;
+		else
+			return other;
+	}
 }
 
 /**

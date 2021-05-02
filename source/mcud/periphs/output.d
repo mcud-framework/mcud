@@ -11,12 +11,12 @@ interface GPO
 	/**
 	Turns the GPO on.
 	*/
-	Result!void on();
+	Result!void on() nothrow;
 
 	/**
 	Turns the GPO off.
 	*/
-	Result!void off();
+	Result!void off() nothrow;
 }
 
 alias isGPO = isLike!GPO;
