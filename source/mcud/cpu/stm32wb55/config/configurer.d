@@ -161,7 +161,7 @@ struct PinConfigurer
 		_pin = pin;
 	}
 
-	auto getRegister(string register)()
+	ref getRegister(string register)()
 	{
 		final switch (_port)
 		{
@@ -436,12 +436,13 @@ private struct FinalConfiguredCPU(ConfiguredCPU c)
 
 unittest
 {
-	auto configured = buildConfiguredCPU((options)
+	auto configured = buildConfiguredCPU((CPUConfigurer options)
 	{
 		options
 			.enableGPIO(GPIO.a)
-			.pin(4)
-				.asOutput();
+				.pin(4)
+					.asOutput()
+					.and();
 	});
 	
 	assert(configured.gpioA_moder.mask == 0x0000_0300);

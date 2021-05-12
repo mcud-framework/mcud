@@ -3,10 +3,12 @@ module mcud.core.errors;
 /**
 A set of errors one can encounter.
 */
-enum Errors
+enum Error
 {
 	/// Everything's okay!
 	ok,
 
 	timeout
 }
+
+alias Errors = Error;

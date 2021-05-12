@@ -11,6 +11,8 @@ if (!is(T == void))
 	private T m_value;
 	private Errors m_code;
 
+	public alias type = T;
+
 	@disable this();
 
 	package this(in T value, Errors code)
@@ -22,6 +24,11 @@ if (!is(T == void))
 	Errors code() const
 	{
 		return m_code;
+	}
+
+	T get()
+	{
+		return m_value;
 	}
 
 	void on(alias callback)() const
@@ -64,11 +71,41 @@ if (is(T == void))
 {
 	private Errors m_code;
 
+	public alias type = void;
+
 	@disable this();
 
 	package this(Errors code)
 	{
 		m_code = code;
+	}
+
+	Errors code() const
+	{
+		return m_code;
+	}
+
+	void on(alias callback)() const
+	{
+		callback(m_value);
+	}
+
+	Result!T map(T function() mapper)()
+	{
+		if (isSuccess())
+			return ok(mapper(m_value));
+		else
+			return this;
+	}
+
+	bool isSuccess() const
+	{
+		return m_code == Errors.ok;
+	}
+
+	bool isFail() const
+	{
+		return m_code != Errors.ok;
 	}
 }
 
