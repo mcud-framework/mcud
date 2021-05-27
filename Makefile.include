@@ -73,7 +73,7 @@ DC = $(TARGET)gdc
 # The linker to use.
 LD = $(TARGET)ld
 # Flags to pass to the D compiler.
-DFLAGS += -nostdlib -Os -ggdb -ffunction-sections -fdata-sections -fno-moduleinfo -fno-exceptions
+DFLAGS += -nostdlib -Os -ggdb -ffunction-sections -fdata-sections -fno-moduleinfo -fno-exceptions -fno-switch-errors
 # Flags to pass to the compiler when building tests.
 HOSTDFLAGS = -funittest -fmain -ggdb
 # The tool to strip binaries with.

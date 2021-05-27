@@ -4,10 +4,10 @@ import mcud.core.result;
 
 import std.traits;
 
-enum FutureResult
+enum FutureState
 {
+	pending,
 	running,
-	waiting,
 	complete
 }
 
@@ -26,7 +26,11 @@ private struct Future(alias publisher, alias poller)
 		{
 			struct Subscribe
 			{
-				alias poll = poller!success;
+				FutureResult poll()
+				{
+					return FutureResult.complete;
+				}
+				//alias poll = poller!success;
 			}
 			return Subscribe();
 		}
