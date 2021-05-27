@@ -22,7 +22,6 @@ SECTIONS
 
         *(.rodata)
         *(.rodata*)
-
     } > flash
 
     .data : AT(ADDR(.text) + SIZEOF(.text))
@@ -30,5 +29,12 @@ SECTIONS
         _data = .;
         *(.data)
         _edata = .;
+    } > sram1
+
+    .bss : AT(ADDR(.data) + SIZEOF(.data))
+    {
+        _bss = .;
+        *(.bss)
+        _ebss = .;
     } > sram1
 }
