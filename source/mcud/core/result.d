@@ -95,9 +95,12 @@ if (is(T == void))
 		return m_code;
 	}
 
-	void on(alias callback)() const
+	@forceinline
+	Result!T on(void function() callback)() const
 	{
-		callback(m_value);
+		if (isSuccess)
+			callback();
+		return this;
 	}
 
 	Result!T map(T function() mapper)()

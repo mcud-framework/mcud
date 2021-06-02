@@ -8,12 +8,12 @@ private struct CPU
 {
 	import mcud.cpu.stm32wb55.periphs;
 
-	GPIO!0x4800_0000 gpioA;
-	GPIO!0x4800_0400 gpioB;
-	GPIO!0x4800_0800 gpioC;
-	GPIO!0x4800_0C00 gpioD;
-	GPIO!0x4800_1000 gpioE;
-	GPIO!0x4800_1C00 gpioH;
+	PeriphGPIO!0x4800_0000 gpioA;
+	PeriphGPIO!0x4800_0400 gpioB;
+	PeriphGPIO!0x4800_0800 gpioC;
+	PeriphGPIO!0x4800_0C00 gpioD;
+	PeriphGPIO!0x4800_1000 gpioE;
+	PeriphGPIO!0x4800_1C00 gpioH;
 
 	RCC!0x5800_0000 rcc;
 }
