@@ -22,21 +22,26 @@ if (!is(T == void))
 		m_code = code;
 	}
 
+	/**
+	Gets the error code of the result.
+	*/
 	Errors code() const
 	{
 		return m_code;
 	}
 
-	T get()
+	/**
+	Executes the callback if the function succeeded.
+	*/
+	void on(void function(T) callback)() const
 	{
-		return m_value;
+		if (isSuccess)
+			callback(m_value);
 	}
 
-	void on(alias callback)() const
-	{
-		callback(m_value);
-	}
-
+	/**
+	Maps the value of this result to another value, if the result is a success code.
+	*/
 	Result!T map(T function(T) mapper)()
 	{
 		if (isSuccess())
@@ -45,6 +50,10 @@ if (!is(T == void))
 			return this;
 	}
 
+	/**
+	If the result is a success code, the result returned by the map function is returned.
+	Otherwise, a failure code is returned.
+	*/
 	Result!T flatMap(Result!T function(T) mapper)()
 	{
 		if (isSuccess())
@@ -53,16 +62,25 @@ if (!is(T == void))
 			return this;
 	}
 
+	/**
+	Returns `true` if the result indicates a success, returns `false` if an error occured.
+	*/
 	bool isSuccess() const
 	{
 		return m_code == Errors.ok;
 	}
 
+	/**
+	Returns `true` if the result indicates an error, returns `false` if it was successful.
+	*/
 	bool isFail() const
 	{
 		return m_code != Errors.ok;
 	}
 
+	/**
+	Returns the value of the result on success, on failure it returns the value given.
+	*/
 	T or(T other) const
 	{
 		if (isSuccess())
