@@ -6,70 +6,214 @@ import mcud.mem.volatile;
 import mcud.meta.like;
 import mcud.periphs.input;
 
-struct GPIO(uint base)
+/**
+The raw GPIO peripheral.
+
+Params:
+	base = The starting address of the peripheral.
+*/
+struct PeriphGPIO(uint base)
 {
+	/// Mode Register
 	Volatile!(uint, base + 0x00) moder;
+	/// Output Type Register
 	Volatile!(uint, base + 0x04) otyper;
+	/// Output Speed Register
 	Volatile!(uint, base + 0x08) ospeedr;
+	/// Pull-Up Pull-Down Register
 	Volatile!(uint, base + 0x0C) pupdr;
+	/// Input Data Register
 	Volatile!(uint, base + 0x10) idr;
+	/// Output Data Register
 	Volatile!(uint, base + 0x14) odr;
+	/// Bit Set/Reset Register
 	Volatile!(uint, base + 0x18) bsrr;
+	/// Configuration Lock Register
 	Volatile!(uint, base + 0x1C) lckr;
+	/// Alternate Function Low
 	Volatile!(uint, base + 0x20) afrl;
+	/// Alternate Function High
 	Volatile!(uint, base + 0x24) afrh;
+	/// Bit Reset Register
 	Volatile!(uint, base + 0x28) brr;
 }
 
-/*
-struct GPIOSetting
+/**
+Configures a pin.
+*/
+struct PinConfig
 {
-	enum Type
+	/**
+	Set of valid ports.
+	*/
+	enum Port
 	{
+		unset, a, b, c, d, e, h
+	}
+
+	/**
+	Set of valid modes.
+	*/
+	enum Mode : uint
+	{
+		unset = -1,
 		input = 0b00,
 		output = 0b01,
-		alternateFunction = 0b10,
-		analog = 0b11
+		alternate = 0b10,
+		analog = 0b11,
 	}
 
-	Type type
-	uint pin;
+	/// The selected port.
+	Port _port = Port.unset;
+	/// The selected mode.
+	Mode _mode = Mode.unset;
+	/// The selected pin.
+	uint _pin = -1;
+
+	/**
+	Sets the port.
+	Params:
+		port = The port to configure.
+	*/
+	PinConfig port(Port port)
+	{
+		_port = port;
+		return this;
+	}
+
+	/**
+	Sets the pin.
+	Params:
+		pin = The pin to configure.
+	*/
+	PinConfig pin(uint pin)
+	{
+		_pin = pin;
+		return this;
+	}
+
+	/**
+	Sets the mode of the pin.
+	Params:
+		mode = The mode of the pin.
+	*/
+	PinConfig mode(Mode mode)
+	{
+		assert(_mode == Mode.unset, "Mode is already set");
+		_mode = mode;
+		return this;
+	}
+
+	/**
+	Configures the pin as an output.
+	*/
+	PinConfig asOutput()
+	{
+		return mode(Mode.output);
+	}
+
+	/**
+	Configures the pin as an input.
+	*/
+	PinConfig asInput()
+	{
+		return mode(Mode.input);
+	}
+
+	/**
+	Configures the pin as an analog input.
+	*/
+	PinConfig asAnalog()
+	{
+		return mode(Mode.analog);
+	}
+
+	/**
+	Configures the pin as an alternative function.
+	*/
+	PinConfig asAlternateFunction()
+	{
+		return mode(Mode.alternate);
+	}
 }
+
+/**
+Manages a pin with a certain configuration.
+Params:
+	config = The pin configuration.
 */
-
-/*
-struct InputPin(alias periph, uint pin)
+template Pin(PinConfig config)
 {
-	@forceinline
-	Result!bool isOn() nothrow
+	import mcud.cpu.stm32wb55.periphs.rcc;
+	import mcud.cpu.stm32wb55.cpu;
+
+	static assert(config._port != PinConfig.Port.unset, "Port not set");
+	static assert(config._pin != -1, "Pin not set");
+	static assert(config._pin < 16, "Pin out of range");
+	static assert(config._mode != PinConfig.Mode.unset, "Mode not set");
+
+	static if (config._port == PinConfig.Port.a)
 	{
-		const pinState = periph.idr.load() & (1 << pin);
-		return ok(pinState != 0);
+		private enum periph = cpu.gpioA;
+		private alias rcc = RCCPeriph!(RCCDevice.GPIOA);
+	}
+	else static if (config._port == PinConfig.Port.b)
+	{
+		private enum periph = cpu.gpioB;
+		private alias rcc = RCCPeriph!(RCCDevice.GPIOB);
+	}
+	else
+		static assert(false, "Invalid port");
+
+	/**
+	Sets the mode of the pin.
+	Params:
+		mode = The mode of the pin.
+	*/
+	void setMode(PinConfig.Mode mode)
+	{
+		auto value = periph.moder.load();
+		value &= ~((0b11) << (config._pin * 2));
+		value |= (cast(uint) config._mode) << (config._pin * 2);
+		periph.moder.store(value);
+	}
+	
+	/**
+	Enables the pin.
+	*/
+	@forceinline
+	Result!void start()
+	{
+		return rcc.start()
+			.on!({
+				setMode(config._mode);
+			});
+	}
+
+	/**
+	Disables the pin.
+	*/
+	@forceinline
+	Result!void stop()
+	{
+		setMode(PinConfig.Mode.analog);
+		return rcc.stop();
+	}
+
+	static if (config._mode == PinConfig.Mode.output)
+	{
+		@forceinline
+		Result!void on() nothrow
+		{
+			periph.bsrr.store(1 << config._pin);
+			return ok!void();
+		}
+
+		@forceinline
+		Result!void off() nothrow
+		{
+			periph.bsrr.store(0x0001_0000 << config._pin);
+			return ok!void();
+		}
 	}
 }
-
-struct OutputPin(alias periph, GPIOSetting setting)
-{
-	@forceinline
-	Result!void on() nothrow
-	{
-		periph.bsrr.store(1 << pin);
-		return ok!void();
-	}
-
-	@forceinline
-	Result!void off() nothrow
-	{
-		periph.bsrr.store(0x0001_0000 << pin);
-		return ok!void();
-	}
-
-	void start()
-	{
-		auto moder = periph.moder.read();
-		moder &= ~(GPIOSetting.Type.analog << (setting.pin * 2));
-		modem |= setting.type << (setting.pin * 2);
-		periph.moder.store(moder)
-	}
-}
-*/
