@@ -63,10 +63,22 @@ struct PinConfig
 		analog = 0b11,
 	}
 
+	/**
+	State of pull-up/pull-down resistor.
+	*/
+	enum Pull : uint
+	{
+		none = 0b00,
+		up = 0b01,
+		down = 0b10,
+	}
+
 	/// The selected port.
 	Port _port = Port.unset;
 	/// The selected mode.
 	Mode _mode = Mode.unset;
+	/// The state of the pull-up/pull-down resistor.
+	Pull _pull = Pull.none;
 	/// The selected pin.
 	uint _pin = -1;
 
@@ -135,6 +147,32 @@ struct PinConfig
 	{
 		return mode(Mode.alternate);
 	}
+
+	/**
+	Configures the pull-up/pull-down resistor.
+	*/
+	PinConfig pull(Pull pull)
+	{
+		assert(_pull == Pull.none, "Pull-up/down is already set");
+		_pull = pull;
+		return this;
+	}
+
+	/**
+	Enables the pull-up resistor.
+	*/
+	PinConfig enablePullUp()
+	{
+		return pull(Pull.up);
+	}
+
+	/**
+	Enables the bull-down resistor.
+	*/
+	PinConfig enablePullDown()
+	{
+		return pull(Pull.down);
+	}
 }
 
 /**
@@ -173,9 +211,22 @@ template Pin(PinConfig config)
 	void setMode(PinConfig.Mode mode)
 	{
 		auto value = periph.moder.load();
-		value &= ~((0b11) << (config._pin * 2));
+		value &= ~(0b11 << (config._pin * 2));
 		value |= (cast(uint) config._mode) << (config._pin * 2);
 		periph.moder.store(value);
+	}
+
+	/**
+	Sets the pull-up/pull-down resistor.
+	Params:
+		pull = The state of the pull-upp/pull-down resistor.
+	*/
+	void setPull(PinConfig.Pull pull)
+	{
+		auto value = periph.pupdr.load();
+		value &= ~(0b11 << (config._pull * 2));
+		value |= (cast(uint) config._pull) << (config._pin * 2);
+		periph.pupdr.store(value);
 	}
 	
 	/**
@@ -187,6 +238,7 @@ template Pin(PinConfig config)
 		return rcc.start()
 			.on!({
 				setMode(config._mode);
+				setPull(config._pull);
 			});
 	}
 
@@ -215,5 +267,19 @@ template Pin(PinConfig config)
 			periph.bsrr.store(0x0001_0000 << config._pin);
 			return ok!void();
 		}
+	}
+	else static if (config._mode == PinConfig.Mode.input)
+	{
+		@forceinline
+		Result!bool isOn()
+		{
+			const idr = periph.idr.load();
+			enum mask = 1 << config._pin;
+			return ok!bool((idr & mask) != 0);
+		}
+	}
+	else
+	{
+		static assert(false, "Unsupported IO mode");
 	}
 }
