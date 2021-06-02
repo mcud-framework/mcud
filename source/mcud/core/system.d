@@ -2,17 +2,16 @@ module mcud.core.system;
 
 import mcud.core.task;
 
-import app;
-import board;
-
 private __gshared Board e_board;
 private alias a_app = App!Board;
 private enum tasks = allTasks!a_app;
 
-
 version(unittest) {}
 else
 {
+	import app;
+	import board;
+
 	private void sleep()
 	{
 		asm { "wfi"; }
@@ -24,6 +23,9 @@ else
 		ubyte _ebss;
 	}
 
+	/**
+	Starts the main scheduling loop.
+	*/
 	void start()
 	{
 		for (ubyte* bss = &_bss; bss < &_ebss; bss++)
