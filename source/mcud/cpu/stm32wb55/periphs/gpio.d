@@ -21,6 +21,23 @@ struct GPIO(uint base)
 	Volatile!(uint, base + 0x28) brr;
 }
 
+/*
+struct GPIOSetting
+{
+	enum Type
+	{
+		input = 0b00,
+		output = 0b01,
+		alternateFunction = 0b10,
+		analog = 0b11
+	}
+
+	Type type
+	uint pin;
+}
+*/
+
+/*
 struct InputPin(alias periph, uint pin)
 {
 	@forceinline
@@ -31,9 +48,7 @@ struct InputPin(alias periph, uint pin)
 	}
 }
 
-//static assert(isGPI!(InputPin!(void, 0)));
-
-struct OutputPin(alias periph, uint pin)
+struct OutputPin(alias periph, GPIOSetting setting)
 {
 	@forceinline
 	Result!void on() nothrow
@@ -48,4 +63,13 @@ struct OutputPin(alias periph, uint pin)
 		periph.bsrr.store(0x0001_0000 << pin);
 		return ok!void();
 	}
+
+	void start()
+	{
+		auto moder = periph.moder.read();
+		moder &= ~(GPIOSetting.Type.analog << (setting.pin * 2));
+		modem |= setting.type << (setting.pin * 2);
+		periph.moder.store(moder)
+	}
 }
+*/

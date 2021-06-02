@@ -7,6 +7,9 @@ APP_SRC ?= source
 # The directory which will containg compiled binaries.
 BIN_DIR ?= bin
 
+# The directory which will contain distribution files.
+DIST ?= $(MCUD)/dist
+
 # The source directory of MCUd.
 MCUD_SRC = $(MCUD)/source/mcud
 
@@ -76,6 +79,7 @@ LD = $(TARGET)ld
 DFLAGS += -nostdlib -Os -ggdb -ffunction-sections -fdata-sections -fno-moduleinfo -fno-exceptions -fno-switch-errors
 # Flags to pass to the compiler when building tests.
 HOSTDFLAGS = -funittest -fmain -ggdb
+LDFLAGS = -gc-sections -Os
 # The tool to strip binaries with.
 STRIP = $(TARGET)strip
 # The tool to copy object files with.
@@ -99,12 +103,16 @@ info:
 clean:
 	rm -rf $(BIN_DIR)
 
+.PHONY: distclean
+distclean: clean
+	rm -rf $(DIST)
+
 $(BIN_APP): $(ELF_APP)
 	$(OBJCOPY) -O binary $< $@
 
 $(ELF_APP): $(OBJ_APP) $(OBJ_DRUNTIME) $(OBJ_PHOBOS) $(LINKER_SCRIPT)
 	@mkdir -p $(dir $@)
-	$(LD) -T $(LINKER_SCRIPT) --gc-sections -o $@ $< $(OBJ_PHOBOS) $(OBJ_DRUNTIME)
+	$(LD) -T $(LINKER_SCRIPT) $(LDFLAGS) -o $@ $< $(OBJ_PHOBOS) $(OBJ_DRUNTIME)
 
 $(OBJ_APP): $(SOURCES) $(MCUD)/Makefile.include
 	@mkdir -p $(dir $@)
@@ -116,7 +124,7 @@ $(OBJ_PHOBOS): $(SOURCES_LIBPHOBOS) $(MCUD)/Makefile.include
 
 $(OBJ_DRUNTIME): $(SOURCES_DRUNTIME) $(MCUD)/Makefile.include
 	@mkdir -p $(dir $@)
-	$(DC) $(DFLAGS) -c -o $@ $(SOURCES_DRUNTIME)
+	$(DC) $(DFLAGS) -fno-tree-loop-distribute-patterns -c -o $@ $(SOURCES_DRUNTIME)
 
 $(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/Makefile.include
 	mkdir -p $(dir $@)

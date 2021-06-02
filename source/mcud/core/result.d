@@ -1,6 +1,7 @@
 module mcud.core.result;
 
 import mcud.core.errors;
+import mcud.core.attributes;
 
 /**
 Holds a value and a success code.
@@ -44,6 +45,14 @@ if (!is(T == void))
 			return this;
 	}
 
+	Result!T flatMap(Result!T function(T) mapper)()
+	{
+		if (isSuccess())
+			return mapper(m_value);
+		else
+			return this;
+	}
+
 	bool isSuccess() const
 	{
 		return m_code == Errors.ok;
@@ -75,6 +84,7 @@ if (is(T == void))
 
 	@disable this();
 
+	@forceinline
 	package this(Errors code)
 	{
 		m_code = code;
@@ -93,11 +103,21 @@ if (is(T == void))
 	Result!T map(T function() mapper)()
 	{
 		if (isSuccess())
-			return ok(mapper(m_value));
+			return ok(mapper());
 		else
 			return this;
 	}
 
+	@forceinline
+	Result!T flatMap(Result!T function() mapper)()
+	{
+		if (isSuccess)
+			return mapper();
+		else
+			return this;
+	}
+
+	@forceinline
 	bool isSuccess() const
 	{
 		return m_code == Errors.ok;

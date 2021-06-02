@@ -1,1 +1,8 @@
 include $(CPUS)/stm32/Makefile.include
+
+$(DIST)/stm32wb5x_ble.bin:
+	mkdir $(DIST)
+	wget -O $@.tmp 'https://github.com/STMicroelectronics/STM32CubeWB/raw/master/Projects/STM32WB_Copro_Wireless_Binaries/STM32WB5x/stm32wb5x_BLE_Stack_light_fw.bin'
+	mv $@.tmp $@
+
+$(ELF_APP): $(DIST)/stm32wb5x_ble.bin

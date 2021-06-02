@@ -7,8 +7,10 @@ enum Error
 {
 	/// Everything's okay!
 	ok,
-
-	timeout
+	/// A timeout occured
+	timeout,
+	/// A buffer was full
+	full,
 }
 
 alias Errors = Error;

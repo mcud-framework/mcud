@@ -20,7 +20,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-module gcc.attribute;
+module gcc.attributes;
 
 private struct Attribute(A...)
 {

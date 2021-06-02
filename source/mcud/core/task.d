@@ -78,3 +78,30 @@ unittest
 	const tasks = allTasks!b;
 	assert(tasks == [taskA2, taskB] || tasks == [taskB, taskA2]);
 }
+
+/**
+Set to `true` if at least one tasks requested to be awake.
+*/
+private shared g_awake = false;
+
+/**
+Ensures tasks are awake.
+*/
+void wake()
+{
+	g_awake = true;
+}
+
+/**
+Tests and clears the awake flag.
+*/
+bool testAndResetAwake()
+{
+	if (g_awake)
+	{
+		g_awake = false;
+		return true;
+	}
+	else
+		return false;
+}
