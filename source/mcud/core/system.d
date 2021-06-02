@@ -12,11 +12,6 @@ else
 	import app;
 	import board;
 
-	private void sleep()
-	{
-		asm { "wfi"; }
-	}
-
 	private extern(C) __gshared
 	{
 		ubyte _bss;
@@ -38,8 +33,6 @@ else
 		{
 			static foreach (task; tasks)
 				task.loop();
-			if (!testAndResetAwake())
-				sleep();
 		}
 	}
 }
