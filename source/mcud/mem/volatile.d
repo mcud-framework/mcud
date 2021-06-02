@@ -3,19 +3,8 @@ Contains many platform-independent memory helper classes.
 */
 module mcud.mem.volatile;
 
+import mcud.core.attributes;
 import mcud.cpu.stm32wb55.mem;
-
-version (GCC)
-{
-	import gcc.attribute;
-}
-else
-{
-	struct attribute
-	{
-		string attr;
-	}
-}
 
 /**
 Wraps volatile memory at a specific memory address.
@@ -27,20 +16,20 @@ struct Volatile(T, size_t addr)
 
 	enum T* t = cast(T*) (addr);
 
-	@attribute("forceinline")
-	T load()
+	@forceinline
+	T load() nothrow
 	{
 		return volatileLoad(*t);
 	}
 
-	@attribute("forceinline")
-	void store(T value)
+	@forceinline
+	void store(T value) nothrow
 	{
 		volatileStore(*t, value);
 	}
 
-	@attribute("forceinline")
-	auto opOpAssign(string op, T)(T value)
+	@forceinline
+	auto opOpAssign(string op, T)(T value) nothrow
 	{
 		T result = mixin("load() " ~ op ~ " value");
 		store(result);

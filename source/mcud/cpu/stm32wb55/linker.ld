@@ -13,6 +13,7 @@ SECTIONS
 {
     .text :
     {
+        _text = .;
         LONG(_stackStart);
         *(.data._start)
         *(.text)
@@ -22,13 +23,20 @@ SECTIONS
 
         *(.rodata)
         *(.rodata*)
-
+        _etext = .;
     } > flash
 
     .data : AT(ADDR(.text) + SIZEOF(.text))
     {
         _data = .;
-        *(.data)
+        *(.data*)
         _edata = .;
+    } > sram1
+
+    .bss : AT(ADDR(.data) + SIZEOF(.data))
+    {
+        _bss = .;
+        *(.bss*)
+        _ebss = .;
     } > sram1
 }

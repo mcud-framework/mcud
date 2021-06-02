@@ -1,6 +1,7 @@
 module mcud.core.result;
 
 import mcud.core.errors;
+import mcud.core.attributes;
 
 /**
 Holds a value and a success code.
@@ -11,12 +12,63 @@ if (!is(T == void))
 	private T m_value;
 	private Errors m_code;
 
+	public alias type = T;
+
 	@disable this();
 
 	package this(in T value, Errors code)
 	{
 		m_value = value;
 		m_code = code;
+	}
+
+	Errors code() const
+	{
+		return m_code;
+	}
+
+	T get()
+	{
+		return m_value;
+	}
+
+	void on(alias callback)() const
+	{
+		callback(m_value);
+	}
+
+	Result!T map(T function(T) mapper)()
+	{
+		if (isSuccess())
+			return ok(mapper(m_value));
+		else
+			return this;
+	}
+
+	Result!T flatMap(Result!T function(T) mapper)()
+	{
+		if (isSuccess())
+			return mapper(m_value);
+		else
+			return this;
+	}
+
+	bool isSuccess() const
+	{
+		return m_code == Errors.ok;
+	}
+
+	bool isFail() const
+	{
+		return m_code != Errors.ok;
+	}
+
+	T or(T other) const
+	{
+		if (isSuccess())
+			return m_value;
+		else
+			return other;
 	}
 }
 
@@ -28,11 +80,52 @@ if (is(T == void))
 {
 	private Errors m_code;
 
+	public alias type = void;
+
 	@disable this();
 
+	@forceinline
 	package this(Errors code)
 	{
 		m_code = code;
+	}
+
+	Errors code() const
+	{
+		return m_code;
+	}
+
+	void on(alias callback)() const
+	{
+		callback(m_value);
+	}
+
+	Result!T map(T function() mapper)()
+	{
+		if (isSuccess())
+			return ok(mapper());
+		else
+			return this;
+	}
+
+	@forceinline
+	Result!T flatMap(Result!T function() mapper)()
+	{
+		if (isSuccess)
+			return mapper();
+		else
+			return this;
+	}
+
+	@forceinline
+	bool isSuccess() const
+	{
+		return m_code == Errors.ok;
+	}
+
+	bool isFail() const
+	{
+		return m_code != Errors.ok;
 	}
 }
 

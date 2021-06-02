@@ -1,5 +1,6 @@
 module mcud.cpu.stm32wb55.periphs.gpio;
 
+import mcud.core.attributes;
 import mcud.core.result;
 import mcud.mem.volatile;
 import mcud.meta.like;
@@ -20,26 +21,55 @@ struct GPIO(uint base)
 	Volatile!(uint, base + 0x28) brr;
 }
 
-struct InputPin(periph, uint pin)
+/*
+struct GPIOSetting
 {
-	Result!bool isOn();
+	enum Type
+	{
+		input = 0b00,
+		output = 0b01,
+		alternateFunction = 0b10,
+		analog = 0b11
+	}
+
+	Type type
+	uint pin;
+}
+*/
+
+/*
+struct InputPin(alias periph, uint pin)
+{
+	@forceinline
+	Result!bool isOn() nothrow
+	{
+		const pinState = periph.idr.load() & (1 << pin);
+		return ok(pinState != 0);
+	}
 }
 
-static assert(isGPI!(InputPin!(void, 0)));
-
-struct OutputPin(alias periph, uint pin)
+struct OutputPin(alias periph, GPIOSetting setting)
 {
-	Result!void on()
+	@forceinline
+	Result!void on() nothrow
 	{
 		periph.bsrr.store(1 << pin);
 		return ok!void();
 	}
 
-	Result!void off()
+	@forceinline
+	Result!void off() nothrow
 	{
 		periph.bsrr.store(0x0001_0000 << pin);
 		return ok!void();
 	}
-}
 
-static assert(isGPI!(InputPin!(void, 0)));
+	void start()
+	{
+		auto moder = periph.moder.read();
+		moder &= ~(GPIOSetting.Type.analog << (setting.pin * 2));
+		modem |= setting.type << (setting.pin * 2);
+		periph.moder.store(moder)
+	}
+}
+*/

@@ -1,5 +1,8 @@
 module mcud.cpu.stm32wb55.periphs.rcc;
 
+import mcud.core.attributes;
+import mcud.core.result;
+import mcud.cpu.stm32wb55.cpu;
 import mcud.mem.volatile;
 
 enum RCC_AHB2ENR
@@ -12,6 +15,45 @@ enum RCC_AHB2ENR
 	GPIOHEN = 0x0_0080,
 	ADCEN   = 0x0_2000,
 	AES1EN  = 0x1_0000,
+}
+
+enum RCCDevice
+{
+	// AHB2ENR
+	GPIOA = RCC_AHB2ENR.GPIOAEN,
+	GPIOB = RCC_AHB2ENR.GPIOBEN,
+}
+
+template RCCPeriph(RCCDevice device)
+if (device == RCCDevice.GPIOA || device == RCCDevice.GPIOB)
+{
+	__gshared uint count = 0;
+
+	@forceinline
+	Result!void start()
+	{
+		//if (count == 0)
+		{
+			auto value = cpu.rcc.ahb2enr.load();
+			value |= device;
+			cpu.rcc.ahb2enr.store(value);
+		}
+		count++;
+		return ok!void;
+	}
+
+	@forceinline
+	Result!void stop()
+	{
+		if (count == 1)
+		{
+			auto value = cpu.rcc.ahb2enr.load();
+			value &= ~device;
+			cpu.rcc.ahb2enr.store(value);
+		}
+		count--;
+		return ok!void;
+	}
 }
 
 struct RCC(uint base)

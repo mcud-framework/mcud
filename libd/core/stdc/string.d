@@ -48,7 +48,13 @@ version (Windows)
 ///
 pure void* memmove(return void* s1, scope const void* s2, size_t n);
 ///
-pure void* memset(return void* s, int c, size_t n);
+pure void* memset(return void* s, int c, size_t n)
+{
+    ubyte* ptr = cast(ubyte*) s;
+    while (n)
+        ptr[n--] = cast(ubyte) c;
+    return s;
+}
 
 ///
 pure char*  strcpy(return char* s1, scope const char* s2);
