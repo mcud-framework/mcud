@@ -1,7 +1,8 @@
 module mcud.core.result;
 
-import mcud.core.errors;
 import mcud.core.attributes;
+
+public import mcud.core.errors;
 
 /**
 Holds a value and a success code.
@@ -10,13 +11,13 @@ struct Result(T)
 if (!is(T == void))
 {
 	private T m_value;
-	private Errors m_code;
+	private Err m_code;
 
 	public alias type = T;
 
 	@disable this();
 
-	package this(in T value, Errors code)
+	package this(in T value, Err code)
 	{
 		m_value = value;
 		m_code = code;
@@ -25,7 +26,7 @@ if (!is(T == void))
 	/**
 	Gets the error code of the result.
 	*/
-	Errors code() const
+	Err code() const
 	{
 		return m_code;
 	}
@@ -67,7 +68,7 @@ if (!is(T == void))
 	*/
 	bool isSuccess() const
 	{
-		return m_code == Errors.ok;
+		return m_code == Err.ok;
 	}
 
 	/**
@@ -75,7 +76,7 @@ if (!is(T == void))
 	*/
 	bool isFail() const
 	{
-		return m_code != Errors.ok;
+		return m_code != Err.ok;
 	}
 
 	/**
@@ -88,6 +89,11 @@ if (!is(T == void))
 		else
 			return other;
 	}
+
+	Result!T opBinary(string op, R)(const R rhs) const
+	{
+		return map!(t => mixin("t " ~ op ~ " rhs"));
+	}
 }
 
 /**
@@ -96,19 +102,19 @@ Holds a success code.
 struct Result(T)
 if (is(T == void))
 {
-	private Errors m_code;
+	private Err m_code;
 
 	public alias type = void;
 
 	@disable this();
 
 	@forceinline
-	package this(Errors code)
+	package this(Err code)
 	{
 		m_code = code;
 	}
 
-	Errors code() const
+	Err code() const
 	{
 		return m_code;
 	}
@@ -141,12 +147,12 @@ if (is(T == void))
 	@forceinline
 	bool isSuccess() const
 	{
-		return m_code == Errors.ok;
+		return m_code == Err.ok;
 	}
 
 	bool isFail() const
 	{
-		return m_code != Errors.ok;
+		return m_code != Err.ok;
 	}
 }
 
@@ -156,7 +162,7 @@ Gets a success result with a value.
 Result!T ok(T)(in T value)
 if (!is(T == void))
 {
-	return Result!T(value, Errors.ok);
+	return Result!T(value, Err.ok);
 }
 
 /**
@@ -165,13 +171,13 @@ Gets a success result without a value.
 Result!void ok(T)()
 if (is(T == void))
 {
-	return Result!void(Errors.ok);
+	return Result!void(Err.ok);
 }
 
 /**
 Gets a failed result with a reason.
 */
-Result!T fail(T)(Errors reason)
+Result!T fail(T)(Err reason)
 if (!is(T == void))
 {
 	return Result!T(T.init, reason);
@@ -180,7 +186,7 @@ if (!is(T == void))
 /**
 Gets a failure result with a value.
 */
-Result!void fail(T)(Errors reason)
+Result!void fail(T)(Err reason)
 if (is(T == void))
 {
 	return Result!void(reason);
@@ -190,6 +196,6 @@ unittest
 {
 	ok!int(5);
 	ok!void();
-	fail!int(Errors.timeout);
-	fail!void(Errors.timeout);
+	fail!int(Err.timeout);
+	fail!void(Err.timeout);
 }

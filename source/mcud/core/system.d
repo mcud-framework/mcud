@@ -14,8 +14,8 @@ else
 		ubyte _ebss;
 	}
 
-	private __gshared Board e_board;
-	private alias a_app = App!Board;
+	private alias a_board = Board!();
+	private alias a_app = App!a_board;
 	private enum tasks = allTasks!a_app;
 
 	/**
@@ -25,7 +25,8 @@ else
 	{
 		for (ubyte* bss = &_bss; bss < &_ebss; bss++)
 			*bss = 0;
-			
+		
+		a_board.init();
 		//e_board.normal.configure();
 		//static __gshared app = App!e_board.start();
 		a_app.start();
