@@ -2,10 +2,6 @@ module mcud.core.system;
 
 import mcud.core.task;
 
-private __gshared Board e_board;
-private alias a_app = App!Board;
-private enum tasks = allTasks!a_app;
-
 version(unittest) {}
 else
 {
@@ -17,6 +13,10 @@ else
 		ubyte _bss;
 		ubyte _ebss;
 	}
+
+	private __gshared Board e_board;
+	private alias a_app = App!Board;
+	private enum tasks = allTasks!a_app;
 
 	/**
 	Starts the main scheduling loop.

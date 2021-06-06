@@ -1,12 +1,16 @@
 module mcud.cpu.stm32wb55.cpu;
 
 import mcud.core.system;
-import mcud.cpu.stm32wb55.config;
-import mcud.mem.volatile;
+import mcud.cpu.stm32.periphs;
 import mcud.cpu.stm32wb55.periphs;
+import mcud.mem.volatile;
 
-private struct CPU
+struct CPU
 {
+	public enum GPIO
+	{
+		unset, a, b, c, d, e, h
+	}
 
 	PeriphGPIO!0x4800_0000 gpioA;
 	PeriphGPIO!0x4800_0400 gpioB;
