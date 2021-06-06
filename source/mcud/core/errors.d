@@ -3,7 +3,7 @@ module mcud.core.errors;
 /**
 A set of errors one can encounter.
 */
-enum Error
+enum Err
 {
 	/// Everything's okay!
 	ok,
@@ -11,6 +11,6 @@ enum Error
 	timeout,
 	/// A buffer was full
 	full,
+	/// An invalid state was reached
+	invalidState,
 }
-
-alias Errors = Error;

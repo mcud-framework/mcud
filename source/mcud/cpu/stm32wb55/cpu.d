@@ -19,7 +19,7 @@ struct CPU
 	PeriphGPIO!0x4800_1000 gpioE;
 	PeriphGPIO!0x4800_1C00 gpioH;
 
-	RCC!0x5800_0000 rcc;
+	PeriphRCC!0x5800_0000 rcc;
 }
 
 /**
