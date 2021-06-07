@@ -2,7 +2,7 @@ module mcud.cpu.stm32wb55.periphs.rcc;
 
 import mcud.core.attributes;
 import mcud.core.result;
-import mcud.cpu.stm32wb55.cpu;
+import mcud.core.system;
 import mcud.mem.volatile;
 import mcud.util.frequency;
 
@@ -195,9 +195,7 @@ struct ClockTree
 
 template RCC(ClockTree config)
 {
-	import mcud.cpu.stm32wb55.cpu : cpu;
-
-	private enum rcc = cpu.rcc;
+	private alias rcc = system.cpu.rcc;
 
 	ClockTree.Source sysclkSource()
 	{
@@ -263,9 +261,9 @@ if (device == RCCDevice.GPIOA || device == RCCDevice.GPIOB)
 	Result!void start()
 	{
 		{
-			auto value = cpu.rcc.ahb2enr.load();
+			auto value = system.cpu.rcc.ahb2enr.load();
 			value |= device;
-			cpu.rcc.ahb2enr.store(value);
+			system.cpu.rcc.ahb2enr.store(value);
 		}
 		count++;
 		return ok!void;
@@ -276,9 +274,9 @@ if (device == RCCDevice.GPIOA || device == RCCDevice.GPIOB)
 	{
 		if (count == 1)
 		{
-			auto value = cpu.rcc.ahb2enr.load();
+			auto value = system.cpu.rcc.ahb2enr.load();
 			value &= ~device;
-			cpu.rcc.ahb2enr.store(value);
+			system.cpu.rcc.ahb2enr.store(value);
 		}
 		count--;
 		return ok!void;

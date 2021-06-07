@@ -10,9 +10,27 @@ enum forceinline = attribute("always_inline");
 /**
 Declares a function to be a task.
 */
-enum task;
+struct task {}
 
 /**
-Deckares a function to be run at the start of the program.
+Declares a function to be run at the start of the program.
 */
-enum setup;
+struct setup {}
+
+/**
+Declares a function to be an interrupt handler.
+*/
+struct interrupt
+{
+	int irq;
+
+	/**
+	Declares a function to be an interrupt handler.
+	Params:
+		irq = The IRQ to listen for.
+	*/
+	this(int irq)
+	{
+		this.irq = irq;
+	}
+}

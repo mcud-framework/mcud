@@ -1,55 +1,19 @@
 module mcud.core.task;
 
 import mcud.core.attributes;
+import mcud.meta;
 
-import std.traits;
-import std.meta;
+alias Task = Function!task;
+alias Setup = Function!setup;
 
-/**
-Describes a task.
-*/
-struct Task
-{
-	/**
-	The loop function of the task.
-	*/
-	void function() loop;
-}
-
-/**
-Checks if the given type can have tasks.
-*/
-private template canContainTasks(alias T)
-{
-	enum canContainTasks = __traits(compiles, __traits(allMembers, T));
-}
-
-/**
-Finds all tasks of a program.
-Param:
-	T = The type to find all tasks for.
-Returns:
-	An array of all tasks.
-*/
 Task[] allTasks(alias T)()
 {
-	static if (hasUDA!(T, task))
-	{
-		return [Task(&T)];
-	}
-	else static if (canContainTasks!T)
-	{
-		Task[] tasks;
-		foreach (child; __traits(allMembers, T))
-		{
-			tasks ~= allTasks!(__traits(getMember, T, child));
-		}
-		return tasks;
-	}
-	else
-	{
-		return [];
-	}
+	return allFunctions!(task, T);
+}
+
+Setup[] allSetup(alias T)()
+{
+	return allFunctions!(setup, T);
 }
 
 unittest
@@ -61,7 +25,7 @@ unittest
 	}
 
 	alias a = A!();
-	const taskA = Task(&a.loop);
+	const taskA = Task(task(), &a.loop);
 	assert(allTasks!a == [taskA]);
 
 	template B()
@@ -72,8 +36,8 @@ unittest
 	}
 
 	alias b = B!();
-	const taskA2 = Task(&b.a.loop);
-	const taskB = Task(&b.loop);
+	const taskA2 = Task(task(), &b.a.loop);
+	const taskB = Task(task(), &b.loop);
 
 	const tasks = allTasks!b;
 	assert(tasks == [taskA2, taskB] || tasks == [taskB, taskA2]);

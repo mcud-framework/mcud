@@ -14,9 +14,19 @@ else
 		ubyte _ebss;
 	}
 
-	private alias a_board = Board!();
-	private alias a_app = App!a_board;
-	private enum tasks = allTasks!a_app;
+	private template System()
+	{
+		public:
+		/// The board support layer.
+		alias board = Board!();
+		/// The CPU used by the board.
+		alias cpu = board.cpu;
+		/// The user application.
+		alias app = App!board;
+	}
+
+	/// Describes the program and board definition.
+	alias system = System!();
 
 	/**
 	Starts the main scheduling loop.
@@ -26,14 +36,16 @@ else
 		for (ubyte* bss = &_bss; bss < &_ebss; bss++)
 			*bss = 0;
 		
-		a_board.init();
+		system.board.init();
 		//e_board.normal.configure();
 		//static __gshared app = App!e_board.start();
-		a_app.start();
+		system.app.start();
+		static foreach (setup; allSetup!system)
+			setup.func();
 		for (;;)
 		{
-			static foreach (task; tasks)
-				task.loop();
+			static foreach (task; allTasks!system)
+				task.func();
 		}
 	}
 }
