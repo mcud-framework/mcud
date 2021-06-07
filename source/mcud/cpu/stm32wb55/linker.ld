@@ -1,4 +1,4 @@
-ENTRY(_start)
+ENTRY(_irqs)
 
 MEMORY
 {
@@ -15,7 +15,7 @@ SECTIONS
     {
         _text = .;
         LONG(_stackStart);
-        *(.data._start)
+        *(.data._irqs)
         *(.text)
         *(.text*)
         

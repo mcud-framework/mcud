@@ -2,7 +2,7 @@ module mcud.cpu.stm32.periphs.gpio;
 
 import mcud.core.attributes;
 import mcud.core.result;
-import mcud.cpu.stm32.cpu;
+import mcud.core.system;
 import mcud.mem.volatile;
 import mcud.meta.like;
 import mcud.periphs.input;
@@ -50,7 +50,7 @@ else
 		/**
 		Set of valid ports.
 		*/
-		alias Port = cpu.GPIO;
+		alias Port = system.cpu.GPIO;
 
 		/**
 		Set of valid modes.
@@ -193,12 +193,12 @@ else
 
 		static if (config._port == PinConfig.Port.a)
 		{
-			private enum periph = cpu.gpioA;
+			private alias periph = system.cpu.gpioA;
 			private alias rcc = RCCPeriph!(RCCDevice.GPIOA);
 		}
 		else static if (config._port == PinConfig.Port.b)
 		{
-			private enum periph = cpu.gpioB;
+			private alias periph = system.cpu.gpioB;
 			private alias rcc = RCCPeriph!(RCCDevice.GPIOB);
 		}
 		else
