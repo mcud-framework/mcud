@@ -4,7 +4,7 @@ Contains many platform-independent memory helper classes.
 module mcud.mem.volatile;
 
 import mcud.core.attributes;
-import mcud.cpu.stm32wb55.mem;
+import mcud.core.system;
 
 /**
 Wraps volatile memory at a specific memory address.
@@ -19,13 +19,13 @@ struct Volatile(T, size_t addr)
 	@forceinline
 	T load() nothrow
 	{
-		return volatileLoad(*t);
+		return system.cpu.volatileLoad(*t);
 	}
 
 	@forceinline
 	void store(T value) nothrow
 	{
-		volatileStore(*t, value);
+		system.cpu.volatileStore(*t, value);
 	}
 
 	@forceinline
