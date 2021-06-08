@@ -75,7 +75,7 @@ class FormatException : Exception
     }
 
     @safe @nogc pure nothrow
-    this(string msg, string fn = __FILE__, size_t ln = __LINE__, Throwable next = null)
+    this(string msg, string fn = __FILE__, uint ln = __LINE__, Throwable next = null)
     {
         super(msg, fn, ln, next);
     }

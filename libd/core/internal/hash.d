@@ -340,11 +340,11 @@ size_t hashOf(T)(scope const T val, size_t seed) if (!is(T == enum) && __traits(
         enum uint r1 = 31;
         enum uint r2 = 27;
     }
-    size_t h = c1 * val;
-    h = (h << r1) | (h >>> (size_t.sizeof * 8 - r1));
-    h = (h * c2) ^ seed;
-    h = (h << r2) | (h >>> (size_t.sizeof * 8 - r2));
-    return h * 5 + c3;
+    size_t h = cast(size_t) (c1 * val);
+    h = cast(size_t) ((h << r1) | (h >>> (size_t.sizeof * 8 - r1)));
+    h = cast(size_t) ((h * c2) ^ seed);
+    h = cast(size_t) ((h << r2) | (h >>> (size_t.sizeof * 8 - r2)));
+    return cast(size_t) (h * 5 + c3);
 }
 
 //arithmetic type hash
@@ -726,7 +726,7 @@ private size_t fnv()(scope const(ubyte)[] bytes, size_t seed) @nogc nothrow pure
     else
         enum prime = (size_t(1) << 88) + (size_t(1) << 8) + size_t(0x3b);
     foreach (b; bytes)
-        seed = (seed ^ b) * prime;
+        seed = cast(size_t) ((seed ^ b) * prime);
     return seed;
 }
 private alias smallBytesHash = fnv;
@@ -802,7 +802,7 @@ private size_t bytesHash(bool dataKnownToBeAligned)(scope const(ubyte)[] bytes, 
     h1 = (h1 ^ (h1 >> 16)) * 0x85ebca6b;
     h1 = (h1 ^ (h1 >> 13)) * 0xc2b2ae35;
     h1 ^= h1 >> 16;
-    return h1;
+    return cast(size_t) h1;
 }
 
 //  Check that bytesHash works with CTFE

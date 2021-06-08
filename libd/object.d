@@ -22,6 +22,7 @@ private
 //alias typeof(int.sizeof)                    size_t;
 //alias typeof(cast(void*)0 - cast(void*)0)   ptrdiff_t;
 
+/*
 version (D_LP64)
 {
     alias size_t = ulong;
@@ -32,6 +33,9 @@ else
     alias size_t = uint;
     alias ptrdiff_t = int;
 }
+*/
+alias size_t = typeof(int.sizeof);
+alias ptrdiff_t = typeof(cast(void*)0 - cast(void*)0);
 
 alias sizediff_t = ptrdiff_t; //For backwards compatibility only.
 
@@ -222,10 +226,7 @@ class TypeInfo
 
     override int opCmp(Object o)
     {
-        import core.internal.traits : externDFunc;
-        alias dstrcmp = externDFunc!("core.internal.string.dstrcmp",
-                                     int function(scope const char[] s1, scope const char[] s2) @trusted pure nothrow @nogc);
-
+        import core.internal.string : dstrcmp;
         if (this is o)
             return 0;
         TypeInfo ti = cast(TypeInfo)o;
@@ -521,12 +522,9 @@ class TypeInfo_StaticArray : TypeInfo
 {
     override string toString() const
     {
-        import core.internal.traits : externDFunc;
-        alias sizeToTempString = externDFunc!("core.internal.string.unsignedToTempString",
-                                              char[] function(ulong, return char[], uint) @safe pure nothrow @nogc);
-
+        import core.internal.string : unsignedToTempString;
         char[20] tmpBuff = void;
-        return value.toString() ~ "[" ~ sizeToTempString(len, tmpBuff, 10) ~ "]";
+        return value.toString() ~ "[" ~ unsignedToTempString(len, tmpBuff, 10) ~ "]";
     }
 
     override bool opEquals(Object o)
@@ -570,7 +568,7 @@ class TypeInfo_StaticArray : TypeInfo
 
     override @property size_t tsize() nothrow pure const
     {
-        return len * value.tsize;
+        return cast(size_t) (len * value.tsize);
     }
 
     override void swap(void* p1, void* p2) const
@@ -590,7 +588,7 @@ class TypeInfo_StaticArray : TypeInfo
 
         for (size_t u = 0; u < len; u += sz)
         {
-            size_t o = u * sz;
+            size_t o = cast(size_t) (u * sz);
             memcpy(tmp, p1 + o, sz);
             memcpy(p1 + o, p2 + o, sz);
             memcpy(p2 + o, tmp, sz);
@@ -739,12 +737,13 @@ class TypeInfo_Function : TypeInfo
 {
     override string toString() const
     {
-        import core.demangle : demangleType;
+        return "<unknown>";
+        // import core.demangle : demangleType;
 
-        alias SafeDemangleFunctionType = char[] function (const(char)[] buf, char[] dst = null) @safe nothrow pure;
-        SafeDemangleFunctionType demangle = ( () @trusted => cast(SafeDemangleFunctionType)(&demangleType) ) ();
+        // alias SafeDemangleFunctionType = char[] function (const(char)[] buf, char[] dst = null) @safe nothrow pure;
+        // SafeDemangleFunctionType demangle = ( () @trusted => cast(SafeDemangleFunctionType)(&demangleType) ) ();
 
-        return (() @trusted => cast(string)(demangle(deco))) ();
+        // return (() @trusted => cast(string)(demangle(deco))) ();
     }
 
     override bool opEquals(Object o)
@@ -807,7 +806,7 @@ class TypeInfo_Delegate : TypeInfo
 
     override size_t getHash(scope const void* p) @trusted const
     {
-        return hashOf(*cast(void delegate()*)p);
+        return cast(size_t) hashOf(*cast(void delegate()*)p);
     }
 
     override bool equals(in void* p1, in void* p2) const
@@ -1183,7 +1182,10 @@ class TypeInfo_Struct : TypeInfo
 
     override @property uint flags() nothrow pure const { return m_flags; }
 
-    override @property size_t talign() nothrow pure const { return m_align; }
+    override @property size_t talign() nothrow pure const
+    {
+        return cast(size_t) m_align;
+        }
 
     final override void destroy(void* p) const
     {
@@ -1591,12 +1593,14 @@ const:
 
     static int opApply(scope int delegate(ModuleInfo*) dg)
     {
-        import core.internal.traits : externDFunc;
-        alias moduleinfos_apply = externDFunc!("rt.minfo.moduleinfos_apply",
-                                              int function(scope int delegate(immutable(ModuleInfo*))));
-        // Bugzilla 13084 - enforcing immutable ModuleInfo would break client code
-        return moduleinfos_apply(
-            (immutable(ModuleInfo*)m) => dg(cast(ModuleInfo*)m));
+        assert(0, "unsupported operation");
+        // import core.internal.traits : externDFunc;
+        // alias moduleinfos_apply = externDFunc!("rt.minfo.moduleinfos_apply",
+        //                                       int function(scope int delegate(immutable(ModuleInfo*))));
+
+        // // Bugzilla 13084 - enforcing immutable ModuleInfo would break client code
+        // return moduleinfos_apply(
+        //     (immutable(ModuleInfo*)m) => dg(cast(ModuleInfo*)m));
     }
 }
 
@@ -1697,9 +1701,7 @@ class Throwable : Object
      */
     void toString(scope void delegate(in char[]) sink) const
     {
-        import core.internal.traits : externDFunc;
-        alias sizeToTempString = externDFunc!("core.internal.string.unsignedToTempString",
-                                              char[] function(ulong, return char[], uint) @safe pure nothrow @nogc);
+        import core.internal.string : sizeToTempString = unsignedToTempString;
 
         char[20] tmpBuff = void;
 
@@ -1747,12 +1749,12 @@ class Exception : Throwable
      * This constructor does not automatically throw the newly-created
      * Exception; the $(D throw) statement should be used for that purpose.
      */
-    @nogc @safe pure nothrow this(string msg, string file = __FILE__, size_t line = __LINE__, Throwable next = null)
+    @nogc @safe pure nothrow this(string msg, string file = __FILE__, uint line = __LINE__, Throwable next = null)
     {
         super(msg, file, line, next);
     }
 
-    @nogc @safe pure nothrow this(string msg, Throwable next, string file = __FILE__, size_t line = __LINE__)
+    @nogc @safe pure nothrow this(string msg, Throwable next, string file = __FILE__, uint line = __LINE__)
     {
         super(msg, file, line, next);
     }
@@ -3644,9 +3646,8 @@ private size_t getArrayHash(in TypeInfo element, in void* ptr, in size_t count) 
             || cast(const TypeInfo_Interface) element;
     }
 
-    import core.internal.traits : externDFunc;
     if (!hasCustomToHash(element))
-        return hashOf(ptr[0 .. elementSize * count]);
+        return hashOf(ptr[0 .. cast(size_t) (elementSize * count)]);
 
     size_t hash = 0;
     foreach (size_t i; 0 .. count)
