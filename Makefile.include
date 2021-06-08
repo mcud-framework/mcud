@@ -64,7 +64,10 @@ TESTSOURCES += $(shell find $(MCUD_SRC) -type f -iname "*.d")
 TESTSOURCES := $(COMMONSOURCES) $(TESTSOURCES)
 
 # Build-only sources
-SOURCES += $(shell find $(MCUD_SRC) -type f -iname "*.d")
+DIRS := $(wildcard $(MCUD_SRC)/*)
+DIRS := $(filter-out $(CPUS),$(DIRS))
+DIRS += $(CPUS)/$(CPU)
+SOURCES += $(shell find $(DIRS) -type f -iname "*.d" )
 SOURCES := $(COMMONSOURCES) $(SOURCES)
 SOURCES_DRUNTIME += $(shell find $(DIR_DRUNTIME) -type f -iname "*.d")
 SOURCES_LIBPHOBOS += $(shell find $(DIR_LIBPHOBOS) -type f -iname "*.d")
@@ -111,21 +114,40 @@ distclean: clean
 $(BIN_APP): $(ELF_APP)
 	$(OBJCOPY) -O binary $< $@
 
-$(ELF_APP): $(OBJ_APP) $(OBJ_DRUNTIME) $(OBJ_PHOBOS) $(LINKER_SCRIPT)
+#$(ELF_APP): $(OBJ_APP) $(OBJ_DRUNTIME) $(OBJ_PHOBOS) $(LINKER_SCRIPT)
+$(ELF_APP):  $(SOURCES:%.d=bin/%.o) $(SOURCES_LIBPHOBOS:%.d=bin/%.o) $(SOURCES_DRUNTIME:%.d=bin/%.o) $(LINKER_SCRIPT)
 	@mkdir -p $(dir $@)
-	$(LD) -T $(LINKER_SCRIPT) $(LDFLAGS) -o $@ $< $(OBJ_PHOBOS) $(OBJ_DRUNTIME)
+	$(LD) -T $(LINKER_SCRIPT) $(LDFLAGS) -o $@ $<
+#	$(LD) -T $(LINKER_SCRIPT) $(LDFLAGS) -o $@ $< $(OBJ_PHOBOS) $(OBJ_DRUNTIME)
 
-$(OBJ_APP): $(SOURCES) $(MCUD)/Makefile.include
-	@mkdir -p $(dir $@)
-	$(DC) $(DFLAGS) -I $(DIR_DRUNTIME) -I $(DIR_LIBPHOBOS) -c -o $@ $(SOURCES)
 
-$(OBJ_PHOBOS): $(SOURCES_LIBPHOBOS) $(MCUD)/Makefile.include
+bin/%.o: %.d
 	@mkdir -p $(dir $@)
-	$(DC) $(DFLAGS) -I $(DIR_DRUNTIME) -c -o $@ $(SOURCES_LIBPHOBOS)
+	$(DC) $(DFLAGS) -I $(DIR_DRUNTIME) -I $(DIR_LIBPHOBOS) -I mcud/source -I source -c -o $@ $<
 
-$(OBJ_DRUNTIME): $(SOURCES_DRUNTIME) $(MCUD)/Makefile.include
+$(OBJ_APP): $(SOURCES:%.d=bin/%.o)
 	@mkdir -p $(dir $@)
-	$(DC) $(DFLAGS) -fno-tree-loop-distribute-patterns -c -o $@ $(SOURCES_DRUNTIME)
+	$(DC) $(DFLAGS) -c -o $@ $^
+
+$(OBJ_PHOBOS): $(SOURCES_LIBPHOBOS:%.d=bin/%.o)
+	@mkdir -p $(dir $@)
+	$(DC) $(DFLAGS) -c -o $@ $^
+
+$(OBJ_RUNTIME): $(SOURCES_DRUNTIME:%.d=bin/%.o)
+	@mkdir -p $(dir $@)
+	$(DC) $(DFLAGS) -c -o $@ $^
+
+#$(OBJ_APP): $(SOURCES) $(MCUD)/Makefile.include
+#	@mkdir -p $(dir $@)
+#	$(DC) $(DFLAGS) -I $(DIR_DRUNTIME) -I $(DIR_LIBPHOBOS) -c -o $@ $(SOURCES)
+#
+#$(OBJ_PHOBOS): $(SOURCES_LIBPHOBOS) $(MCUD)/Makefile.include
+#	@mkdir -p $(dir $@)
+#	$(DC) $(DFLAGS) -I $(DIR_DRUNTIME) -c -o $@ $(SOURCES_LIBPHOBOS)
+#
+#$(OBJ_DRUNTIME): $(SOURCES_DRUNTIME) $(MCUD)/Makefile.include
+#	@mkdir -p $(dir $@)
+#	$(DC) $(DFLAGS) -fno-tree-loop-distribute-patterns -c -o $@ $(SOURCES_DRUNTIME)
 
 $(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/Makefile.include
 	mkdir -p $(dir $@)

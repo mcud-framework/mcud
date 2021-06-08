@@ -188,12 +188,6 @@ private
     {
         T       value;  // extracted information
         string  rest;
-
-        this(T value, string rest)
-        {
-            this.value = value;
-            this.rest = rest;
-        }
     }
 
     /* Demangles mstr as the storage class part of Argument. */
