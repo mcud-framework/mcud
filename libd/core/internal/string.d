@@ -34,7 +34,7 @@ private struct TempStringNoAlloc
     private ubyte _len;
     auto get() return
     {
-        return _buf[$-_len..$];
+        return _buf[cast(size_t) ($-_len)..$];
     }
     alias get this;
 }
@@ -78,7 +78,7 @@ char[] signedToTempString(long value, return char[] buf, uint radix) @safe
     if (neg)
     {
         // about to do a slice without a bounds check
-        auto trustedSlice(return char[] r) @trusted { assert(r.ptr > buf.ptr); return (r.ptr-1)[0..r.length+1]; }
+        auto trustedSlice(return char[] r) @trusted { assert(r.ptr > buf.ptr); return (r.ptr-1)[0..cast(size_t) (r.length+1)]; }
         r = trustedSlice(r);
         r[0] = '-';
     }

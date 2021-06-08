@@ -193,7 +193,7 @@ bool isBinaryOp(string op)
 
 bool isBinaryAssignOp(string op)
 {
-    return op.length >= 2 && op[$ - 1] == '=' && isBinaryOp(op[0 .. $ - 1]);
+    return op.length >= 2 && op[cast(size_t) ($ - 1)] == '=' && isBinaryOp(op[0 .. cast(size_t) ($ - 1)]);
 }
 
 // Generate mixin expression to perform scalar arrayOp loop expression, assumes

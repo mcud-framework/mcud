@@ -273,6 +273,8 @@ int bt(in size_t* p, size_t bitnum) pure @system
         return ((p[bitnum >> 6] & (1L << (bitnum & 63)))) != 0;
     else static if (size_t.sizeof == 4)
         return ((p[bitnum >> 5] & (1  << (bitnum & 31)))) != 0;
+    else static if (size_t.sizeof == 2)
+        return ((p[bitnum >> 4] & (1  << (bitnum & 15)))) != 0;
     else
         static assert(0);
 }

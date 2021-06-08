@@ -188,6 +188,12 @@ private
     {
         T       value;  // extracted information
         string  rest;
+
+        this(T value, string rest)
+        {
+            this.value = value;
+            this.rest = rest;
+        }
     }
 
     /* Demangles mstr as the storage class part of Argument. */
@@ -7857,21 +7863,6 @@ version(unittest) void freeFunc(string);
     static assert(mangledName!((int a) { return a+x; }) == "DFNaNbNiNfiZi");  // pure nothrow @safe @nogc
   else
     static assert(mangledName!((int a) { return a+x; }) == "DFNbNiNfiZi");  // nothrow @safe @nnogc
-}
-
-@system unittest
-{
-    // @system due to demangle
-    // Test for bug 5718
-    import std.demangle : demangle;
-    int foo;
-    auto foo_demangled = demangle(mangledName!foo);
-    assert(foo_demangled[0 .. 4] == "int " && foo_demangled[$-3 .. $] == "foo",
-        foo_demangled);
-
-    void bar();
-    auto bar_demangled = demangle(mangledName!bar);
-    assert(bar_demangled[0 .. 5] == "void " && bar_demangled[$-5 .. $] == "bar()");
 }
 
 
