@@ -1,6 +1,5 @@
-#TARGET = avr-
-TARGET = /home/seeseemelk/sync/pkgbuilds/avr-gdc/src/gcc-build/gcc/
-DFLAGS +=  -B /usr/lib/gcc/avr/11.1.0/
+TARGET = avr-
+DFLAGS +=  -B /usr/lib/gcc/avr/11.2.0/
 
 .PHONY: flash
 flash: $(BIN_APP)

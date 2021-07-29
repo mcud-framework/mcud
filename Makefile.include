@@ -67,10 +67,14 @@ TESTSOURCES := $(COMMONSOURCES) $(TESTSOURCES)
 DIRS := $(wildcard $(MCUD_SRC)/*)
 DIRS := $(filter-out $(CPUS),$(DIRS))
 DIRS += $(CPUS)/$(CPU)
-SOURCES += $(shell find $(DIRS) -type f -iname "*.d" )
-SOURCES := $(COMMONSOURCES) $(SOURCES)
+SOURCES_APP += $(shell find $(DIRS) -type f -iname "*.d" )
+SOURCES_APP := $(COMMONSOURCES) $(SOURCES)
 SOURCES_DRUNTIME += $(shell find $(DIR_DRUNTIME) -type f -iname "*.d")
 SOURCES_LIBPHOBOS += $(shell find $(DIR_LIBPHOBOS) -type f -iname "*.d")
+
+OBJECTS_APP = $(SOURCES:%.d=$(BIN_DIR)/%.d.o)
+OBJECTS_DRUNTIME = $(SOURCES_DRUNTIME:%.d=$(BIN_DIR)/%.d.o)
+OBJECTS_LIBPHOBOS = $(SOURCES_LIBPHOBOS:%.d=$(BIN_DIR)/%.d.o)
 
 # The host D compiler to use.
 HOSTDC = gdc
@@ -84,6 +88,9 @@ DFLAGS += $(VERSIONS:%=-fversion=%)
 # Flags to pass to the compiler when building tests.
 HOSTDFLAGS = -funittest -fmain -ggdb
 LDFLAGS = -gc-sections -Os
+ifneq (,$(LINKER_SCRIPT))
+LDFLAGS += -T $(LINKER_SCRIPT)
+endif
 # The tool to strip binaries with.
 STRIP = $(TARGET)strip
 # The tool to copy object files with.
@@ -114,40 +121,25 @@ distclean: clean
 $(BIN_APP): $(ELF_APP)
 	$(OBJCOPY) -O binary $< $@
 
-#$(ELF_APP): $(OBJ_APP) $(OBJ_DRUNTIME) $(OBJ_PHOBOS) $(LINKER_SCRIPT)
-$(ELF_APP):  $(SOURCES:%.d=bin/%.o) $(SOURCES_LIBPHOBOS:%.d=bin/%.o) $(SOURCES_DRUNTIME:%.d=bin/%.o) $(LINKER_SCRIPT)
+$(ELF_APP):  $(OBJECTS_APP) $(OBJECTS_LIBPHOBOS) $(OBJECTS_DRUNTIME) $(LINKER_SCRIPT)
 	@mkdir -p $(dir $@)
-	$(LD) -T $(LINKER_SCRIPT) $(LDFLAGS) -o $@ $<
-#	$(LD) -T $(LINKER_SCRIPT) $(LDFLAGS) -o $@ $< $(OBJ_PHOBOS) $(OBJ_DRUNTIME)
+	$(LD) $(LDFLAGS) -o $@ $<
 
-
-bin/%.o: %.d
+$(BIN_DIR)/%.d.o: %.d
 	@mkdir -p $(dir $@)
 	$(DC) $(DFLAGS) -I $(DIR_DRUNTIME) -I $(DIR_LIBPHOBOS) -I mcud/source -I source -c -o $@ $<
 
-$(OBJ_APP): $(SOURCES:%.d=bin/%.o)
+$(OBJ_APP): $(OBJECTS_APP)
 	@mkdir -p $(dir $@)
 	$(DC) $(DFLAGS) -c -o $@ $^
 
-$(OBJ_PHOBOS): $(SOURCES_LIBPHOBOS:%.d=bin/%.o)
+$(OBJ_PHOBOS): $(OBJECTS_LIBPHOBOS)
 	@mkdir -p $(dir $@)
 	$(DC) $(DFLAGS) -c -o $@ $^
 
-$(OBJ_RUNTIME): $(SOURCES_DRUNTIME:%.d=bin/%.o)
+$(OBJ_RUNTIME): $(OBJECTS_DRUNTIME)
 	@mkdir -p $(dir $@)
 	$(DC) $(DFLAGS) -c -o $@ $^
-
-#$(OBJ_APP): $(SOURCES) $(MCUD)/Makefile.include
-#	@mkdir -p $(dir $@)
-#	$(DC) $(DFLAGS) -I $(DIR_DRUNTIME) -I $(DIR_LIBPHOBOS) -c -o $@ $(SOURCES)
-#
-#$(OBJ_PHOBOS): $(SOURCES_LIBPHOBOS) $(MCUD)/Makefile.include
-#	@mkdir -p $(dir $@)
-#	$(DC) $(DFLAGS) -I $(DIR_DRUNTIME) -c -o $@ $(SOURCES_LIBPHOBOS)
-#
-#$(OBJ_DRUNTIME): $(SOURCES_DRUNTIME) $(MCUD)/Makefile.include
-#	@mkdir -p $(dir $@)
-#	$(DC) $(DFLAGS) -fno-tree-loop-distribute-patterns -c -o $@ $(SOURCES_DRUNTIME)
 
 $(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/Makefile.include
 	mkdir -p $(dir $@)
