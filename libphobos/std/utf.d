@@ -66,84 +66,6 @@ import std.traits;     // isSomeChar, isSomeString
 import std.typecons;   // Flag, Yes, No
 
 
-/++
-    Exception thrown on errors in std.utf functions.
-  +/
-class UTFException : Exception
-{
-    import core.internal.string : unsignedToTempString, UnsignedStringBuf;
-
-    uint[4] sequence;
-    size_t  len;
-
-    @safe pure nothrow @nogc
-    UTFException setSequence(scope uint[] data...)
-    {
-        assert(data.length <= 4);
-
-        len = data.length < 4 ? data.length : 4;
-        sequence[0 .. len] = data[0 .. len];
-
-        return this;
-    }
-
-    // FIXME: Use std.exception.basicExceptionCtors here once bug #11500 is fixed
-
-    /**
-    Standard exception constructors.
-     */
-    this(string msg, string file = __FILE__, size_t line = __LINE__,
-         Throwable next = null) @nogc @safe pure nothrow
-    {
-        super(msg, file, line, next);
-    }
-    /// ditto
-    this(string msg, size_t index, string file = __FILE__,
-         size_t line = __LINE__, Throwable next = null) @safe pure nothrow
-    {
-        UnsignedStringBuf buf = void;
-        msg ~= " (at index " ~ unsignedToTempString(index, buf, 10) ~ ")";
-        super(msg, file, line, next);
-    }
-
-    /**
-    Returns:
-        A `string` detailing the invalid UTF sequence.
-     */
-    override string toString() const
-    {
-        if (len == 0)
-        {
-            /* Exception.toString() is not marked as const, although
-             * it is const-compatible.
-             */
-            //return super.toString();
-            auto e = () @trusted { return cast(Exception) super; } ();
-            return e.toString();
-        }
-
-        string result = "Invalid UTF sequence:";
-
-        foreach (i; sequence[0 .. len])
-        {
-            UnsignedStringBuf buf = void;
-            result ~= ' ';
-            auto h = unsignedToTempString(i, buf, 16);
-            if (h.length == 1)
-                result ~= '0';
-            result ~= h;
-            result ~= 'x';
-        }
-
-        if (super.msg.length > 0)
-        {
-            result ~= " - ";
-            result ~= super.msg;
-        }
-
-        return result;
-    }
-}
 
 ///
 @safe unittest
@@ -627,7 +549,7 @@ do
     import core.bitop : bsr;
     immutable msbs = 7 - bsr((~uint(c)) & 0xFF);
     if (c == 0xFF || msbs < 2 || msbs > 4)
-        throw new UTFException("Invalid UTF-8 sequence", index);
+		assert(0, "Invalid UTF-8 sequence");
     return msbs;
 }
 

@@ -62,32 +62,6 @@ import std.meta;
 import std.range.primitives;
 import std.traits;
 
-
-/**
-Signals a mismatch between a format and its corresponding argument.
- */
-class FormatException : Exception
-{
-    @safe @nogc pure nothrow
-    this()
-    {
-        super("format error");
-    }
-
-    @safe @nogc pure nothrow
-    this(string msg, string fn = __FILE__, uint ln = __LINE__, Throwable next = null)
-    {
-        super(msg, fn, ln, next);
-    }
-}
-
-///
-@safe unittest
-{
-    import std.exception : assertThrown;
-    assertThrown!FormatException(format("%d", "foo"));
-}
-
 /**********************************************************************
    Interprets variadic argument list `args`, formats them according
    to `fmt`, and sends the resulting characters to `w`. The

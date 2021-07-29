@@ -1,3 +1,5 @@
 include $(CPUS)/avr/Makefile.include
 
 DFLAGS += -mmcu=atmega328p
+
+LINKER_SCRIPT =
