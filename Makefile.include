@@ -1,5 +1,8 @@
+DOCKER ?= seeseemelk/mcud:avr-2021-07-30
+
 # The location of the MCUd directory.
-MCUD ?= mcud
+_MCUD := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+MCUD ?= $(_MCUD)
 
 # The directory containing the application sources.
 APP_SRC ?= source
@@ -12,6 +15,9 @@ DIST ?= $(MCUD)/dist
 
 # The source directory of MCUd.
 MCUD_SRC = $(MCUD)/source/mcud
+
+# The directory containing the default boards
+BOARDS = $(MCUD_SRC)/boards
 
 # The directory containing the sources for the D runtime.
 DIR_DRUNTIME = $(MCUD)/libd
@@ -43,14 +49,28 @@ OBJ_PHOBOS = $(BIN_DIR)/phobos.o
 # The linker script to use.
 LINKER_SCRIPT = $(CPUS)/$(CPU)/linker.ld
 
-ifeq ($(CPU),)
-$(error No CPU was set)
+ifeq (,$(BOARD))
+$(error No board was set)
 endif
+
+ifneq (,$(wildcard $(BOARD)))
+BOARD_DIR = $(abspath $(BOARD))
+else
+BOARD_DIR = $(wildcard $(BOARDS)/$(BOARD))
+endif
+include $(BOARD_DIR)/Makefile.include
+
+ifeq (,$(CPU))
+$(error No CPU was set. Make sure your board definition sets CPU)
+endif
+
+local_to_docker = $(subst $(MCUD),/mcud,$1)
+RUN := docker run -t --rm -v $(CURDIR):/src -v $(abspath $(MCUD)):/mcud -w /src -u $(shell id -u):$(shell id -g) $(DOCKER)
 
 # Include the all target first.
 .PHONY: all
 all: $(ELF_APP)
-	arm-none-eabi-size $(ELF_APP)
+	$(TARGET)size $(ELF_APP)
 
 # Include CPU targets
 include $(CPUS)/$(CPU)/Makefile.include
@@ -66,9 +86,11 @@ TESTSOURCES := $(COMMONSOURCES) $(TESTSOURCES)
 # Build-only sources
 DIRS := $(wildcard $(MCUD_SRC)/*)
 DIRS := $(filter-out $(CPUS),$(DIRS))
+DIRS := $(filter-out $(BOARDS),$(DIRS))
 DIRS += $(CPUS)/$(CPU)
+DIRS += $(BOARD_DIR)
 SOURCES_APP += $(shell find $(DIRS) -type f -iname "*.d" )
-SOURCES_APP := $(COMMONSOURCES) $(SOURCES)
+SOURCES_APP := $(COMMONSOURCES) $(SOURCES_APP)
 SOURCES_DRUNTIME += $(shell find $(DIR_DRUNTIME) -type f -iname "*.d")
 SOURCES_LIBPHOBOS += $(shell find $(DIR_LIBPHOBOS) -type f -iname "*.d")
 
@@ -83,8 +105,17 @@ DC = $(TARGET)gdc
 # The linker to use.
 LD = $(TARGET)ld
 # Flags to pass to the D compiler.
-DFLAGS += -nostdlib -Os -ggdb -ffunction-sections -fdata-sections -fno-moduleinfo -fno-exceptions -fno-switch-errors
+DFLAGS += -nostdlib -Os -ggdb \
+	-ffunction-sections \
+	-fdata-sections \
+	-fno-moduleinfo \
+	-fno-exceptions \
+	-fno-switch-errors \
+	-I$(DIR_DRUNTIME) \
+	-I$(DIR_LIBPHOBOS) \
+	-I$(MCUD)
 DFLAGS += $(VERSIONS:%=-fversion=%)
+DFLAGS := $(call local_to_docker,$(DFLAGS))
 # Flags to pass to the compiler when building tests.
 HOSTDFLAGS = -funittest -fmain -ggdb
 LDFLAGS = -gc-sections -Os
@@ -119,29 +150,25 @@ distclean: clean
 	rm -rf $(DIST)
 
 $(BIN_APP): $(ELF_APP)
-	$(OBJCOPY) -O binary $< $@
+	$(RUN) $(OBJCOPY) -O binary $< $@
 
-$(ELF_APP):  $(OBJECTS_APP) $(OBJECTS_LIBPHOBOS) $(OBJECTS_DRUNTIME) $(LINKER_SCRIPT)
+$(ELF_APP):  $(OBJ_APP) $(OBJ_PHOBOS) $(OBJ_DRUNTIME) $(LINKER_SCRIPT)
 	@mkdir -p $(dir $@)
-	$(LD) $(LDFLAGS) -o $@ $<
+	$(RUN) $(LD) $(LDFLAGS) -o $@ $(call local_to_docker,$<)
 
-$(BIN_DIR)/%.d.o: %.d
+$(OBJ_APP): $(SOURCES_APP)
 	@mkdir -p $(dir $@)
-	$(DC) $(DFLAGS) -I $(DIR_DRUNTIME) -I $(DIR_LIBPHOBOS) -I mcud/source -I source -c -o $@ $<
+	$(RUN) $(DC) $(DFLAGS) -c -o $@ $(call local_to_docker,$^)
 
-$(OBJ_APP): $(OBJECTS_APP)
+$(OBJ_PHOBOS): $(SOURCES_LIBPHOBOS)
 	@mkdir -p $(dir $@)
-	$(DC) $(DFLAGS) -c -o $@ $^
+	$(RUN) $(DC) $(DFLAGS) -c -o $@ $(call local_to_docker,$^)
 
-$(OBJ_PHOBOS): $(OBJECTS_LIBPHOBOS)
+$(OBJ_DRUNTIME): $(SOURCES_DRUNTIME)
 	@mkdir -p $(dir $@)
-	$(DC) $(DFLAGS) -c -o $@ $^
-
-$(OBJ_RUNTIME): $(OBJECTS_DRUNTIME)
-	@mkdir -p $(dir $@)
-	$(DC) $(DFLAGS) -c -o $@ $^
+	$(RUN) $(DC) $(DFLAGS) -c -o $@ $(call local_to_docker,$^)
 
 $(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/Makefile.include
 	mkdir -p $(dir $@)
-	$(HOSTDC) $(HOSTDFLAGS) -o $@ $(TESTSOURCES)
+	$(RUN) $(HOSTDC) $(HOSTDFLAGS) -o $@ $(TESTSOURCES)
 

@@ -36,10 +36,10 @@ else
 		for (ubyte* bss = &_bss; bss < &_ebss; bss++)
 			*bss = 0;
 		
-		system.board.init();
-		//e_board.normal.configure();
-		//static __gshared app = App!e_board.start();
-		system.app.start();
+		static if (is(typeof(system.board.init)))
+			system.board.init();
+		static if (is(typeof(system.app.start)))
+			system.app.start();
 		static foreach (setup; allSetup!system)
 			setup.func();
 		for (;;)
