@@ -1,0 +1,4 @@
+name "blinky"
+targetType "executable"
+subPackage "../mcud"
+dependency ":mcud" version="*"
