@@ -9,7 +9,7 @@ $(info Images: $(IMAGES))
 all: $(addsuffix /built,$(IMAGES))
 
 base/built: base/Dockerfile
-	docker build base -t seeseemelk/mcud:base-$(DATE)
+	docker build base -t seeseemelk/mcud:base-$(DATE) --network=host
 	touch base/built
 
 define build_image =
