@@ -70,7 +70,7 @@ RUN := docker run -t --rm -v $(CURDIR):/src -v $(abspath $(MCUD)):/mcud -w /src 
 # Include the all target first.
 .PHONY: all
 all: $(ELF_APP)
-	$(TARGET)size $(ELF_APP)
+	$(RUN) $(TARGET)size $(ELF_APP)
 
 # Include CPU targets
 include $(CPUS)/$(CPU)/Makefile.include
