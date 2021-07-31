@@ -1,6 +1,8 @@
 module mcud.cpu.atmega328p.irq;
 
+import gcc.attributes;
 import mcud.core.attributes;
+import mcud.core.system;
 import mcud.meta.functions;
 
 /**
@@ -88,8 +90,38 @@ enum IRQ
 version (unittest) {}
 else
 {
-	void isr_handler(IRQ irq)
+	private:
+	alias irq_handler = void function();
+
+	void dummyHandler() {}
+
+	irq_handler isr_handler(IRQ irq)()
 	{
-		allFunctions!(irq, system);
+		Function!interrupt[] isrs;
+		foreach (Function!interrupt isr; allFunctions!(interrupt, system))
+		{
+			if (isr.attribute.irq == irq)
+				isrs ~= isr;
+		}
+
+		if (isrs.length == 1)
+			return isrs[0].func;
+		else if (isrs.length == 0)
+			return &dummyHandler;
+		else
+			assert(0, "Found more than one IRQ handler for " ~ irq);
 	}
+
+	irq_handler[] generate_irq_handlers()
+	{
+		irq_handler[] handlers;
+		foreach (irq; __traits(allMembers, IRQ))
+		{
+			handlers ~= isr_handler!(__traits(getMember, IRQ, irq));
+		}
+		return handlers;
+	}
+
+	@attribute("section", ".vectors")
+	extern(C) immutable irq_handler[] isr_vectors = generate_irq_handlers();
 }
