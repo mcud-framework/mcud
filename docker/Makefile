@@ -14,6 +14,8 @@ base/built: base/Dockerfile
 
 define build_image =
 .PHONY: build_$1
+build_$1: $1/built
+
 $1/built: $1/Dockerfile base/built
 	docker build $1 -t seeseemelk/mcud:$1-$(DATE)
 	touch $1/built
