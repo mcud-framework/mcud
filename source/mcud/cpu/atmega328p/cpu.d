@@ -5,5 +5,4 @@ An interface to the Atmega328P.
 */
 template Atmega328P()
 {
-
 }
