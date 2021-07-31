@@ -30,15 +30,13 @@ private template canContainFunctions(alias T)
 /**
 Finds all attributed functions of a program.
 Param:
-	T = The type to find all functions for.
+	attribute = The attribute that functions should be annotated with.
+	T = The type to search for functions.
 Returns:
 	An array of all attributed functions.
 */
-Function!attribute[] allFunctions(alias attribute, alias T)()
+Function!attribute[] allFunctions(alias attribute, alias T = system)()
 {
-	// import mcud.core.system;
-	// static assert(&system.cpu.onReset == &system.board.cpu.onReset);
-	// static assert(&system.cpu.onReset == &system.app.loop);
 	Function!attribute[] filters = [];
 	allFunctionsFiltered!(attribute, T)(filters);
 	return filters;
