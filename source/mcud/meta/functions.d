@@ -17,6 +17,11 @@ struct Function(T)
 	The function.
 	*/
 	void function() func;
+
+	/**
+	The mangled name of the function.
+	*/
+	string mangled;
 }
 
 /**
@@ -56,7 +61,7 @@ private void allFunctionsFiltered(alias attribute, alias T)(ref Function!attribu
 			if (filter.func == &T)
 				return;
 		}
-		found ~= [Function!attribute(uda, &T)];
+		found ~= [Function!attribute(uda, &T, T.mangleof)];
 	}
 	else static if (canContainFunctions!T)
 	{
