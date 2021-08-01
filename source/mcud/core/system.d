@@ -29,7 +29,8 @@ else
 	alias system = System!();
 
 	/**
-	Starts the main scheduling loop.
+	Performs common MCUd initialisation functions and then enters the scheduler.
+	This function should only ever be called by the reset handler.
 	*/
 	void start()
 	{
