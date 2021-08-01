@@ -4,14 +4,14 @@ import gcc.attributes;
 import mcud.core.attributes;
 import mcud.core.system;
 import mcud.meta.functions;
+import std.traits;
 
 /**
 A list of all supported IRQs.
 */
 enum IRQ
 {
-	/// External pin, power-on reset, brown-out reset
-	/// and watchdog system reset.
+	/// External pin, power-on reset, brown-out reset and watchdog system reset.
 	RESET,
 
 	/// External interrupt request 0
@@ -95,7 +95,7 @@ else
 
 	void dummyHandler() {}
 
-	irq_handler isr_handler(IRQ irq)()
+	string isr_handler(IRQ irq)()
 	{
 		Function!interrupt[] isrs;
 		foreach (Function!interrupt isr; allFunctions!(interrupt, system))
@@ -105,23 +105,23 @@ else
 		}
 
 		if (isrs.length == 1)
-			return isrs[0].func;
+			return isrs[0].mangled;
 		else if (isrs.length == 0)
-			return &dummyHandler;
+			return dummyHandler.mangleof;
 		else
 			assert(0, "Found more than one IRQ handler for " ~ irq);
 	}
 
-	irq_handler[] generate_irq_handlers()
-	{
-		irq_handler[] handlers;
-		foreach (irq; __traits(allMembers, IRQ))
-		{
-			handlers ~= isr_handler!(__traits(getMember, IRQ, irq));
-		}
-		return handlers;
-	}
-
 	@attribute("section", ".vectors")
-	extern(C) immutable irq_handler[] isr_vectors = generate_irq_handlers();
+	@attribute("naked")
+	extern(C) void isr_vectors()
+	{
+		static foreach (irq; EnumMembers!IRQ)
+		{
+			asm
+			{
+				"jmp " ~ isr_handler!irq;
+			}
+		}
+	}
 }
