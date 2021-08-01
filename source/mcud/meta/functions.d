@@ -17,6 +17,11 @@ struct Function(T)
 	The function.
 	*/
 	void function() func;
+
+	/**
+	The mangled name of the function.
+	*/
+	string mangled;
 }
 
 /**
@@ -30,15 +35,13 @@ private template canContainFunctions(alias T)
 /**
 Finds all attributed functions of a program.
 Param:
-	T = The type to find all functions for.
+	attribute = The attribute that functions should be annotated with.
+	T = The type to search for functions.
 Returns:
 	An array of all attributed functions.
 */
-Function!attribute[] allFunctions(alias attribute, alias T)()
+Function!attribute[] allFunctions(alias attribute, alias T = system)()
 {
-	// import mcud.core.system;
-	// static assert(&system.cpu.onReset == &system.board.cpu.onReset);
-	// static assert(&system.cpu.onReset == &system.app.loop);
 	Function!attribute[] filters = [];
 	allFunctionsFiltered!(attribute, T)(filters);
 	return filters;
@@ -58,7 +61,7 @@ private void allFunctionsFiltered(alias attribute, alias T)(ref Function!attribu
 			if (filter.func == &T)
 				return;
 		}
-		found ~= [Function!attribute(uda, &T)];
+		found ~= [Function!attribute(uda, &T, T.mangleof)];
 	}
 	else static if (canContainFunctions!T)
 	{
