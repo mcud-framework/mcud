@@ -1,18 +1,41 @@
 module mcud.cpu.atmega328p.periphs.gpio;
 
+import mcud.core.system;
+import mcud.cpu.atmega328p.io;
+
 /**
-Controls a GPIO device.
+Controls a single pin of a GPIO device.
 */
-template GPIO(GPIOConfig config)
+template GPIOPin(GPIOConfig config)
 {
 	static assert(config._pin != -1, "No pin was selected");
 	static assert(config._port != Port.none, "No port was selected");
 	static assert(config._mode != GPIOConfig.Mode.none,
 		"No mode was GPIO mode configured");
 
+	static if (config._port == Port.b)
+		alias gpio = system.cpu.gpioB;
+	else static if (config._port == Port.c)
+		alias gpio = system.cpu.gpioC;
+	else static if (config._port == Port.d)
+		alias gpio = system.cpu.gpioD;
+
+	enum pin = config._pin;
+	enum mask = 1 << pin;
+
 	void start()
 	{
+		gpio.ddr.setBit(pin);
+	}
 
+	void on()
+	{
+		gpio.ddr.setBit(pin);
+	}
+
+	void off()
+	{
+		gpio.port.set(gpio.port.get() & ~mask);
 	}
 }
 
@@ -45,10 +68,11 @@ struct GPIOConfig
 	Params:
 		port = The port to control.
 	*/
-	void port(Port port)
+	GPIOConfig port(Port port)
 	{
 		assert(_port == Port.none, "A port was already selected");
 		_port = port;
+		return this;
 	}
 
 	/**
@@ -56,35 +80,38 @@ struct GPIOConfig
 	Params:
 		pin = The pin to control.
 	*/
-	void pin(uint pin)
+	GPIOConfig pin(uint pin)
 	{
 		assert(_port != Port.none, "No port was selected. Make sure to select"
 			~ " a port before configuring a pin.");
 		if (_port == Port.b)
 			assert(pin <= 7, "Selected pin does not exist.");
 		if (_port == Port.c)
-			assert(pin <= 5, "Selected pin does not exist.");
+			assert(pin <= 6, "Selected pin does not exist.");
 		if (_port == Port.d)
 			assert(pin <= 7, "Selected pin does not exist.");
 		_pin = pin;
+		return this;
 	}
 
 	/**
 	Configures the pin as an input.
 	*/
-	void asInput()
+	GPIOConfig asInput()
 	{
 		assert(_mode == Mode.none, "The pin as already configured");
 		_mode = Mode.input;
+		return this;
 	}
 
 	/**
 	Configures the pin as an output;
 	*/
-	void asOutput()
+	GPIOConfig asOutput()
 	{
 		assert(_mode == Mode.none, "The pin as already configured");
 		_mode = Mode.output;
+		return this;
 	}
 }
 
@@ -96,7 +123,12 @@ enum Port
 	none, b, c, d
 }
 
-template GPIOPeriph
+/**
+Allows access to a GPIO periph.
+*/
+template GPIOPeriph(ubyte base)
 {
-
+	alias pin = IO!(base + 0x00);
+	alias ddr = IO!(base + 0x01);
+	alias port = IO!(base + 0x02);
 }

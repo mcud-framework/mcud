@@ -1,5 +1,7 @@
 module mcud.cpu.atmega328p.mem;
 
+import mcud.core.attributes;
+
 version (unittest)
 {
 	T volatileLoad(T)(ref T v) nothrow
