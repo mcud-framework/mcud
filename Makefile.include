@@ -49,6 +49,9 @@ OBJ_PHOBOS = $(BIN_DIR)/phobos.o
 # The linker script to use.
 LINKER_SCRIPT = $(CPUS)/$(CPU)/linker.ld
 
+# Use docker if docker hasn't been explicitly disabled
+USE_DOCKER ?= yes
+
 ifeq (,$(BOARD))
 $(error No board was set)
 endif
@@ -64,8 +67,13 @@ ifeq (,$(CPU))
 $(error No CPU was set. Make sure your board definition sets CPU)
 endif
 
+$(info Docker: $(DOCKER))
+ifeq (yes,$(USE_DOCKER))
 local_to_docker = $(subst $(MCUD),/mcud,$1)
 RUN := docker run -t --rm -v $(CURDIR):/src -v $(abspath $(MCUD)):/mcud -w /src -u $(shell id -u):$(shell id -g) $(DOCKER)
+else
+RUN :=
+endif
 
 # Include the all target first.
 .PHONY: all
