@@ -1,4 +1,4 @@
-TARGET = xtensa-elf-
+TARGET = xtensa-lx106-elf-
 
 .PHONY: flash
 flash: $(BIN_FILE)
