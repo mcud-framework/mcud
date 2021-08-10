@@ -67,7 +67,6 @@ ifeq (,$(CPU))
 $(error No CPU was set. Make sure your board definition sets CPU)
 endif
 
-$(info Docker: $(DOCKER))
 ifeq (yes,$(USE_DOCKER))
 local_to_docker = $(subst $(MCUD),/mcud,$1)
 RUN := docker run -t --rm --network none \
