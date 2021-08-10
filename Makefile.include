@@ -1,5 +1,3 @@
-DOCKER ?= seeseemelk/mcud:avr-2021-07-30
-
 # The location of the MCUd directory.
 _MCUD := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 MCUD ?= $(_MCUD)

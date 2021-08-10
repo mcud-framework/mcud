@@ -1,5 +1,6 @@
-TARGET = avr-
 DFLAGS +=  -B /usr/lib/gcc/avr/11.2.0/
+DOCKER ?= seeseemelk/mcud:avr-2021-07-30
+TARGET = avr-
 
 .PHONY: flash
 flash: $(BIN_APP)
