@@ -70,7 +70,12 @@ endif
 $(info Docker: $(DOCKER))
 ifeq (yes,$(USE_DOCKER))
 local_to_docker = $(subst $(MCUD),/mcud,$1)
-RUN := docker run -t --rm -v $(CURDIR):/src -v $(abspath $(MCUD)):/mcud -w /src -u $(shell id -u):$(shell id -g) $(DOCKER)
+RUN := docker run -t --rm --network none \
+	-v $(CURDIR):/src \
+	-v $(abspath $(MCUD)):/mcud \
+	-w /src \
+	-u $(shell id -u):$(shell id -g) \
+	$(DOCKER)
 else
 RUN :=
 endif
