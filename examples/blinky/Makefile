@@ -1,3 +1,3 @@
-BOARD = rgbduino
+BOARD ?= rgbduino
 
 include ../../Makefile.include
