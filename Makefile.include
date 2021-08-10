@@ -66,7 +66,7 @@ $(error No CPU was set. Make sure your board definition sets CPU)
 endif
 
 ifeq (yes,$(USE_DOCKER))
-local_to_docker = $(subst $(MCUD),/mcud,$1)
+convert_path = $(subst $(MCUD),/mcud,$1)
 RUN := docker run -t --rm --network none \
 	-v $(CURDIR):/src \
 	-v $(abspath $(MCUD)):/mcud \
@@ -74,6 +74,7 @@ RUN := docker run -t --rm --network none \
 	-u $(shell id -u):$(shell id -g) \
 	$(DOCKER)
 else
+convert_path = $1
 RUN :=
 endif
 
@@ -125,7 +126,7 @@ DFLAGS += -nostdlib -Os -ggdb \
 	-I$(DIR_LIBPHOBOS) \
 	-I$(MCUD)
 DFLAGS += $(VERSIONS:%=-fversion=%)
-DFLAGS := $(call local_to_docker,$(DFLAGS))
+DFLAGS := $(call convert_path,$(DFLAGS))
 # Flags to pass to the compiler when building tests.
 HOSTDFLAGS = -funittest -fmain -ggdb
 LDFLAGS = -gc-sections -Os
@@ -164,19 +165,19 @@ $(BIN_APP): $(ELF_APP)
 
 $(ELF_APP):  $(OBJ_APP) $(OBJ_PHOBOS) $(OBJ_DRUNTIME) $(LINKER_SCRIPT)
 	@mkdir -p $(dir $@)
-	$(RUN) $(LD) $(LDFLAGS) -o $@ $(call local_to_docker,$(OBJ_APP) $(OBJ_PHOBOS) $(OBJ_DRUNTIME))
+	$(RUN) $(LD) $(LDFLAGS) -o $@ $(call convert_path,$(OBJ_APP) $(OBJ_PHOBOS) $(OBJ_DRUNTIME))
 
 $(OBJ_APP): $(SOURCES_APP)
 	@mkdir -p $(dir $@)
-	$(RUN) $(DC) $(DFLAGS) -c -o $@ $(call local_to_docker,$^)
+	$(RUN) $(DC) $(DFLAGS) -c -o $@ $(call convert_path,$^)
 
 $(OBJ_PHOBOS): $(SOURCES_LIBPHOBOS)
 	@mkdir -p $(dir $@)
-	$(RUN) $(DC) $(DFLAGS) -c -o $@ $(call local_to_docker,$^)
+	$(RUN) $(DC) $(DFLAGS) -c -o $@ $(call convert_path,$^)
 
 $(OBJ_DRUNTIME): $(SOURCES_DRUNTIME)
 	@mkdir -p $(dir $@)
-	$(RUN) $(DC) $(DFLAGS) -c -o $@ $(call local_to_docker,$^)
+	$(RUN) $(DC) $(DFLAGS) -c -o $@ $(call convert_path,$^)
 
 $(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/Makefile.include
 	mkdir -p $(dir $@)
