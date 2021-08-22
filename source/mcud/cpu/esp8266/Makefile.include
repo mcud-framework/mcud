@@ -1,4 +1,2 @@
 TARGET = xtensa-lx106-elf-
-
-.PHONY: flash
-flash: $(BIN_FILE)
+DOCKER = no
