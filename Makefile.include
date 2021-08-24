@@ -50,6 +50,10 @@ LINKER_SCRIPT = $(CPUS)/$(CPU)/linker.ld
 # Use docker if docker hasn't been explicitly disabled
 USE_DOCKER ?= yes
 
+# Define the 'all' target as early so it becomes the default.
+.PHONY: all
+all:
+
 ifeq (,$(BOARD))
 $(error No board was set)
 endif
@@ -65,6 +69,9 @@ ifeq (,$(CPU))
 $(error No CPU was set. Make sure your board definition sets CPU)
 endif
 
+# Include CPU targets
+include $(CPUS)/$(CPU)/Makefile.include
+
 ifeq (yes,$(USE_DOCKER))
 convert_path = $(subst $(MCUD),/mcud,$1)
 RUN := docker run -t --rm --network none \
@@ -78,13 +85,9 @@ convert_path = $1
 RUN :=
 endif
 
-# Include the all target first.
-.PHONY: all
+# define the 'all' target
 all: $(ELF_APP)
 	$(RUN) $(TARGET)size $(ELF_APP)
-
-# Include CPU targets
-include $(CPUS)/$(CPU)/Makefile.include
 
 # Find all the sources to build.
 # Common sources
@@ -129,7 +132,7 @@ DFLAGS += $(VERSIONS:%=-fversion=%)
 DFLAGS := $(call convert_path,$(DFLAGS))
 # Flags to pass to the compiler when building tests.
 HOSTDFLAGS = -funittest -fmain -ggdb
-LDFLAGS = -gc-sections -Os
+LDFLAGS = -Os --gc-sections
 ifneq (,$(LINKER_SCRIPT))
 LDFLAGS += -T $(LINKER_SCRIPT)
 endif

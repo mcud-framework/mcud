@@ -1,2 +1,2 @@
 TARGET = xtensa-lx106-elf-
-DOCKER = no
+USE_DOCKER = no
