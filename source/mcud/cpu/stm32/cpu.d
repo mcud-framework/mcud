@@ -1,13 +1,6 @@
 module mcud.cpu.stm32.cpu;
 
-// version (MCU_STM32WB55)
-// {
-// 	public import mcud.cpu.stm32wb55.cpu : cpu;
-// }
-// else version (unittest)
-// {
-// }
-// else
-// {
-// 	static assert(0, "No MCU version set");
-// }
+import mcud.cpu.stm32.capabilities;
+
+static assert(hasCPUMember!"GPIO", "CPU has no GPIO definition");
+static assert(hasGPIO!"unset", "GPIO enum has no 'unset' value");

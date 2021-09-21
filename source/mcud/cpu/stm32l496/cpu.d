@@ -1,8 +1,10 @@
 module mcud.cpu.stm32l496.cpu;
 
 import mcud.core.attributes;
-import mcud.cpu.stm32l496.periphs;
+import mcud.cpu.stm32.mem : vload = volatileLoad;
+import mcud.cpu.stm32.mem : vstore = volatileStore;
 import mcud.cpu.stm32l496.irq : IRQName = IRQ;
+import mcud.cpu.stm32l496.periphs;
 
 template STM32L496()
 {
@@ -32,4 +34,7 @@ template STM32L496()
 		import mcud.core.system : start;
 		start();
 	}
+
+	alias volatileLoad = vload;
+	alias volatileStore = vstore;
 }
