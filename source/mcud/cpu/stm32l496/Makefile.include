@@ -1,0 +1,1 @@
+include $(CPUS)/stm32/Makefile.include
