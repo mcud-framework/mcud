@@ -1,20 +1,24 @@
 module mcud.cpu.stm32l496.cpu;
 
-import mcud.core.attributes;
-import mcud.cpu.stm32.mem : vload = volatileLoad;
-import mcud.cpu.stm32.mem : vstore = volatileStore;
-import mcud.cpu.stm32l496.irq : IRQName = IRQ;
+import mcud.cpu.stm32.capabilities;
+import mcud.cpu.stm32.cpu;
+import mcud.cpu.stm32l496.irq;
 import mcud.cpu.stm32l496.periphs;
+import mcud.meta.extend;
 
+/**
+Base template for STM32L496 microcontrollers.
+*/
 template STM32L496()
 {
-	alias IRQ = IRQName;
+	alias base = STM32!(IRQ);
+	mixin AliasThis!(base);
 
-	enum GPIO
+	static Capabilities capabilities()
 	{
-		unset,
-		a,b,c,d,e,f,g,h,i
-	};
+		Capabilities caps;
+		return caps;
+	}
 
 	PeriphRCC!0x4002_1000 rcc;
 
@@ -27,14 +31,4 @@ template STM32L496()
 	PeriphGPIO!0x4800_1800 gpioG;
 	PeriphGPIO!0x4800_1C00 gpioH;
 	PeriphGPIO!0x4800_2000 gpioI;
-
-	@interrupt(IRQ.reset)
-	void onReset()
-	{
-		import mcud.core.system : start;
-		start();
-	}
-
-	alias volatileLoad = vload;
-	alias volatileStore = vstore;
 }

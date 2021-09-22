@@ -50,7 +50,19 @@ else
 		/**
 		Set of valid ports.
 		*/
-		alias Port = system.cpu.GPIO;
+		enum Port
+		{
+			unset,
+			a = 'a',
+			b = 'b',
+			c = 'c',
+			d = 'd',
+			e = 'e',
+			f = 'f',
+			g = 'g',
+			h = 'h',
+			i = 'i'
+		}
 
 		/**
 		Set of valid modes.
@@ -190,51 +202,52 @@ else
 		static assert(config._pin != -1, "Pin not set");
 		static assert(config._pin < 16, "Pin out of range");
 		static assert(config._mode != PinConfig.Mode.unset, "Mode not set");
+		static assert(system.cpu.capabilities.hasGPIO(config._port), "Invalid port");
 
 		static if (config._port == PinConfig.Port.a)
 		{
 			private alias periph = system.cpu.gpioA;
-			private alias rcc = RCCPeriph!(RCCDevice.GPIOA);
+			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOAEN);
 		}
 		else static if (config._port == PinConfig.Port.b)
 		{
 			private alias periph = system.cpu.gpioB;
-			private alias rcc = RCCPeriph!(RCCDevice.GPIOB);
+			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOBEN);
 		}
 		else static if (config._port == PinConfig.Port.c)
 		{
 			private alias periph = system.cpu.gpioC;
-			private alias rcc = RCCPeriph!(RCCDevice.GPIOC);
+			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOCEN);
 		}
 		else static if (config._port == PinConfig.Port.d)
 		{
 			private alias periph = system.cpu.gpioD;
-			private alias rcc = RCCPeriph!(RCCDevice.GPIOD);
+			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIODEN);
 		}
 		else static if (config._port == PinConfig.Port.e)
 		{
 			private alias periph = system.cpu.gpioE;
-			private alias rcc = RCCPeriph!(RCCDevice.GPIOE);
+			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOEEN);
 		}
 		else static if (config._port == PinConfig.Port.f)
 		{
 			private alias periph = system.cpu.gpiof;
-			private alias rcc = RCCPeriph!(RCCDevice.GPIOF);
+			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOFEN);
 		}
 		else static if (config._port == PinConfig.Port.g)
 		{
 			private alias periph = system.cpu.gpioG;
-			private alias rcc = RCCPeriph!(RCCDevice.GPIOG);
+			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOGEN);
 		}
 		else static if (config._port == PinConfig.Port.h)
 		{
 			private alias periph = system.cpu.gpioH;
-			private alias rcc = RCCPeriph!(RCCDevice.GPIOH);
+			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOHEN);
 		}
 		else static if (config._port == PinConfig.Port.i)
 		{
 			private alias periph = system.cpu.gpioI;
-			private alias rcc = RCCPeriph!(RCCDevice.GPIOI);
+			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOIEN);
 		}
 		else
 			static assert(false, "Invalid port");

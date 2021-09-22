@@ -2,7 +2,7 @@ ENTRY(_irqs)
 
 MEMORY
 {
-    flash (rx)  : ORIGIN = 0x08000000, LENGTH = 1M
+    flash (rx) : ORIGIN = 0x08000000, LENGTH = 1M
     sram (rxw) : ORIGIN = 0x20000000, LENGTH = 320K
 }
 

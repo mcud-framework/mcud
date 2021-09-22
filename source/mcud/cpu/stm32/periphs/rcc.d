@@ -47,52 +47,23 @@ struct PeriphRCC(uint base)
 	Volatile!(uint, base + 0x9C) ccipr2;
 }
 
-interface RCC_AHB2ENR
+enum RCC_AHB2ENR
 {
-	static if (hasGPIO!"a")
-		enum GPIOAEN = 1 << 0;
-	static if (hasGPIO!"b")
-		enum GPIOBEN = 1 << 1;
-	static if (hasGPIO!"c")
-		enum GPIOCEN = 1 << 2;
-	static if (hasGPIO!"d")
-		enum GPIODEN = 1 << 3;
-	static if (hasGPIO!"e")
-		enum GPIOEEN = 1 << 4;
-	static if (hasGPIO!"f")
-		enum GPIOFEN = 1 << 5;
-	static if (hasGPIO!"g")
-		enum GPIOGEN = 1 << 6;
-	static if (hasGPIO!"h")
-		enum GPIOHEN = 1 << 7;
-	static if (hasGPIO!"e")
-		enum GPIOIEN = 1 << 8;
-	static if (hasOTGFS())
-		enum OTGFSEN = 1 << 12;
-	static if (hasADC())
-		enum ADCEN   = 1 << 13;
-	static if (hasDCMI())
-		enum DCMIEN  = 1 << 14;
-	static if (hasAES())
-		enum AES1EN  = 1 << 16;
-	static if (hasHash())
-		enum HASHEN  = 1 << 17;
-	static if (hasRng())
-		enum RNGEN   = 1 << 18;
-}
-
-enum RCCDevice
-{
-	// AHB2ENR
-	GPIOA = RCC_AHB2ENR.GPIOAEN,
-	GPIOB = RCC_AHB2ENR.GPIOBEN,
-	GPIOC = RCC_AHB2ENR.GPIOCEN,
-	GPIOD = RCC_AHB2ENR.GPIODEN,
-	GPIOE = RCC_AHB2ENR.GPIOEEN,
-	GPIOF = RCC_AHB2ENR.GPIOFEN,
-	GPIOG = RCC_AHB2ENR.GPIOGEN,
-	GPIOH = RCC_AHB2ENR.GPIOHEN,
-	GPIOI = RCC_AHB2ENR.GPIOIEN,
+	GPIOAEN = 1 << 0,
+	GPIOBEN = 1 << 1,
+	GPIOCEN = 1 << 2,
+	GPIODEN = 1 << 3,
+	GPIOEEN = 1 << 4,
+	GPIOFEN = 1 << 5,
+	GPIOGEN = 1 << 6,
+	GPIOHEN = 1 << 7,
+	GPIOIEN = 1 << 8,
+	OTGFSEN = 1 << 12,
+	ADCEN   = 1 << 13,
+	DCMIEN  = 1 << 14,
+	AES1EN  = 1 << 16,
+	HASHEN  = 1 << 17,
+	RNGEN   = 1 << 18,
 }
 
 /**
@@ -266,18 +237,7 @@ template RCC(ClockTree config)
 	}
 }
 
-template RCCPeriph(RCCDevice device)
-if (
-	   device == RCCDevice.GPIOA
-	|| device == RCCDevice.GPIOB
-	|| device == RCCDevice.GPIOC
-	|| device == RCCDevice.GPIOD
-	|| device == RCCDevice.GPIOE
-	|| device == RCCDevice.GPIOF
-	|| device == RCCDevice.GPIOG
-	|| device == RCCDevice.GPIOH
-	|| device == RCCDevice.GPIOI
-)
+template RCCPeriph(RCC_AHB2ENR device)
 {
 	__gshared uint count = 0;
 

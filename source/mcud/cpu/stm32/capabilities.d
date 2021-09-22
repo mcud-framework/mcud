@@ -1,50 +1,73 @@
 module mcud.cpu.stm32.capabilities;
 
-import mcud.core.system;
-
-private alias cpu = system.cpu;
-
-private bool hasMember(alias parent, string member)()
+/**
+Describes the capabilities of an STM32 microcontroller.
+*/
+struct Capabilities
 {
-	return __traits(hasMember, parent, member);
-}
+	/// A bitmask of available pins on port A.
+	uint gpioAMask = 0;
+	/// A bitmask of available pins on port B.
+	uint gpioBMask = 0;
+	/// A bitmask of available pins on port C.
+	uint gpioCMask = 0;
+	/// A bitmask of available pins on port D.
+	uint gpioDMask = 0;
+	/// A bitmask of available pins on port E.
+	uint gpioEMask = 0;
+	/// A bitmask of available pins on port F.
+	uint gpioFMask = 0;
+	/// A bitmask of available pins on port G.
+	uint gpioGMask = 0;
+	/// A bitmask of available pins on port H.
+	uint gpioHMask = 0;
+	/// A bitmask of available pins on port I.
+	uint gpioIMask = 0;
 
-bool hasCPUMember(string member)()
-{
-	return hasMember!(cpu, member);
-}
+	/**
+	Gets the GPIO mask for a given port.
+	Params:
+		port = The port to query.
+	Returns: The mask for the port.
+	*/
+	uint gpioMask(char port)
+	{
+		switch (port)
+		{
+			case 'a': return gpioAMask;
+			case 'b': return gpioBMask;
+			case 'c': return gpioCMask;
+			case 'd': return gpioDMask;
+			case 'e': return gpioEMask;
+			case 'f': return gpioFMask;
+			case 'g': return gpioGMask;
+			case 'h': return gpioHMask;
+			case 'i': return gpioIMask;
+			default: assert(0, "Invalid port: " ~ port);
+		}
+	}
 
-bool hasGPIO(string port)()
-{
-	return hasMember!(cpu.GPIO, port);
-}
+	/**
+	Gets the number of IO pins on the port.
+	Params:
+		port = The port to query.
+	Returns: The mask for the port.
+	*/
+	int gpioPins(char port)
+	{
+		import core.bitop : popcnt;
+		return popcnt(gpioMask(port));
+	}
 
-bool hasOTGFS()
-{
-	return false;
-}
-
-bool hasADC()
-{
-	return false;
-}
-
-bool hasDCMI()
-{
-	return false;
-}
-
-bool hasAES()
-{
-	return false;
-}
-
-bool hasHash()
-{
-	return false;
-}
-
-bool hasRng()
-{
-	return false;
+	/**
+	Tests whether a specific GPIO port is available or not.
+	Params:
+		port = The port to query.
+	Returns: `true` if the port is available, `false` if the port is not present
+		on the microcontroller.
+	*/
+	bool hasGPIO(char port)
+	{
+		return gpioMask(port) != 0;
+	}
 }

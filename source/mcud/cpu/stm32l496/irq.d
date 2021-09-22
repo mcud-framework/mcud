@@ -4,6 +4,9 @@ import mcud.core.attributes;
 import mcud.core.system;
 import mcud.meta;
 
+/**
+Set of possible IRQs.
+*/
 enum IRQ
 {
 	reset = 0,
@@ -154,5 +157,6 @@ else
 		return handlers;
 	}
 
-	private extern(C) immutable ISR[] _irqs = isrHandlers();
+	private enum handlers = isrHandlers();
+	private extern(C) immutable ISR[handlers.length] _irqs = handlers;
 }
