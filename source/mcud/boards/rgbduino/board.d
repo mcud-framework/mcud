@@ -12,5 +12,9 @@ template Board()
 		void off() {}
 	}
 
-	alias led = Led!();
+	alias led = GPIOPin!(GPIOConfig()
+		.asOutput()
+		.port(Port.b)
+		.pin(5)
+	);
 }
