@@ -1,4 +1,0 @@
-name "mcud"
-sourcePaths "source" "libd" "libphobos"
-importPaths "source" "libd" "libphobos"
-excludedSourceFiles "source/mcud/boards/*"

@@ -2,6 +2,9 @@ module board;
 
 import mcud.cpu.atmega328p;
 
+/**
+An RGBDuino board.
+*/
 template Board()
 {
 	alias cpu = Atmega328P!();
@@ -18,3 +21,5 @@ template Board()
 		.pin(5)
 	);
 }
+
+alias board = Board!();

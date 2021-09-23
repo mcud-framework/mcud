@@ -6,7 +6,7 @@ MCUD ?= $(_MCUD)
 APP_SRC ?= source
 
 # The directory which will containg compiled binaries.
-BIN_DIR ?= bin
+BIN_DIR ?= bin/$(BOARD)
 
 # The directory which will contain distribution files.
 DIST ?= $(MCUD)/dist
@@ -15,7 +15,7 @@ DIST ?= $(MCUD)/dist
 MCUD_SRC = $(MCUD)/source/mcud
 
 # The directory containing the default boards
-BOARDS = $(MCUD_SRC)/boards
+BOARDS = $(MCUD)/boards
 
 # The directory containing the sources for the D runtime.
 DIR_DRUNTIME = $(MCUD)/libd
@@ -24,7 +24,7 @@ DIR_DRUNTIME = $(MCUD)/libd
 DIR_LIBPHOBOS = $(MCUD)/libphobos
 
 # The directory containing CPU sources.
-CPUS = $(MCUD_SRC)/cpu
+CPUS = $(MCUD)/cpu
 
 # The output ELF file.
 ELF_APP = $(BIN_DIR)/application.elf
@@ -96,12 +96,9 @@ TESTSOURCES += $(shell find $(MCUD_SRC) -type f -iname "*.d")
 TESTSOURCES := $(COMMONSOURCES) $(TESTSOURCES)
 
 # Build-only sources
-DIRS := $(wildcard $(MCUD_SRC)/*)
-DIRS := $(filter-out $(CPUS),$(DIRS))
-DIRS := $(filter-out $(BOARDS),$(DIRS))
+DIRS += $(wildcard $(MCUD_SRC))
 DIRS += $(CPUS)/$(CPU)
 DIRS += $(BOARD_DIR)
-DIRS += $(EXTRA_DIRS)
 DIRS := $(DIRS)
 SOURCES_APP += $(shell find $(DIRS) -type f -iname "*.d" )
 SOURCES_APP := $(COMMONSOURCES) $(SOURCES_APP)
@@ -186,3 +183,13 @@ $(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/Makefile.include
 	mkdir -p $(dir $@)
 	$(RUN) $(HOSTDC) $(HOSTDFLAGS) -o $@ $(TESTSOURCES)
 
+.PHONY: dub
+dub:
+	$(MCUD)/tools/generate_dub.d "$(MCUD)" $(SUPPORTED_BOARDS) > dub.sdl
+
+.PHONY: describe
+describe:
+	@echo "BOARD=$(BOARD)"
+	@echo "BOARD_DIR=$(BOARD_DIR)"
+	@echo "CPU=$(CPU)"
+	@echo "DIRS=$(DIRS)"
