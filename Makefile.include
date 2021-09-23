@@ -6,7 +6,7 @@ MCUD ?= $(_MCUD)
 APP_SRC ?= source
 
 # The directory which will containg compiled binaries.
-BIN_DIR ?= bin
+BIN_DIR ?= bin/$(BOARD)
 
 # The directory which will contain distribution files.
 DIST ?= $(MCUD)/dist
@@ -15,7 +15,7 @@ DIST ?= $(MCUD)/dist
 MCUD_SRC = $(MCUD)/source/mcud
 
 # The directory containing the default boards
-BOARDS = $(MCUD_SRC)/boards
+BOARDS = $(MCUD)/boards
 
 # The directory containing the sources for the D runtime.
 DIR_DRUNTIME = $(MCUD)/libd
@@ -98,7 +98,6 @@ TESTSOURCES := $(COMMONSOURCES) $(TESTSOURCES)
 # Build-only sources
 DIRS := $(wildcard $(MCUD_SRC)/*)
 DIRS := $(filter-out $(CPUS),$(DIRS))
-DIRS := $(filter-out $(BOARDS),$(DIRS))
 DIRS += $(CPUS)/$(CPU)
 DIRS += $(BOARD_DIR)
 DIRS += $(EXTRA_DIRS)
