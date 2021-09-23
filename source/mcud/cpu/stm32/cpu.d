@@ -1,13 +1,24 @@
 module mcud.cpu.stm32.cpu;
 
-// version (MCU_STM32WB55)
-// {
-// 	public import mcud.cpu.stm32wb55.cpu : cpu;
-// }
-// else version (unittest)
-// {
-// }
-// else
-// {
-// 	static assert(0, "No MCU version set");
-// }
+import mcud.cpu.stm32.capabilities;
+
+/**
+Base template for STM32 microcontrollers.
+*/
+template STM32(alias irqs)
+{
+	alias IRQ = irqs;
+
+	import mcud.cpu.stm32.mem : vload = volatileLoad;
+	import mcud.cpu.stm32.mem : vstore = volatileStore;
+	alias volatileLoad = vload;
+	alias volatileStore = vstore;
+
+	import mcud.core.attributes : interrupt;
+	@interrupt(IRQ.reset)
+	void onReset()
+	{
+		import mcud.core.system : start;
+		start();
+	}
+}

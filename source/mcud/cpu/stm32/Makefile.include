@@ -1,5 +1,7 @@
 TARGET = arm-none-eabi-
 DFLAGS += -mcpu=cortex-m4 -mthumb 
+DOCKER = seeseemelk/mcud:arm-none-eabi-2021-07-31
+EXTRA_DIRS += $(CPUS)/stm32
 
 .PHONY: flash
 flash: $(BIN_APP)

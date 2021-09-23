@@ -1,6 +1,7 @@
 module mcud.core.system;
 
 import mcud.core.task;
+import std.traits;
 
 version(unittest) {}
 else
@@ -19,6 +20,7 @@ else
 		public:
 		/// The board support layer.
 		alias board = Board!();
+		static assert(__traits(hasMember, board, "cpu"), "Board does not define a 'cpu'");
 		/// The CPU used by the board.
 		alias cpu = board.cpu;
 		/// The user application.

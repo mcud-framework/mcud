@@ -1,0 +1,4 @@
+EXTRA_DIRS += $(CPUS)/stm32l496
+LINKER_SCRIPT = $(CPUS)/stm32l496/linker_$(LINKER_VARIANT).ld
+
+include $(CPUS)/stm32/Makefile.include

@@ -1,4 +1,4 @@
-module mcud.cpu.stm32wb55.mem;
+module mcud.cpu.stm32.mem;
 
 import mcud.core.attributes;
 
