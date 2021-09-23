@@ -55,14 +55,4 @@ void main(string[] args)
 		writefln!(`    sourcePaths "%s"`)(description.dirs.join(`" "`));
 		writefln!(`}`);
 	}
-
-	//writeln(`importPaths "source" "libd" "libphobos"`);
-
-	// foreach (string dir; dirEntries(buildPath(mcud, "boards"), SpanMode.shallow))
-	// {
-	// 	string board = dir.split("/")[$ - 1];
-	// 	writefln!(`configuration "%s" {`)(board);
-	// 	writefln!(`    sourcePaths "%s"`)(dir);
-	// 	writefln!(`}`);
-	// }
 }
