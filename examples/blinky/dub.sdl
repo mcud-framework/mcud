@@ -1,5 +1,0 @@
-name "blinky"
-targetType "executable"
-subPackage "../../"
-dependency ":mcud" version="*"
-sourcePaths "source/mcud/board/emlp010ra"
