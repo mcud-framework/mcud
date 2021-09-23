@@ -185,3 +185,6 @@ $(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/Makefile.include
 	mkdir -p $(dir $@)
 	$(RUN) $(HOSTDC) $(HOSTDFLAGS) -o $@ $(TESTSOURCES)
 
+.PHONY: dub
+dub:
+	$(MCUD)/tools/generate_dub.d "$(MCUD)" $(SUPPORTED_BOARDS) > dub.sdl
