@@ -1,24 +1,68 @@
 #!/bin/rdmd
 module tools.generate_dub;
 
-import std.array;
 import std.file;
 import std.path;
+import std.process;
 import std.stdio;
+import std.string;
+
+/**
+Describes a board configuration.
+*/
+struct Description
+{
+	/// The name of the board.
+	string board;
+	/// The path to the board support package.
+	string boardPath;
+	/// A set of directories to build.
+	string[] dirs;
+}
 
 void main(string[] args)
 {
-	auto mcud = args[1];
-	auto boards = args[2 .. $-1];
-	writeln(`name "mcud"`);
-	writefln(`sourcePaths "%s/source" "%s/libd" "%s/libphobos"`, mcud, mcud, mcud);
-	//writeln(`importPaths "source" "libd" "libphobos"`);
+	const mcud = args[1];
+	const boards = args[2 .. $];
 
-	foreach (string dir; dirEntries(buildPath(mcud, "boards"), SpanMode.shallow))
+	writeln(`name "mcud"`);
+	writefln(`sourcePaths "source" "%s/source" "%s/libd" "%s/libphobos"`, mcud, mcud, mcud);
+
+	Description[] descriptions;
+	foreach (const board; boards)
 	{
-		string board = dir.split("/")[$ - 1];
-		writefln!(`configuration "%s" {`)(board);
-		writefln!(`    sourcePaths "%s"`)(dir);
+		Description description;
+		description.board = board;
+		auto process = execute(["make", "describe"]);
+		string output = process.output;
+		foreach (line; splitLines(output))
+		{
+			if (line.indexOf('=') != -1)
+			{
+				const parts = line.split('=');
+				string key = parts[0];
+				string[] values = parts[1].split(' ');
+				if (key == "DIRS")
+					description.dirs = values;
+			}
+		}
+		descriptions ~= description;
+	}
+
+	foreach (const description; descriptions)
+	{
+		writefln!(`configuration "%s" {`)(description.board);
+		writefln!(`    sourcePaths "%s"`)(description.dirs.join(`" "`));
 		writefln!(`}`);
 	}
+
+	//writeln(`importPaths "source" "libd" "libphobos"`);
+
+	// foreach (string dir; dirEntries(buildPath(mcud, "boards"), SpanMode.shallow))
+	// {
+	// 	string board = dir.split("/")[$ - 1];
+	// 	writefln!(`configuration "%s" {`)(board);
+	// 	writefln!(`    sourcePaths "%s"`)(dir);
+	// 	writefln!(`}`);
+	// }
 }
