@@ -1,9 +1,7 @@
-module mcud.cpu.stm32l496.cpu;
+module cpu.stm32l496.base;
 
-import mcud.cpu.stm32.capabilities;
-import mcud.cpu.stm32.cpu;
-import mcud.cpu.stm32l496.irq;
-import mcud.cpu.stm32l496.periphs;
+import cpu.stm32.base;
+import cpu.stm32.periphs;
 import mcud.meta.extend;
 
 /**
@@ -11,14 +9,8 @@ Base template for STM32L496 microcontrollers.
 */
 template STM32L496()
 {
-	alias base = STM32!(IRQ);
+	alias base = STM32!();
 	mixin AliasThis!(base);
-
-	static Capabilities capabilities()
-	{
-		Capabilities caps;
-		return caps;
-	}
 
 	PeriphRCC!0x4002_1000 rcc;
 

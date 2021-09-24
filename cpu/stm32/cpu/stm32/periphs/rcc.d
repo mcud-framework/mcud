@@ -1,9 +1,9 @@
-module mcud.cpu.stm32.periphs.rcc;
+module cpu.stm32.periphs.rcc;
 
+import cpu.capabilities;
 import mcud.core.attributes;
 import mcud.core.result;
 import mcud.core.system;
-import mcud.cpu.stm32.capabilities;
 import mcud.mem.volatile;
 import mcud.util.frequency;
 
@@ -32,7 +32,7 @@ struct PeriphRCC(uint base)
 	Volatile!(uint, base + 0x58) apb1enr1;
 	Volatile!(uint, base + 0x5C) apb1enr2;
 	Volatile!(uint, base + 0x60) apb2enr;
-	
+
 	Volatile!(uint, base + 0x68) ahb1smenr;
 	Volatile!(uint, base + 0x6C) ahb2smenr;
 	Volatile!(uint, base + 0x70) ahb3smenr;

@@ -1,4 +1,4 @@
-module mcud.cpu.atmega328p.irq;
+module cpu.irq;
 
 import gcc.attributes;
 import mcud.core.attributes;

@@ -1,4 +1,4 @@
-module mcud.cpu.stm32.periphs.gpio;
+module cpu.stm32.periphs.gpio;
 
 import mcud.core.attributes;
 import mcud.core.result;
@@ -195,58 +195,59 @@ else
 	*/
 	template Pin(PinConfig config)
 	{
-		import mcud.cpu.stm32.periphs.rcc;
-		import mcud.cpu.stm32.cpu;
+		import board : board;
+		import cpu.capabilities;
+		import cpu.stm32.periphs.rcc;
 
 		static assert(config._port != PinConfig.Port.unset, "Port not set");
 		static assert(config._pin != -1, "Pin not set");
 		static assert(config._pin < 16, "Pin out of range");
 		static assert(config._mode != PinConfig.Mode.unset, "Mode not set");
-		static assert(system.cpu.capabilities.hasGPIO(config._port), "Invalid port");
+		static assert(capabilities.hasGPIO(config._port), "Invalid port");
 
 		static if (config._port == PinConfig.Port.a)
 		{
-			private alias periph = system.cpu.gpioA;
+			private alias periph = board.cpu.gpioA;
 			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOAEN);
 		}
 		else static if (config._port == PinConfig.Port.b)
 		{
-			private alias periph = system.cpu.gpioB;
+			private alias periph = board.cpu.gpioB;
 			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOBEN);
 		}
 		else static if (config._port == PinConfig.Port.c)
 		{
-			private alias periph = system.cpu.gpioC;
+			private alias periph = board.cpu.gpioC;
 			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOCEN);
 		}
 		else static if (config._port == PinConfig.Port.d)
 		{
-			private alias periph = system.cpu.gpioD;
+			private alias periph = board.cpu.gpioD;
 			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIODEN);
 		}
 		else static if (config._port == PinConfig.Port.e)
 		{
-			private alias periph = system.cpu.gpioE;
+			private alias periph = board.cpu.gpioE;
 			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOEEN);
 		}
 		else static if (config._port == PinConfig.Port.f)
 		{
-			private alias periph = system.cpu.gpiof;
+			private alias periph = board.cpu.gpiof;
 			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOFEN);
 		}
 		else static if (config._port == PinConfig.Port.g)
 		{
-			private alias periph = system.cpu.gpioG;
+			private alias periph = board.cpu.gpioG;
 			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOGEN);
 		}
 		else static if (config._port == PinConfig.Port.h)
 		{
-			private alias periph = system.cpu.gpioH;
+			private alias periph = board.cpu.gpioH;
 			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOHEN);
 		}
 		else static if (config._port == PinConfig.Port.i)
 		{
-			private alias periph = system.cpu.gpioI;
+			private alias periph = board.cpu.gpioI;
 			private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOIEN);
 		}
 		else
@@ -277,7 +278,7 @@ else
 			value |= (cast(uint) config._pull) << (config._pin * 2);
 			periph.pupdr.store(value);
 		}
-		
+
 		/**
 		Enables the pin.
 		*/

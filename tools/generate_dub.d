@@ -27,20 +27,21 @@ void main(string[] args)
 
 	writeln(`name "mcud"`);
 	writefln(`sourcePaths "source" "%s/source" "%s/libd" "%s/libphobos"`, mcud, mcud, mcud);
+	writefln(`importPaths "source" "%s/source" "%s/libd" "%s/libphobos"`, mcud, mcud, mcud);
 
 	Description[] descriptions;
 	foreach (const board; boards)
 	{
 		Description description;
 		description.board = board;
-		auto process = execute(["make", "describe"]);
+		const process = execute(["make", "describe", "BOARD=" ~ board]);
 		string output = process.output;
 		foreach (line; splitLines(output))
 		{
 			if (line.indexOf('=') != -1)
 			{
 				const parts = line.split('=');
-				string key = parts[0];
+				const key = parts[0];
 				string[] values = parts[1].split(' ');
 				if (key == "DIRS")
 					description.dirs = values;
@@ -53,6 +54,7 @@ void main(string[] args)
 	{
 		writefln!(`configuration "%s" {`)(description.board);
 		writefln!(`    sourcePaths "%s"`)(description.dirs.join(`" "`));
+		writefln!(`    importPaths "%s"`)(description.dirs.join(`" "`));
 		writefln!(`}`);
 	}
 }
