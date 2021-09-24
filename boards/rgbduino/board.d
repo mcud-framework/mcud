@@ -1,6 +1,7 @@
 module board;
 
-import mcud.cpu.atmega328p;
+import cpu.atmega328p;
+import cpu.periphs;
 
 /**
 An RGBDuino board.

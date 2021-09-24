@@ -1,8 +1,9 @@
 module app;
 
+import board : board;
 import mcud.core;
 
-template App(alias board)
+template App()
 {
 	@task
 	void loop()

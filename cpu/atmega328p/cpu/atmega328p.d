@@ -1,17 +1,15 @@
-module mcud.cpu.atmega328p.cpu;
+module cpu.atmega328p;
 
+import cpu.periphs.gpio;
 import mcud.core.attributes;
+import mcud.core.interrupts;
 import mcud.core.system;
-import mcud.cpu.atmega328p.irq : IRQName = IRQ;
-import mcud.cpu.atmega328p.periphs.gpio;
 
 /**
 An interface to the Atmega328P.
 */
 template Atmega328P()
 {
-	alias IRQ = IRQName;
-
 	@interrupt(IRQ.RESET)
 	void reset()
 	{

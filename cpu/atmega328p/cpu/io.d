@@ -1,4 +1,4 @@
-module mcud.cpu.atmega328p.io;
+module cpu.io;
 
 import mcud.core.attributes;
 

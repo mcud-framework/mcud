@@ -34,14 +34,14 @@ void main(string[] args)
 	{
 		Description description;
 		description.board = board;
-		auto process = execute(["make", "describe"]);
+		const process = execute(["make", "describe", "BOARD=" ~ board]);
 		string output = process.output;
 		foreach (line; splitLines(output))
 		{
 			if (line.indexOf('=') != -1)
 			{
 				const parts = line.split('=');
-				string key = parts[0];
+				const key = parts[0];
 				string[] values = parts[1].split(' ');
 				if (key == "DIRS")
 					description.dirs = values;

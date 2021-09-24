@@ -1,7 +1,7 @@
-module mcud.cpu.atmega328p.periphs.gpio;
+module cpu.periphs.gpio;
 
+import cpu.io;
 import mcud.core.system;
-import mcud.cpu.atmega328p.io;
 
 /**
 Controls a single pin of a GPIO device.
