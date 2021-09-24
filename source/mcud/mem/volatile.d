@@ -3,6 +3,7 @@ Contains many platform-independent memory helper classes.
 */
 module mcud.mem.volatile;
 
+import cpu.mem;
 import mcud.core.attributes;
 import mcud.core.system;
 
@@ -19,13 +20,13 @@ struct Volatile(T, size_t addr)
 	@forceinline
 	T load() nothrow
 	{
-		return system.cpu.volatileLoad(*t);
+		return volatileLoad(*t);
 	}
 
 	@forceinline
 	void store(T value) nothrow
 	{
-		system.cpu.volatileStore(*t, value);
+		volatileStore(*t, value);
 	}
 
 	@forceinline

@@ -24,7 +24,7 @@ else
 		/// The CPU used by the board.
 		alias cpu = board.cpu;
 		/// The user application.
-		alias app = App!board;
+		alias app = App!();
 	}
 
 	/// Describes the program and board definition.
@@ -38,7 +38,7 @@ else
 	{
 		for (ubyte* bss = &_bss; bss < &_ebss; bss++)
 			*bss = 0;
-		
+
 		static if (is(typeof(system.board.init)))
 			system.board.init();
 		static if (is(typeof(system.app.start)))

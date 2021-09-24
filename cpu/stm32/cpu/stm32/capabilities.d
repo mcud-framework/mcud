@@ -1,4 +1,4 @@
-module mcud.cpu.stm32.capabilities;
+module cpu.stm32.capabilities;
 
 /**
 Describes the capabilities of an STM32 microcontroller.

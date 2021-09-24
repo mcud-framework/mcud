@@ -2,4 +2,5 @@ module mcud.core.interrupts;
 
 import mcud.core.system;
 
-alias IRQ = system.cpu.IRQ;
+public import cpu.irq : IRQ;
+public import mcud.core.attributes : interrupt;

@@ -55,7 +55,7 @@ $(error No board was set)
 endif
 
 ifneq (,$(wildcard $(BOARD)))
-BOARD_DIR = $(abspath $(BOARD))
+BOARD_DIR = $(BOARD)
 else
 BOARD_DIR = $(wildcard $(BOARDS)/$(BOARD))
 endif
@@ -189,6 +189,7 @@ dub:
 
 .PHONY: describe
 describe:
+	@echo "MCUD=$(MCUD)"
 	@echo "BOARD=$(BOARD)"
 	@echo "BOARD_DIR=$(BOARD_DIR)"
 	@echo "CPU=$(CPU)"

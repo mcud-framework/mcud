@@ -27,6 +27,7 @@ void main(string[] args)
 
 	writeln(`name "mcud"`);
 	writefln(`sourcePaths "source" "%s/source" "%s/libd" "%s/libphobos"`, mcud, mcud, mcud);
+	writefln(`importPaths "source" "%s/source" "%s/libd" "%s/libphobos"`, mcud, mcud, mcud);
 
 	Description[] descriptions;
 	foreach (const board; boards)
@@ -53,6 +54,7 @@ void main(string[] args)
 	{
 		writefln!(`configuration "%s" {`)(description.board);
 		writefln!(`    sourcePaths "%s"`)(description.dirs.join(`" "`));
+		writefln!(`    importPaths "%s"`)(description.dirs.join(`" "`));
 		writefln!(`}`);
 	}
 }
