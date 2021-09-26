@@ -44,34 +44,34 @@ struct PeriphGPIO(char port, uint base)
 }
 
 /**
+Set of valid ports.
+*/
+enum GPIOPort
+{
+	unset,
+	a = 'a',
+	b = 'b',
+	c = 'c',
+	d = 'd',
+	e = 'e',
+	f = 'f',
+	g = 'g',
+	h = 'h',
+	i = 'i'
+}
+
+/**
 Configures a GPIO port.
 */
 struct PortConfig
 {
-	/**
-	Set of valid ports.
-	*/
-	enum Port
-	{
-		unset,
-		a = 'a',
-		b = 'b',
-		c = 'c',
-		d = 'd',
-		e = 'e',
-		f = 'f',
-		g = 'g',
-		h = 'h',
-		i = 'i'
-	}
-
 	/// The configured port.
-	Port _port = Port.unset;
+	GPIOPort _port = GPIOPort.unset;
 
 	/**
 	Sets the port to configure.
 	*/
-	PortConfig port(Port port)
+	PortConfig port(GPIOPort port)
 	{
 		assert(capabilities.hasGPIO(cast(char) port), "The MCU does not have a port '" ~ (cast(char) port) ~ "'");
 		_port = port;
@@ -82,69 +82,73 @@ struct PortConfig
 /**
 Manages a GPIO port.
 */
-template Port(PortConfig config)
+struct Port(PortConfig config)
 {
-	static assert(config._port != PortConfig.Port.unset, "No port was selected");
+	/// The port the driver manages.
+	enum _port = config._port;
 
-	static if (config._port == PortConfig.Port.a)
+	static assert(_port != GPIOPort.unset, "No port was selected");
+
+	static if (config._port == GPIOPort.a)
 	{
-		private alias periph = board.cpu.gpioA;
-		private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOAEN);
+		alias periph = board.cpu.gpioA;
+		alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOAEN);
 	}
-	else static if (config._port == PortConfig.Port.b)
+	else static if (config._port == GPIOPort.b)
 	{
-		private alias periph = board.cpu.gpioB;
-		private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOBEN);
+		alias periph = board.cpu.gpioB;
+		alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOBEN);
 	}
-	else static if (config._port == PortConfig.Port.c)
+	else static if (config._port == GPIOPort.c)
 	{
-		private alias periph = board.cpu.gpioC;
-		private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOCEN);
+		alias periph = board.cpu.gpioC;
+		alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOCEN);
 	}
-	else static if (config._port == PortConfig.Port.d)
+	else static if (config._port == GPIOPort.d)
 	{
-		private alias periph = board.cpu.gpioD;
-		private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIODEN);
+		alias periph = board.cpu.gpioD;
+		alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIODEN);
 	}
-	else static if (config._port == PortConfig.Port.e)
+	else static if (config._port == GPIOPort.e)
 	{
-		private alias periph = board.cpu.gpioE;
-		private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOEEN);
+		alias periph = board.cpu.gpioE;
+		alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOEEN);
 	}
-	else static if (config._port == PortConfig.Port.f)
+	else static if (config._port == GPIOPort.f)
 	{
-		private alias periph = board.cpu.gpiof;
-		private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOFEN);
+		alias periph = board.cpu.gpiof;
+		alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOFEN);
 	}
-	else static if (config._port == PortConfig.Port.g)
+	else static if (config._port == GPIOPort.g)
 	{
-		private alias periph = board.cpu.gpioG;
-		private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOGEN);
+		alias periph = board.cpu.gpioG;
+		alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOGEN);
 	}
-	else static if (config._port == PortConfig.Port.h)
+	else static if (config._port == GPIOPort.h)
 	{
-		private alias periph = board.cpu.gpioH;
-		private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOHEN);
+		alias periph = board.cpu.gpioH;
+		alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOHEN);
 	}
-	else static if (config._port == PortConfig.Port.i)
+	else static if (config._port == GPIOPort.i)
 	{
-		private alias periph = board.cpu.gpioI;
-		private alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOIEN);
+		alias periph = board.cpu.gpioI;
+		alias rcc = RCCPeriph!(RCC_AHB2ENR.GPIOIEN);
 	}
 	else
 		static assert(false, "Invalid port");
 
-	template configurePin(PinConfig config)
-	{
-		alias configurePin = Pin!(periph, config);
-	}
-
+	/**
+	Enables the port.
+	*/
 	@forceinline
 	void start()
 	{
 		rcc.start();
 	}
 
+	/**
+	Disables the port.
+	*/
 	@forceinline
 	void stop()
 	{

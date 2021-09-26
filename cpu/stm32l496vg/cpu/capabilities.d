@@ -5,6 +5,7 @@
 module cpu.capabilities;
 
 import cpu.stm32l496.capabilities;
+public import cpu.stm32.periphs.gpio : AlternateFunction, GPIOPort;
 
 /**
 Gets the capabilities of the STM32L496VG.
@@ -18,5 +19,8 @@ Capabilities capabilities()
 	caps.gpioDMask = 0b1111_1111_1111_1111;
 	caps.gpioEMask = 0b1111_1111_1111_1111;
 	caps.gpioHMask = 0b0000_0000_0000_1011;
+
+	caps.alternateFunctions[AlternateFunction.usart1] = 5;
+
 	return caps;
 }

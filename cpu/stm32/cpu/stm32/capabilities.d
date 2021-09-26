@@ -4,29 +4,40 @@
 
 module cpu.stm32.capabilities;
 
+public import cpu.stm32.periphs.gpio : AlternateFunction, GPIOPort;
+
+struct PortMask
+{
+	/// A bitmask of available pins on port A.
+	uint gpioA = 0;
+	/// A bitmask of available pins on port B.
+	uint gpioB = 0;
+	/// A bitmask of available pins on port C.
+	uint gpioC = 0;
+	/// A bitmask of available pins on port D.
+	uint gpioD = 0;
+	/// A bitmask of available pins on port E.
+	uint gpioE = 0;
+	/// A bitmask of available pins on port F.
+	uint gpioF = 0;
+	/// A bitmask of available pins on port G.
+	uint gpioG = 0;
+	/// A bitmask of available pins on port H.
+	uint gpioH = 0;
+	/// A bitmask of available pins on port I.
+	uint gpioI = 0;
+}
+
 /**
 Describes the capabilities of an STM32 microcontroller.
 */
 struct Capabilities
 {
-	/// A bitmask of available pins on port A.
-	uint gpioAMask = 0;
-	/// A bitmask of available pins on port B.
-	uint gpioBMask = 0;
-	/// A bitmask of available pins on port C.
-	uint gpioCMask = 0;
-	/// A bitmask of available pins on port D.
-	uint gpioDMask = 0;
-	/// A bitmask of available pins on port E.
-	uint gpioEMask = 0;
-	/// A bitmask of available pins on port F.
-	uint gpioFMask = 0;
-	/// A bitmask of available pins on port G.
-	uint gpioGMask = 0;
-	/// A bitmask of available pins on port H.
-	uint gpioHMask = 0;
-	/// A bitmask of available pins on port I.
-	uint gpioIMask = 0;
+	/// Bitmask of available pins.
+	PortMask mask;
+
+	/// A set of alternative functions
+	uint[AlternateFunction] alternateFunctions;
 
 	/**
 	Gets the GPIO mask for a given port.
@@ -91,5 +102,10 @@ struct Capabilities
 			return false;
 		const mask = gpioMask(port);
 		return (mask & (1 << pin)) != 0;
+	}
+
+	bool pinSupport(char port, int pin, AlternateFunction af)
+	{
+
 	}
 }

@@ -1,5 +1,8 @@
 module cpu.stm32.periphs.gpio.pin;
 
+import board : board;
+import cpu.capabilities;
+import cpu.stm32.periphs.rcc;
 import mcud.core.attributes;
 import mcud.core.result;
 import mcud.core.system;
@@ -7,46 +10,108 @@ import mcud.mem.volatile;
 import mcud.meta.like;
 import mcud.periphs.input;
 
+
+/**
+Set of valid modes.
+*/
+enum PinMode : uint
+{
+	unset = -1,
+	input = 0b00,
+	output = 0b01,
+	alternate = 0b10,
+	analog = 0b11,
+}
+
+/**
+State of pull-up/pull-down resistor.
+*/
+enum PinPull : uint
+{
+	none = 0b00,
+	up = 0b01,
+	down = 0b10,
+}
+
+/**
+A set of all alternative functions.
+*/
+enum AlternateFunction
+{
+	can1,
+	can2,
+	comp1,
+	comp2,
+	dcmi,
+	dfsdm,
+	evenout,
+	fmc,
+	i2c1,
+	i2c2,
+	i2c3,
+	i2c4,
+	lcd,
+	lptim2,
+	lpuart1,
+	otg_fs,
+	quadspi,
+	sai1,
+	sai2,
+	sdmmc,
+	spi1,
+	spi2,
+	spi3,
+	swpmi1,
+	sysAf,
+	tim1,
+	tim15,
+	tim16,
+	tim17,
+	tim2,
+	tim3,
+	tim4,
+	tim5,
+	tim8,
+	tsc,
+	uart4,
+	uart5,
+	unset,
+	usart1,
+	usart2,
+	usart3,
+}
+
 /**
 Configures a pin.
 */
-struct PinConfig
+struct PinConfigT(Port)
 {
-	/**
-	Set of valid modes.
-	*/
-	enum Mode : uint
-	{
-		unset = -1,
-		input = 0b00,
-		output = 0b01,
-		alternate = 0b10,
-		analog = 0b11,
-	}
-
-	/**
-	State of pull-up/pull-down resistor.
-	*/
-	enum Pull : uint
-	{
-		none = 0b00,
-		up = 0b01,
-		down = 0b10,
-	}
-
+	/// The port the pin is on.
+	alias _port = Port;
 	/// The selected mode.
-	Mode _mode = Mode.unset;
+	PinMode _mode = PinMode.unset;
 	/// The state of the pull-up/pull-down resistor.
-	Pull _pull = Pull.none;
+	PinPull _pull = PinPull.none;
 	/// The selected pin.
 	uint _pin = -1;
+
+	/**
+	Sets the port the GPIO pin uses.
+	*/
+	PinConfigT!Port port(Port)(Port port)
+	{
+		import mcud.meta.copy : copyTo;
+		PinConfigT!Port config;
+		this.copyTo(config);
+		return config;
+	}
 
 	/**
 	Sets the pin.
 	Params:
 		pin = The pin to configure.
 	*/
-	PinConfig pin(uint pin)
+	PinConfigT!Port pin(uint pin)
 	{
 		_pin = pin;
 		return this;
@@ -57,9 +122,9 @@ struct PinConfig
 	Params:
 		mode = The mode of the pin.
 	*/
-	PinConfig mode(Mode mode)
+	PinConfigT!Port mode(PinMode mode)
 	{
-		assert(_mode == Mode.unset, "Mode is already set");
+		assert(_mode == PinMode.unset, "Mode is already set");
 		_mode = mode;
 		return this;
 	}
@@ -67,41 +132,41 @@ struct PinConfig
 	/**
 	Configures the pin as an output.
 	*/
-	PinConfig asOutput()
+	PinConfigT!Port asOutput()
 	{
-		return mode(Mode.output);
+		return mode(PinMode.output);
 	}
 
 	/**
 	Configures the pin as an input.
 	*/
-	PinConfig asInput()
+	PinConfigT!Port asInput()
 	{
-		return mode(Mode.input);
+		return mode(PinMode.input);
 	}
 
 	/**
 	Configures the pin as an analog input.
 	*/
-	PinConfig asAnalog()
+	PinConfigT!Port asAnalog()
 	{
-		return mode(Mode.analog);
+		return mode(PinMode.analog);
 	}
 
 	/**
 	Configures the pin as an alternative function.
 	*/
-	PinConfig asAlternateFunction()
+	PinConfigT!Port asAlternateFunction()
 	{
-		return mode(Mode.alternate);
+		return mode(PinMode.alternate);
 	}
 
 	/**
 	Configures the pull-up/pull-down resistor.
 	*/
-	PinConfig pull(Pull pull)
+	PinConfigT!Port pull(PinPull pull)
 	{
-		assert(_pull == Pull.none, "Pull-up/down is already set");
+		assert(_pull == PinPull.none, "Pull-up/down is already set");
 		_pull = pull;
 		return this;
 	}
@@ -109,42 +174,42 @@ struct PinConfig
 	/**
 	Enables the pull-up resistor.
 	*/
-	PinConfig enablePullUp()
+	PinConfigT!Port enablePullUp()
 	{
-		return pull(Pull.up);
+		return pull(PinPull.up);
 	}
 
 	/**
 	Enables the bull-down resistor.
 	*/
-	PinConfig enablePullDown()
+	PinConfigT!Port enablePullDown()
 	{
-		return pull(Pull.down);
+		return pull(PinPull.down);
 	}
 }
+alias PinConfig = PinConfigT!(void);
 
 /**
 Manages a pin with a certain configuration.
 Params:
 	config = The pin configuration.
 */
-template Pin(alias periph, PinConfig config)
+struct Pin(alias config)
 {
-	import board : board;
-	import cpu.capabilities;
-	import cpu.stm32.periphs.rcc;
-
+	alias periph = config._port.periph;
 	static assert(config._pin != -1, "Pin not set");
 	static assert(config._pin < 16, "Pin out of range");
-	static assert(config._mode != PinConfig.Mode.unset, "Mode not set");
-	static assert(capabilities.gpioHasPin(periph._port, config._pin), "Invalid port");
+	static assert(config._mode != PinMode.unset, "Mode not set");
+	static assert(!is(config._port == void), "No port was selected");
+	static assert(capabilities.gpioHasPin(config._port._port, config._pin), "Invalid port");
 
+static:
 	/**
 	Sets the mode of the pin.
 	Params:
 		mode = The mode of the pin.
 	*/
-	void setMode(PinConfig.Mode mode)
+	void setMode(PinMode mode)
 	{
 		auto value = periph.moder.load();
 		value &= ~(0b11 << (config._pin * 2));
@@ -157,7 +222,7 @@ template Pin(alias periph, PinConfig config)
 	Params:
 		pull = The state of the pull-upp/pull-down resistor.
 	*/
-	void setPull(PinConfig.Pull pull)
+	void setPull(PinPull pull)
 	{
 		auto value = periph.pupdr.load();
 		value &= ~(0b11 << (config._pull * 2));
@@ -181,10 +246,10 @@ template Pin(alias periph, PinConfig config)
 	@forceinline
 	void stop()
 	{
-		setMode(PinConfig.Mode.analog);
+		setMode(PinMode.analog);
 	}
 
-	static if (config._mode == PinConfig.Mode.output)
+	static if (config._mode == PinMode.output)
 	{
 		@forceinline
 		Result!void on() nothrow
@@ -200,7 +265,7 @@ template Pin(alias periph, PinConfig config)
 			return ok!void();
 		}
 	}
-	else static if (config._mode == PinConfig.Mode.input)
+	else static if (config._mode == PinMode.input)
 	{
 		@forceinline
 		Result!bool isOn()
