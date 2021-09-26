@@ -74,4 +74,22 @@ struct Capabilities
 	{
 		return gpioMask(port) != 0;
 	}
+
+	/**
+	Tests whether a specific GPIO port has a specific pin.
+	Params:
+		port = The port to query.
+		pin = The pin to test for.
+	Returns: `true` if the port has the pin, `false` if the port does not have
+		the pin.
+	*/
+	bool gpioHasPin(char port, int pin)
+	{
+		if (pin < 0)
+			return false;
+		if (pin > 15)
+			return false;
+		const mask = gpioMask(port);
+		return (mask & (1 << pin)) != 0;
+	}
 }

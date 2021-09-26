@@ -4,6 +4,7 @@
 
 module cpu.stm32.periphs.rcc;
 
+import board : board;
 import cpu.capabilities;
 import mcud.core.attributes;
 import mcud.core.result;
@@ -228,7 +229,7 @@ template RCC(ClockTree config)
 			default:
 			}
 		}
-		
+
 		/// APB1 prescaler (PPRE1)
 		cfgr &= ~(0b111 << 8);
 		cfgr |= config._cfgr_ppre1;
@@ -236,37 +237,26 @@ template RCC(ClockTree config)
 		/// HCLK1 Prescaler (HPRE1)
 		cfgr &= ~(0b1111 << 4);
 		cfgr |= config._cfgr_hpre1;
-		
+
 		rcc.cfgr.store(cfgr);
 	}
 }
 
 template RCCPeriph(RCC_AHB2ENR device)
 {
-	__gshared uint count = 0;
-
 	@forceinline
-	Result!void start()
+	void start()
 	{
-		{
-			auto value = system.cpu.rcc.ahb2enr.load();
-			value |= device;
-			system.cpu.rcc.ahb2enr.store(value);
-		}
-		count++;
-		return ok!void;
+		auto value = board.cpu.rcc.ahb2enr.load();
+		value |= device;
+		board.cpu.rcc.ahb2enr.store(value);
 	}
 
 	@forceinline
-	Result!void stop()
+	void stop()
 	{
-		if (count == 1)
-		{
-			auto value = system.cpu.rcc.ahb2enr.load();
-			value &= ~device;
-			system.cpu.rcc.ahb2enr.store(value);
-		}
-		count--;
-		return ok!void;
+		auto value = board.cpu.rcc.ahb2enr.load();
+		value &= ~device;
+		board.cpu.rcc.ahb2enr.store(value);
 	}
 }
