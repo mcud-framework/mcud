@@ -1,5 +1,3 @@
-ENTRY(_irqs)
-
 MEMORY
 {
   FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 0x100000
@@ -8,4 +6,4 @@ MEMORY
   RAM1 (rwx) : ORIGIN = 0x20040000, LENGTH = 0x3F000
 }
 
-include "linked.ld"
+include "linker.ld"
