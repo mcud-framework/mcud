@@ -1,0 +1,5 @@
+TARGET = arm-none-eabi-
+DFLAGS += -mcpu=cortex-m33 -mthumb 
+DOCKER = seeseemelk/mcud:arm-none-eabi-2021-07-31
+DIRS += $(CPUS)/stm32
+LINKER_SCRIPT = $(CPUS)/stm32l496/linker_$(LINKER_VARIANT).ld
