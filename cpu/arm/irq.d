@@ -5,7 +5,7 @@
 /**
 This module auto-generates the interrupt vector table.
 */
-module cpu.stm32.irq;
+module irq;
 
 import cpu.irq;
 import mcud.core.attributes;

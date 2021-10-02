@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public *
+ * License, v. 2.0. If a copy of the MPL was not distributed with this *
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.           */
+
 MEMORY
 {
   FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 0x100000
@@ -6,4 +10,4 @@ MEMORY
   RAM1 (rwx) : ORIGIN = 0x20040000, LENGTH = 0x3F000
 }
 
-include "linker.ld"
+INCLUDE "linker.ld"
