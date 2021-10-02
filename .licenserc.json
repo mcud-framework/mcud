@@ -10,6 +10,8 @@
 		"# file, You can obtain one at https://mozilla.org/MPL/2.0/."
 	],
 	"ignore": [
-		"tools/generate_dub.d"
+		"tools/generate_dub.d",
+		"libd/",
+		"libphobos/"
 	]
 }
