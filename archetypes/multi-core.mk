@@ -13,7 +13,8 @@ ALL_BINS :=
 ALL_ELFS :=
 
 define targets_for_cpu
-$(eval DFLAGS_$1 ?= $(DFLAGS))
+$(eval VERSIONS_$1 ?= CORE_$1)
+$(eval DFLAGS_$1 ?= $(DFLAGS) $(VERSIONS_$1:%=-fversion=%))
 $(eval LDFLAGS_$1 ?= $(filter-out -T $(LINKER_SCRIPT),$(LDFLAGS)) -T $(LINKER_SCRIPT_$1))
 
 $(eval BIN_APP_$1 = $(BIN_APP:%.bin=%_$1.bin))
@@ -24,6 +25,7 @@ $(eval OBJ_DRUNTIME_$1 = $(OBJ_DRUNTIME:%.o=%_$1.o))
 
 ALL_BINS += $(BIN_APP_$1)
 ALL_ELFS += $(ELF_APP_$1)
+VARIANTS += $1
 
 $(BIN_APP_$1): $(ELF_APP_$1)
 	$(RUN) $(OBJCOPY) -O binary $< $@

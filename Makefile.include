@@ -54,6 +54,9 @@ LINKER_SCRIPT = $(CPUS)/$(CPU)/linker.ld
 # Use docker if docker hasn't been explicitly disabled
 USE_DOCKER ?= yes
 
+# Set of variants, used by the dub generator to generate configurations.
+VARIANTS :=
+
 ifeq (,$(BOARD))
 $(error No board was set)
 endif
@@ -169,13 +172,20 @@ $(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/Makefile.include
 dub:
 	$(MCUD)/tools/generate_dub.d "$(MCUD)" $(SUPPORTED_BOARDS) > dub.sdl
 
+define VARIANT_INFO
+	@echo "VERSION_$V=$(VERSIONS_$V)"
+	
+endef
+
 .PHONY: describe
 describe:
 	@echo "MCUD=$(MCUD)"
 	@echo "BOARD=$(BOARD)"
 	@echo "BOARD_DIR=$(BOARD_DIR)"
+	@echo "VARIANTS=$(VARIANTS)"
 	@echo "CPU=$(CPU)"
 	@echo "DIRS=$(DIRS)"
+	$(foreach V,$(VARIANTS),$(call VARIANT_INFO,$V))
 
 ifeq (,$(ARCHETYPE))
 $(error CPU did not set an archetype)
