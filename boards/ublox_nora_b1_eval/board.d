@@ -4,7 +4,7 @@
 
 module board;
 
-import cpu.nrf5340.cpu;
+import cpu.nrf5340;
 import mcud.periphs.gpio.noop;
 
 /**
@@ -14,7 +14,56 @@ template Board()
 {
 	alias cpu = NRF5340!();
 
-	static NoOpGPIO led;
+	static Pin!(
+		PinConfig()
+		.port(Port.p0)
+		.pin(28)
+		.asOutput()
+	) led1;
+
+	static Pin!(
+		PinConfig()
+		.port(Port.p0)
+		.pin(29)
+		.asOutput()
+	) led2;
+
+	static Pin!(
+		PinConfig()
+		.port(Port.p0)
+		.pin(30)
+		.asOutput()
+	) led3;
+
+	static Pin!(
+		PinConfig()
+		.port(Port.p0)
+		.pin(31)
+		.asOutput()
+	) led4;
+
+	static Pin!(
+		PinConfig()
+		.port(Port.p0)
+		.pin(23)
+		.asInput()
+		.withPullUp()
+	) button1;
+
+	version(CORE_application) void init()
+	{
+		led1.start();
+		led2.start();
+		led3.start();
+		led4.start();
+
+		led1.on();
+		led2.on();
+		led3.on();
+		led4.on();
+
+		button1.start();
+	}
 }
 
 /// The board.

@@ -69,7 +69,6 @@ Authors:   $(HTTP erdani.org, Andrei Alexandrescu),
 module std.typecons;
 
 import core.stdc.stdint : uintptr_t;
-import std.format : singleSpec, FormatSpec, formatValue;
 import std.meta; // : AliasSeq, allSatisfy;
 import std.range.primitives : isOutputRange;
 import std.traits;

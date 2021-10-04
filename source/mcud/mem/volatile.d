@@ -7,7 +7,7 @@ Contains many platform-independent memory helper classes.
 */
 module mcud.mem.volatile;
 
-import cpu.mem;
+version(unittest) {} else import cpu.mem;
 import mcud.core.attributes;
 import mcud.core.system;
 
@@ -16,6 +16,7 @@ Wraps volatile memory at a specific memory address.
 */
 struct Volatile(T, size_t addr)
 {
+static:
 	alias type = T;
 	enum address = addr;
 
@@ -24,13 +25,15 @@ struct Volatile(T, size_t addr)
 	@forceinline
 	T load() nothrow
 	{
-		return volatileLoad(*t);
+		version(unittest) assert(0, "Not supported during unit tests");
+		else return volatileLoad(*t);
 	}
 
 	@forceinline
 	void store(T value) nothrow
 	{
-		volatileStore(*t, value);
+		version(unittest) assert(0, "Not supported during unit tests");
+		else volatileStore(*t, value);
 	}
 
 	@forceinline

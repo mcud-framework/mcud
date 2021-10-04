@@ -32,8 +32,8 @@ SECTIONS
 
     .bss : AT(ADDR(.data) + SIZEOF(.data))
     {
-        PROVIDE(_bss = .);
+        _bss = .;
         *(.bss*)
-        PROVIDE(_ebss = .);
+        _ebss = .;
     } > RAM
 }

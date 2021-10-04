@@ -128,7 +128,7 @@ DFLAGS += -nostdlib -Os -ggdb \
 	-fno-switch-errors \
 	-I$(DIR_DRUNTIME) \
 	-I$(DIR_LIBPHOBOS) \
-	-I$(MCUD)
+	-I$(MCUD_SRC)
 DFLAGS += $(VERSIONS:%=-fversion=%)
 DFLAGS := $(call convert_path,$(DFLAGS))
 # Flags to pass to the compiler when building tests.

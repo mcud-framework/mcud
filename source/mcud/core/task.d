@@ -29,8 +29,9 @@ unittest
 	}
 
 	alias a = A!();
-	const taskA = Task(task(), &a.loop);
-	assert(allTasks!a == [taskA]);
+	const tasks = allTasks!a;
+	assert(tasks[0].attribute == task());
+	assert(tasks[0].func == &a.loop);
 
 	template B()
 	{
@@ -43,6 +44,9 @@ unittest
 	const taskA2 = Task(task(), &b.a.loop);
 	const taskB = Task(task(), &b.loop);
 
-	const tasks = allTasks!b;
-	assert(tasks == [taskA2, taskB] || tasks == [taskB, taskA2]);
+	const tasks2 = allTasks!b;
+	assert(tasks2[0].attribute == task());
+	assert(tasks2[1].attribute == task());
+	assert(tasks2[0].func == &b.a.loop);
+	assert(tasks2[1].func == &b.loop);
 }
