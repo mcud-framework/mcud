@@ -28,7 +28,7 @@ ALL_ELFS += $(ELF_APP_$1)
 VARIANTS += $1
 
 $(BIN_APP_$1): $(ELF_APP_$1)
-	$(RUN) $(OBJCOPY) -O binary $< $@
+	$(RUN) $(OBJCOPY) -O binary $$< $$@
 
 $(ELF_APP_$1): $(OBJ_APP_$1) $(OBJ_PHOBOS_$1) $(OBJ_DRUNTIME_$1) $(LINKER_SCRIPT_$1)
 	@mkdir -p $$(dir $$@)
@@ -49,5 +49,5 @@ endef
 
 $(foreach cpu,$(CPU_LIST),$(eval $(call targets_for_cpu,$(cpu))))
 .PHONY: all
-all: $(ALL_ELFS)
+all: $(ALL_ELFS) $(ALL_BINS)
 	$(RUN) $(TARGET)size $(ALL_ELFS)

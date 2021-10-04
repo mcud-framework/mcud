@@ -4,7 +4,7 @@
 
 module board;
 
-import cpu.nrf5340;
+import cpu.nrf5340.cpu;
 import mcud.periphs.gpio.noop;
 
 /**
@@ -12,7 +12,7 @@ An example definition for a u-blox Nora B1 evaluation kit.
 */
 template Board()
 {
-	static NRF5340 cpu;
+	alias cpu = NRF5340!();
 
 	static NoOpGPIO led;
 }
