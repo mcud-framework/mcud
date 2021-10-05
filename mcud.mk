@@ -164,7 +164,7 @@ clean:
 distclean: clean
 	rm -rf $(DIST)
 
-$(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/include.mk
+$(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/mcud.mk
 	mkdir -p $(dir $@)
 	$(RUN) $(HOSTDC) $(HOSTDFLAGS) -o $@ $(TESTSOURCES)
 

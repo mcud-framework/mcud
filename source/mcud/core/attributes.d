@@ -12,9 +12,26 @@ Forces a specific function to be inlined.
 enum forceinline = attribute("always_inline");
 
 /**
+Describes the states of a task.
+*/
+enum TaskState
+{
+	/// Marks the task as started.
+	started,
+	/// Marks the task as stopped.
+	stopped,
+	/// Marks the task as a task which cannot be stopped.
+	unstoppable
+}
+
+/**
 Declares a function to be a task.
 */
-struct task {}
+struct task
+{
+	/// The state of the task.
+	TaskState state = TaskState.started;
+}
 
 /**
 Declares a function to be run at the start of the program.

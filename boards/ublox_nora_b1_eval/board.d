@@ -50,6 +50,30 @@ template Board()
 		.withPullUp()
 	) button1;
 
+	static Pin!(
+		PinConfig()
+		.port(Port.p0)
+		.pin(24)
+		.asInput()
+		.withPullUp()
+	) button2;
+
+	static Pin!(
+		PinConfig()
+		.port(Port.p0)
+		.pin(8)
+		.asInput()
+		.withPullUp()
+	) button3;
+
+	static Pin!(
+		PinConfig()
+		.port(Port.p0)
+		.pin(9)
+		.asInput()
+		.withPullUp()
+	) button4;
+
 	version(CORE_application) void init()
 	{
 		led1.start();
@@ -63,6 +87,9 @@ template Board()
 		led4.on();
 
 		button1.start();
+		button2.start();
+		button3.start();
+		button4.start();
 	}
 }
 

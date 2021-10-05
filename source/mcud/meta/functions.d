@@ -4,13 +4,14 @@
 
 module mcud.meta.functions;
 
-import std.traits;
+import mcud.core.system;
 import std.meta;
+import std.traits;
 
 /**
 Describes a function.
 */
-struct Function(T)
+struct Function(T, Arg = void)
 {
 	/**
 	The attribute the function was annotated with.
@@ -20,7 +21,10 @@ struct Function(T)
 	/**
 	The function.
 	*/
-	void function() func;
+	static if (is(Arg == void))
+		void function() func;
+	else
+		void function(Arg) func;
 
 	/**
 	The mangled name of the function.
@@ -44,14 +48,14 @@ Param:
 Returns:
 	An array of all attributed functions.
 */
-Function!attribute[] allFunctions(alias attribute, alias T = system)()
+Function!(attribute, Arg)[] allFunctions(alias attribute, alias T = system, Arg = void)()
 {
-	Function!attribute[] filters = [];
-	allFunctionsFiltered!(attribute, T)(filters);
+	Function!(attribute, Arg)[] filters = [];
+	allFunctionsFiltered!(attribute, T, Arg)(filters);
 	return filters;
 }
 
-private void allFunctionsFiltered(alias attribute, alias T)(ref Function!attribute[] found)
+private void allFunctionsFiltered(alias attribute, alias T, Arg)(ref Function!(attribute, Arg)[] found)
 {
 	static if (hasUDA!(T, attribute))
 	{
@@ -60,18 +64,21 @@ private void allFunctionsFiltered(alias attribute, alias T)(ref Function!attribu
 		attribute uda;
 		static if (!isType!(udas[0]))
 			uda = udas[0];
-		foreach (filter; found)
+		static if (is(typeof(&T) == typeof(found[0].func)))
 		{
-			if (filter.func == &T)
-				return;
+			foreach (filter; found)
+			{
+				if (filter.func == &T)
+					return;
+			}
+			found ~= [Function!(attribute, Arg)(uda, &T, T.mangleof)];
 		}
-		found ~= [Function!attribute(uda, &T, T.mangleof)];
 	}
 	else static if (canContainFunctions!T)
 	{
 		static foreach (child; __traits(allMembers, T))
 		{
-			allFunctionsFiltered!(attribute, __traits(getMember, T, child))(found);
+			allFunctionsFiltered!(attribute, __traits(getMember, T, child), Arg)(found);
 		}
 	}
 }

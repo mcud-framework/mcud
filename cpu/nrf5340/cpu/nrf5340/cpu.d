@@ -26,7 +26,7 @@ template NRF5340()
 	@interrupt(IRQ.reset)
 	void onReset()
 	{
-		import mcud.core.system : start;
-		start();
+		import mcud.core.system : startMCUd;
+		startMCUd();
 	}
 }
