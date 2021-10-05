@@ -6,7 +6,7 @@ DFLAGS += -mcpu=cortex-m4 -mthumb
 DIRS += $(CPUS)/stm32
 ARCHETYPE = single-core
 
-include $(CPUS)/arm/Makefile.include
+include $(CPUS)/arm/include.mk
 
 .PHONY: flash
 flash: $(BIN_APP)

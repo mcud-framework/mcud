@@ -66,7 +66,7 @@ BOARD_DIR = $(BOARD)
 else
 BOARD_DIR = $(wildcard $(BOARDS)/$(BOARD))
 endif
-include $(BOARD_DIR)/Makefile.include
+include $(BOARD_DIR)/include.mk
 
 ifeq (,$(CPU))
 $(error No CPU was set. Make sure your board definition sets CPU)
@@ -75,7 +75,7 @@ endif
 .DEFAULT_GOAL := all
 
 # Include CPU targets
-include $(CPUS)/$(CPU)/Makefile.include
+include $(CPUS)/$(CPU)/include.mk
 
 $(info Docker: $(DOCKER))
 ifeq (yes,$(USE_DOCKER))
@@ -164,7 +164,7 @@ clean:
 distclean: clean
 	rm -rf $(DIST)
 
-$(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/Makefile.include
+$(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/include.mk
 	mkdir -p $(dir $@)
 	$(RUN) $(HOSTDC) $(HOSTDFLAGS) -o $@ $(TESTSOURCES)
 

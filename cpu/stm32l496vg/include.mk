@@ -4,4 +4,4 @@
 
 LINKER_VARIANT = 1024
 
-include $(CPUS)/stm32l496/Makefile.include
+include $(CPUS)/stm32l496/include.mk

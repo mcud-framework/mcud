@@ -11,4 +11,4 @@ LINKER_SCRIPT_network = $(CPUS)/nrf5340/linker_network.ld
 
 ARCHETYPE = multi-core
 
-include $(CPUS)/arm/Makefile.include
+include $(CPUS)/arm/include.mk
