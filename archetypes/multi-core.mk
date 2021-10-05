@@ -32,7 +32,7 @@ $(BIN_APP_$1): $(ELF_APP_$1)
 
 $(ELF_APP_$1): $(OBJ_APP_$1) $(OBJ_PHOBOS_$1) $(OBJ_DRUNTIME_$1) $(LINKER_SCRIPT_$1)
 	@mkdir -p $$(dir $$@)
-	$(RUN) $(DC) -MD -MP -MF $$(@:%.elf=%.elf.dep) $(LDFLAGS_$1) -o $$@ $$(call convert_path,$(OBJ_APP_$1) $(OBJ_PHOBOS_$1) $(OBJ_DRUNTIME_$1))
+	$(RUN) $(LD) -MD -MP -MF $$(@:%.elf=%.elf.dep) $(LDFLAGS_$1) -o $$@ $$(call convert_path,$(OBJ_APP_$1) $(OBJ_PHOBOS_$1) $(OBJ_DRUNTIME_$1)) -lc_nano
 
 $(OBJ_APP_$1): $(SOURCES_APP)
 	@mkdir -p $$(dir $$@)

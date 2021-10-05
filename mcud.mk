@@ -118,9 +118,9 @@ HOSTDC = gdc
 # The D compiler to use.
 DC := $(TARGET)gdc
 # The linker to use.
-LD := $(TARGET)ld
+LD := $(TARGET)gcc
 # Flags to pass to the D compiler.
-DFLAGS += -nostdlib -Os -ggdb \
+DFLAGS += -nostdlib -Os -ggdb -flto \
 	-ffunction-sections \
 	-fdata-sections \
 	-fno-moduleinfo \
@@ -133,7 +133,7 @@ DFLAGS += $(VERSIONS:%=-fversion=%)
 DFLAGS := $(call convert_path,$(DFLAGS))
 # Flags to pass to the compiler when building tests.
 HOSTDFLAGS = -funittest -fmain -ggdb
-LDFLAGS = -Wl,-gc-sections -Os -nostdlib
+LDFLAGS += -Wl,-gc-sections -Os -flto -nostdlib
 ifneq (,$(LINKER_SCRIPT))
 LDFLAGS += -L $(CPUS)/$(CPU) -T $(LINKER_SCRIPT)
 endif

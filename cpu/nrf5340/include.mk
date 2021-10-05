@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 DFLAGS += -mcpu=cortex-m33 -mthumb 
+LDFLAGS += -mcpu=cortex-m33 -mthumb
 
 CPU_LIST = application network
 LINKER_SCRIPT_common = $(CPUS)/nrf5340/linker.ld

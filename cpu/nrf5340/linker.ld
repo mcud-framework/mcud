@@ -10,9 +10,9 @@ SECTIONS
 {
     .text :
     {
-        PROVIDE(_text = .);
+        PROVIDE(__start_text = .);
         LONG(_stackStart);
-        *(.data._irqs)
+        *(.irq*)
         *(.text)
         *(.text*)
         
@@ -20,20 +20,26 @@ SECTIONS
 
         *(.rodata)
         *(.rodata*)
-        PROVIDE(_etext = .);
+        PROVIDE(__stop_text = .);
     } > FLASH
 
     .data : AT(ADDR(.text) + SIZEOF(.text))
     {
-        PROVIDE(_data = .);
+        PROVIDE(__start_data = .);
         *(.data*)
-        PROVIDE(_edata = .);
+        PROVIDE(__stop_data = .);
     } > RAM
 
     .bss : AT(ADDR(.data) + SIZEOF(.data))
     {
-        _bss = .;
+        PROVIDE(__start_bss = .);
         *(.bss*)
-        _ebss = .;
+        PROVIDE(__stop_bss = .);
     } > RAM
+
+    .exclude :
+    {
+        *(.init*)
+        *(.fini*)
+    }
 }

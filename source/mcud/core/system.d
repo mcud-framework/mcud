@@ -4,6 +4,8 @@
 
 module mcud.core.system;
 
+import core.stdc.string;
+import gcc.attributes;
 import mcud.core.task;
 import std.traits;
 
@@ -13,10 +15,22 @@ else
 	import app;
 	import board;
 
-	private extern(C) __gshared
+	private extern extern(C) __gshared
 	{
-		ubyte _bss;
-		ubyte _ebss;
+		@attribute("section", ".bss")
+		ubyte __start_bss;
+		@attribute("section", ".bss")
+		ubyte __stop_bss;
+
+		@attribute("section", ".data")
+		ubyte __start_data;
+		@attribute("section", ".data")
+		ubyte __stop_data;
+
+		@attribute("section", ".text")
+		ubyte __start_text;
+		@attribute("section", ".text")
+		ubyte __stop_text;
 	}
 
 	private template System()
@@ -40,13 +54,11 @@ else
 	*/
 	void start()
 	{
-		for (ubyte* bss = &_bss; bss < &_ebss; bss++)
-			*bss = 0;
+		memset(&__start_bss, 0, &__stop_bss - &__start_bss);
+		memcpy(&__start_data, &__stop_text, &__stop_data - &__start_data);
 
 		static if (is(typeof(system.board.init)))
 			system.board.init();
-		static if (is(typeof(system.app.start)))
-			system.app.start();
 		static foreach (setup; allSetup!system)
 			setup.func();
 		for (;;)

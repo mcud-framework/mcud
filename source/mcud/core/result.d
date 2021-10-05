@@ -112,7 +112,6 @@ if (is(T == void))
 
 	@disable this();
 
-	@forceinline
 	package this(Err code)
 	{
 		m_code = code;
@@ -123,7 +122,6 @@ if (is(T == void))
 		return m_code;
 	}
 
-	@forceinline
 	Result!T on(void function() callback)() const
 	{
 		if (isSuccess)
@@ -139,7 +137,6 @@ if (is(T == void))
 			return this;
 	}
 
-	@forceinline
 	Result!T flatMap(Result!T function() mapper)()
 	{
 		if (isSuccess)
@@ -148,7 +145,6 @@ if (is(T == void))
 			return this;
 	}
 
-	@forceinline
 	bool isSuccess() const
 	{
 		return m_code == Err.ok;

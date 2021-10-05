@@ -8,6 +8,7 @@ This module auto-generates the interrupt vector table.
 module irq;
 
 import cpu.irq;
+import gcc.attributes;
 import mcud.core.attributes;
 import mcud.core.system;
 import mcud.meta;
@@ -52,4 +53,5 @@ private ISR[] isrHandlers()
 }
 
 private enum handlers = isrHandlers();
+@attribute("section", ".irq")
 private extern(C) immutable ISR[handlers.length] _irqs = handlers;
