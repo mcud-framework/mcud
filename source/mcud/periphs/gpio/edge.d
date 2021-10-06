@@ -6,8 +6,9 @@ import mcud.core.event;
 /**
 Configures an edge detector.
 */
-struct EdgeDetectorConfigT(RiseEvent, FallEvent)
+struct EdgeDetectorConfigT(RiseEvent, FallEvent, GPIO)
 {
+	alias _pin = GPIO;
 	alias Rise = RiseEvent;
 	alias Fall = FallEvent;
 	/// Whether or not to detects rising edges.
@@ -18,9 +19,9 @@ struct EdgeDetectorConfigT(RiseEvent, FallEvent)
 	/**
 	Lets the edge detector detect rising edges.
 	*/
-	EdgeDetectorConfigT!(Event, FallEvent) detectRising(Event)(Event event)
+	EdgeDetectorConfigT!(Event, FallEvent, GPIO) detectRising(Event)(Event event)
 	{
-		EdgeDetectorConfigT!(Event, FallEvent) config;
+		EdgeDetectorConfigT!(Event, FallEvent, GPIO) config;
 		config._riseEvent = event;
 		config._fallEvent = _fallEvent;
 		return config;
@@ -29,9 +30,9 @@ struct EdgeDetectorConfigT(RiseEvent, FallEvent)
 	/**
 	Lets the edge detector detect falling edges.
 	*/
-	EdgeDetectorConfigT!(RiseEvent, Event) detectFalling(Event)(Event event)
+	EdgeDetectorConfigT!(RiseEvent, Event, GPIO) detectFalling(Event)(Event event)
 	{
-		EdgeDetectorConfigT!(RiseEvent, Event) config;
+		EdgeDetectorConfigT!(RiseEvent, Event, GPIO) config;
 		config._riseEvent = _riseEvent;
 		config._fallEvent = event;
 		return config;
@@ -40,25 +41,22 @@ struct EdgeDetectorConfigT(RiseEvent, FallEvent)
 	/**
 	Sets the pin to detect.
 	*/
-	/*
-	EdgeDetectorConfigT!Pin pin(Pin)(Pin pin)
+	EdgeDetectorConfigT!(RiseEvent, FallEvent, Pin) pin(Pin)(Pin pin)
 	{
-		EdgeDetectorConfigT!Pin config;
-		config._onDetect = _onDetect;
-		config._detectRising = _detectRising;
-		config._detectFalling = _detectFalling;
+		EdgeDetectorConfigT!(RiseEvent, FallEvent, Pin) config;
+		config._riseEvent = _riseEvent;
+		config._fallEvent = _fallEvent;
 		return config;
 	}
-	*/
 }
-alias EdgeDetectorConfig = EdgeDetectorConfigT!(void[], void[]);
+alias EdgeDetectorConfig = EdgeDetectorConfigT!(void[], void[], void[]);
 
 /**
 Detects edges.
 */
-template EdgeDetector(alias pin, alias config)
+template EdgeDetector(alias config)
 {
-	//static assert(!is(config._pin == void), "No pin configured to detect");
+	static assert(!is(config._pin == void[]), "No pin configured to detect");
 	//static assert(config._detectFalling || config._detectRising, "No flank selected to detect");
 	//static assert(config._onDetect !is null, "No function set to execute on detection");
 
@@ -68,7 +66,7 @@ static:
 	@task
 	void detect()
 	{
-		const newState = pin.isOn();
+		const newState = config._pin.isOn();
 		scope(exit) state = newState;
 		static if (!is(config._detectRising == void[]))
 		{
