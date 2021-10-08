@@ -1,82 +1,108 @@
 module mcud.periphs.gpio.edge;
 
-import mcud.core.attributes;
-import mcud.core.event;
+import mcud.core;
+import mcud.meta.device;
 
 /**
 Configures an edge detector.
 */
-struct EdgeDetectorConfigT(RiseEvent, FallEvent, GPIO)
+struct EdgeDetectorConfig
 {
-	alias _pin = GPIO;
-	alias Rise = RiseEvent;
-	alias Fall = FallEvent;
-	/// Whether or not to detects rising edges.
-	RiseEvent _riseEvent;
-	/// Whether or not to detect falling edges.
-	FallEvent _fallEvent;
+	bool _detectRising = false;
+	bool _detectFalling = false;
+	Device _pin = Device.empty;
 
 	/**
 	Lets the edge detector detect rising edges.
 	*/
-	EdgeDetectorConfigT!(Event, FallEvent, GPIO) detectRising(Event)(Event event)
+	EdgeDetectorConfig detectRising()
 	{
-		EdgeDetectorConfigT!(Event, FallEvent, GPIO) config;
-		config._riseEvent = event;
-		config._fallEvent = _fallEvent;
-		return config;
+		_detectRising = true;
+		return this;
 	}
 
 	/**
 	Lets the edge detector detect falling edges.
 	*/
-	EdgeDetectorConfigT!(RiseEvent, Event, GPIO) detectFalling(Event)(Event event)
+	EdgeDetectorConfig detectFalling()
 	{
-		EdgeDetectorConfigT!(RiseEvent, Event, GPIO) config;
-		config._riseEvent = _riseEvent;
-		config._fallEvent = event;
-		return config;
+		_detectFalling = true;
+		return this;
 	}
 
 	/**
 	Sets the pin to detect.
 	*/
-	EdgeDetectorConfigT!(RiseEvent, FallEvent, Pin) pin(Pin)(Pin pin)
+	EdgeDetectorConfig pin(Pin)(Pin pin)
 	{
-		EdgeDetectorConfigT!(RiseEvent, FallEvent, Pin) config;
-		config._riseEvent = _riseEvent;
-		config._fallEvent = _fallEvent;
-		return config;
+		_pin = Device.of!Pin;
+		return this;
 	}
 }
-alias EdgeDetectorConfig = EdgeDetectorConfigT!(void[], void[], void[]);
+
 
 /**
 Detects edges.
 */
-template EdgeDetector(alias config)
+struct EdgeDetector(EdgeDetectorConfig config)
 {
-	static assert(!is(config._pin == void[]), "No pin configured to detect");
-	//static assert(config._detectFalling || config._detectRising, "No flank selected to detect");
-	//static assert(config._onDetect !is null, "No function set to execute on detection");
+	static assert(config._detectFalling || config._detectRising, "No flank selected to detect");
+	static assert(config._pin != Device.empty, "No device selected");
 
 static:
 	private shared bool state = false;
+	private alias _pin = getDevice!(Device(config._pin));
+
+	/**
+	Fired if a falling edge is detected.
+	*/
+	struct Falling {}
+
+	/**
+	Fired if a rising edge is detected.
+	*/
+	struct Rising {}
 
 	@task
 	void detect()
 	{
-		const newState = config._pin.isOn();
-		scope(exit) state = newState;
+		stopTask!detect();
+		_pin.isOn();
+	}
+
+	void start()
+	{
+		_pin.start();
+		startTask!detect();
+	}
+
+	void stop()
+	{
+		_pin.stop();
+		stopTask!detect();
+	}
+
+	@event!(_pin.InputHigh)
+	void ifHigh()
+	{
+		startTask!detect();
 		static if (!is(config._detectRising == void[]))
 		{
-			if (state == false && newState == true)
-				fire!(config.Rise)(config._riseEvent);
+			if (state == false)
+				fire!Rising;
 		}
+		state = true;
+	}
+
+	@event!(_pin.InputLow)
+	void ifLow()
+	{
+		startTask!detect();
 		static if (!is(config._detectFalling == void[]))
 		{
-			if (state == true && newState == false)
-				fire!(config.Fall)(config._fallEvent);
+			if (state == true)
+				fire!Falling;
 		}
+		state = false;
 	}
 }

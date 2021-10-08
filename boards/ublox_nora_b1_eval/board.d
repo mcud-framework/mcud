@@ -5,6 +5,7 @@
 module board;
 
 import cpu.nrf5340;
+import mcud.periphs.gpio.inverse;
 import mcud.periphs.gpio.noop;
 
 /**
@@ -48,7 +49,9 @@ template Board()
 		.pin(23)
 		.asInput()
 		.withPullUp()
-	) button1;
+	) button1_raw;
+
+	static Inverse!button1_raw button1;
 
 	static Pin!(
 		PinConfig()
@@ -56,7 +59,9 @@ template Board()
 		.pin(24)
 		.asInput()
 		.withPullUp()
-	) button2;
+	) button2_raw;
+
+	static Inverse!button2_raw button2;
 
 	static Pin!(
 		PinConfig()
@@ -64,7 +69,9 @@ template Board()
 		.pin(8)
 		.asInput()
 		.withPullUp()
-	) button3;
+	) button3_raw;
+
+	static Inverse!button3_raw button3;
 
 	static Pin!(
 		PinConfig()
@@ -72,7 +79,9 @@ template Board()
 		.pin(9)
 		.asInput()
 		.withPullUp()
-	) button4;
+	) button4_raw;
+
+	static Inverse!button4_raw button4;
 
 	version(CORE_application) void init()
 	{

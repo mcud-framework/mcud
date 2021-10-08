@@ -50,21 +50,24 @@ Returns:
 */
 Function!(attribute, Arg)[] allFunctions(alias attribute, alias T = system, Arg = void)()
 {
-	Function!(attribute, Arg)[] filters = [];
-	allFunctionsFiltered!(attribute, T, Arg)(filters);
-	return filters;
+	Function!(attribute, Arg)[] found = [];
+	allFunctionsFiltered!(attribute, T, Arg)(found);
+	return found;
 }
 
 private void allFunctionsFiltered(alias attribute, alias T, Arg)(ref Function!(attribute, Arg)[] found)
 {
-	static if (hasUDA!(T, attribute))
+	enum isPublic = __traits(getVisibility, T) == "public";
+	static if (isPublic && hasUDA!(T, attribute))
 	{
 		alias udas = getUDAs!(T, attribute);
 		assert(udas.length == 1, "A function should not have duplicate annotations");
 		attribute uda;
 		static if (!isType!(udas[0]))
 			uda = udas[0];
-		static if (is(typeof(&T) == typeof(found[0].func)))
+
+		alias expectedParams = Parameters!(Function!(attribute, Arg).func);
+		static if (is(Parameters!T == expectedParams))
 		{
 			foreach (filter; found)
 			{
@@ -74,7 +77,7 @@ private void allFunctionsFiltered(alias attribute, alias T, Arg)(ref Function!(a
 			found ~= [Function!(attribute, Arg)(uda, &T, T.mangleof)];
 		}
 	}
-	else static if (canContainFunctions!T)
+	else static if (isPublic && canContainFunctions!T)
 	{
 		static foreach (child; __traits(allMembers, T))
 		{

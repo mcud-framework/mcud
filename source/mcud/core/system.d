@@ -79,10 +79,6 @@ else
 	private enum unstoppableTasks = tasks
 		.filter!(task => task.attribute.state == TaskState.unstoppable);
 
-	private enum initialTaskStates = getInitialTaskStates(stoppableTasks);
-
-	private shared bool[] runningTasks = initialTaskStates;
-
 	/**
 	Performs common MCUd initialisation functions and then enters the scheduler.
 	This function should only ever be called by the reset handler.
@@ -102,11 +98,12 @@ else
 			{
 				task.func();
 			}
-			static foreach (i, task; stoppableTasks)
-			{
-				if (runningTasks[i])
+			static foreach (task; stoppableTasks)
+			{{
+				enum mangled = task.mangled;
+				if (TaskRuntime!(mangled).running == true)
 					task.func();
-			}
+			}}
 		}
 	}
 
@@ -131,10 +128,9 @@ else
 	Params:
 		task = The task to start.
 	*/
-	void start(alias task)()
+	void startTask(alias task)()
 	{
-		enum index = findStoppableTask!task;
-		runningTasks[index] = true;
+		TaskRuntime!(task.mangleof).running = true;
 	}
 
 	/**
@@ -142,9 +138,8 @@ else
 	Params:
 		task = The task to stop.
 	*/
-	void stop(alias task)()
+	void stopTask(alias task)()
 	{
-		enum index = findStoppableTask!task;
-		runningTasks[index] = false;
+		TaskRuntime!(task.mangleof).running = false;
 	}
 }

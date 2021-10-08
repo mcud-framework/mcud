@@ -47,7 +47,10 @@ template fire(T, alias target = system)
 
 	static if (argHandlers.length == 1 && voidHandlers.length == 0)
 	{
-		enum fire = argHandlers[0].func;
+		void fire(T t)
+		{
+			argHandlers[0].func(t);
+		}
 	}
 	else static if (argHandlers.length == 0 && voidHandlers.length == 1)
 	{
