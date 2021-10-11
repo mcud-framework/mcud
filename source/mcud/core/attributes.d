@@ -12,6 +12,11 @@ Forces a specific function to be inlined.
 enum forceinline = attribute("always_inline");
 
 /**
+Forces the function to be compiled in.
+*/
+enum used = attribute("used");
+
+/**
 Describes the states of a task.
 */
 enum TaskState

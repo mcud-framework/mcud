@@ -14,10 +14,11 @@ An interface to the Atmega328P.
 */
 template Atmega328P()
 {
+	@used
 	@interrupt(IRQ.RESET)
 	void reset()
 	{
-		start();
+		startMCUd();
 	}
 
 	alias gpioB = GPIOPeriph!0x03;

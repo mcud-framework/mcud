@@ -21,6 +21,7 @@ template Board()
 		.pin(28)
 		.asOutput()
 	) led1;
+	alias led = led1;
 
 	static Pin!(
 		PinConfig()

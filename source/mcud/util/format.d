@@ -15,7 +15,7 @@ private enum FormatType
 private struct FormatSpec
 {
 	FormatType type;
-	size_t index;
+	uint index;
 }
 
 private FormatSpec[] parseFormatString(string fmt)
@@ -59,7 +59,7 @@ private FormatSpec[] parseFormatString(string fmt)
 				escape = false;
 			}
 			else
-				assert(0, "Invalid format specifier '" ~ fmt[escapeStart .. i + 1] ~ "'");
+				assert(0, "Invalid format specifier '" ~ fmt[escapeStart .. cast(size_t)(i + 1)] ~ "'");
 		}
 		else if (chr == '%')
 		{
