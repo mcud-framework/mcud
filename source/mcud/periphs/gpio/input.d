@@ -2,25 +2,25 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-module mcud.periphs.output;
+module mcud.periphs.gpio.input;
 
 import mcud.core.result;
 import mcud.meta.like;
 
 /**
-Describes a general purpose output.
+A general purpose input.
 */
-interface GPO
+interface GPI
 {
 	/**
-	Turns the GPO on.
+	Tests if the GPI is currently on.
 	*/
-	Result!void on() nothrow;
+	bool isOnSync();
 
 	/**
-	Turns the GPO off.
+	Tests if the GPI is currently on.
 	*/
-	Result!void off() nothrow;
+	void isOn();
 }
 
-alias isGPO = isLike!GPO;
+alias isGPI = isLike!GPI;

@@ -2,10 +2,5 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-SUPPORTED_BOARDS = \
-	rgbduino \
-	nucleo_wb55_dongle \
-	ublox_nora_b1_eval
-BOARD ?= ublox_nora_b1_eval
-
-include ../../mcud.mk
+$(ELF_APP_application): $(LINKER_SCRIPT_application) $(LINKER_SCRIPT_common)
+$(ELF_APP_network): $(LINKER_SCRIPT_network) $(LINKER_SCRIPT_common)

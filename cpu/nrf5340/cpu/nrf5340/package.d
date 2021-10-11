@@ -2,10 +2,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-module mcud.meta;
+module cpu.nrf5340;
 
 public:
-import mcud.meta.device;
-import mcud.meta.functions;
-import mcud.meta.like;
-import mcud.meta.startable;
+import cpu.nrf5340.cpu;
+import cpu.nrf5340.periphs;

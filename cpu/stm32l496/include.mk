@@ -2,8 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-include $(CPUS)/avr/Makefile.include
+DIRS += $(CPUS)/stm32l496
+LINKER_SCRIPT = $(CPUS)/stm32l496/linker_$(LINKER_VARIANT).ld
 
-DFLAGS += -mmcu=atmega328p
-
-LINKER_SCRIPT =
+include $(CPUS)/stm32/include.mk

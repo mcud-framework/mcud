@@ -15,5 +15,5 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build examples
-        run: make -f Makefile.ci
+        run: make -f ci.mk
 

@@ -2,11 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-TARGET = arm-none-eabi-
-DFLAGS += -mcpu=cortex-m4 -mthumb 
-DOCKER = seeseemelk/mcud:arm-none-eabi-2021-07-31
-DIRS += $(CPUS)/stm32
+TARGET = avr-
+DFLAGS +=  -B /usr/lib/gcc/avr/11.2.0/
+DOCKER ?= seeseemelk/mcud:avr-2021-07-30
+DIRS += $(CPUS)/avr
+ARCHETYPE = single-core
 
 .PHONY: flash
 flash: $(BIN_APP)
-	st-flash write $< 0x08000000

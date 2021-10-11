@@ -10,14 +10,29 @@ import mcud.meta;
 alias Task = Function!task;
 alias Setup = Function!setup;
 
+/**
+Gets all tasks.
+*/
 Task[] allTasks(alias T)()
 {
 	return allFunctions!(task, T);
 }
 
+/**
+Gets all setups.
+*/
 Setup[] allSetup(alias T)()
 {
 	return allFunctions!(setup, T);
+}
+
+/**
+Keeps track of some runtime information of a task.
+*/
+template TaskRuntime(string mangledName)
+{
+	/// Whether or not the task is running.
+	static shared bool running = true;
 }
 
 unittest
@@ -29,8 +44,10 @@ unittest
 	}
 
 	alias a = A!();
-	const taskA = Task(task(), &a.loop);
-	assert(allTasks!a == [taskA]);
+	const tasks = allTasks!a;
+	assert(tasks.length > 0);
+	assert(tasks[0].attribute == task());
+	assert(tasks[0].func == &a.loop);
 
 	template B()
 	{
@@ -43,6 +60,9 @@ unittest
 	const taskA2 = Task(task(), &b.a.loop);
 	const taskB = Task(task(), &b.loop);
 
-	const tasks = allTasks!b;
-	assert(tasks == [taskA2, taskB] || tasks == [taskB, taskA2]);
+	const tasks2 = allTasks!b;
+	assert(tasks2[0].attribute == task());
+	assert(tasks2[1].attribute == task());
+	assert(tasks2[0].func == &b.a.loop);
+	assert(tasks2[1].func == &b.loop);
 }

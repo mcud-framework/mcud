@@ -12,15 +12,11 @@ $(info Images: $(IMAGES))
 
 all: $(addsuffix /built,$(IMAGES))
 
-base/built: base/Dockerfile
-	docker build base -t seeseemelk/mcud:base-$(DATE) --network=host
-	touch base/built
-
 define build_image =
 .PHONY: build_$1
 build_$1: $1/built
 
-$1/built: $1/Dockerfile base/built
+$1/built: $1/Dockerfile
 	docker build $1 -t seeseemelk/mcud:$1-$(DATE)
 	touch $1/built
 endef

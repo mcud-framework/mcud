@@ -97,9 +97,16 @@ else
 	private:
 	alias irq_handler = void function();
 
+	@attribute("used")
 	void dummyHandler() {}
 
-	string isr_handler(IRQ irq)()
+	struct ISRHandler
+	{
+		void function() func;
+		string mangled;
+	}
+
+	ISRHandler isr_handler(IRQ irq)()
 	{
 		Function!interrupt[] isrs;
 		foreach (Function!interrupt isr; allFunctions!(interrupt, system))
@@ -109,22 +116,23 @@ else
 		}
 
 		if (isrs.length == 1)
-			return isrs[0].mangled;
+			return ISRHandler(isrs[0].func, isrs[0].mangled);
 		else if (isrs.length == 0)
-			return dummyHandler.mangleof;
+			return ISRHandler(&dummyHandler, dummyHandler.mangleof);
 		else
 			assert(0, "Found more than one IRQ handler for " ~ irq);
 	}
 
 	@attribute("section", ".vectors")
 	@attribute("naked")
+	@attribute("used")
 	extern(C) void isr_vectors()
 	{
 		static foreach (irq; EnumMembers!IRQ)
 		{
 			asm
 			{
-				"jmp " ~ isr_handler!irq;
+				"jmp " ~ isr_handler!irq.mangled;
 			}
 		}
 	}

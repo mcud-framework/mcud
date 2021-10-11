@@ -16,7 +16,7 @@ BIN_DIR ?= bin/$(BOARD)
 DIST ?= $(MCUD)/dist
 
 # The source directory of MCUd.
-MCUD_SRC = $(MCUD)/source/mcud
+MCUD_SRC = $(MCUD)/source
 
 # The directory containing the default boards
 BOARDS = $(MCUD)/boards
@@ -54,6 +54,9 @@ LINKER_SCRIPT = $(CPUS)/$(CPU)/linker.ld
 # Use docker if docker hasn't been explicitly disabled
 USE_DOCKER ?= yes
 
+# Set of variants, used by the dub generator to generate configurations.
+VARIANTS :=
+
 ifeq (,$(BOARD))
 $(error No board was set)
 endif
@@ -63,19 +66,16 @@ BOARD_DIR = $(BOARD)
 else
 BOARD_DIR = $(wildcard $(BOARDS)/$(BOARD))
 endif
-include $(BOARD_DIR)/Makefile.include
+include $(BOARD_DIR)/include.mk
 
 ifeq (,$(CPU))
 $(error No CPU was set. Make sure your board definition sets CPU)
 endif
 
-# Include the all target first.
-.PHONY: all
-all: $(ELF_APP)
-	$(RUN) $(TARGET)size $(ELF_APP)
+.DEFAULT_GOAL := all
 
 # Include CPU targets
-include $(CPUS)/$(CPU)/Makefile.include
+include $(CPUS)/$(CPU)/include.mk
 
 $(info Docker: $(DOCKER))
 ifeq (yes,$(USE_DOCKER))
@@ -116,11 +116,11 @@ OBJECTS_LIBPHOBOS = $(SOURCES_LIBPHOBOS:%.d=$(BIN_DIR)/%.d.o)
 # The host D compiler to use.
 HOSTDC = gdc
 # The D compiler to use.
-DC = $(TARGET)gdc
+DC := $(TARGET)gdc
 # The linker to use.
-LD = $(TARGET)ld
+LD := $(TARGET)gcc
 # Flags to pass to the D compiler.
-DFLAGS += -nostdlib -Os -ggdb \
+DFLAGS += -nostdlib -Os -ggdb -flto \
 	-ffunction-sections \
 	-fdata-sections \
 	-fno-moduleinfo \
@@ -128,14 +128,14 @@ DFLAGS += -nostdlib -Os -ggdb \
 	-fno-switch-errors \
 	-I$(DIR_DRUNTIME) \
 	-I$(DIR_LIBPHOBOS) \
-	-I$(MCUD)
+	-I$(MCUD_SRC)
 DFLAGS += $(VERSIONS:%=-fversion=%)
 DFLAGS := $(call convert_path,$(DFLAGS))
 # Flags to pass to the compiler when building tests.
 HOSTDFLAGS = -funittest -fmain -ggdb
-LDFLAGS = -gc-sections -Os
+LDFLAGS += -Wl,-gc-sections -Os -flto -nostdlib
 ifneq (,$(LINKER_SCRIPT))
-LDFLAGS += -T $(LINKER_SCRIPT)
+LDFLAGS += -L $(CPUS)/$(CPU) -T $(LINKER_SCRIPT)
 endif
 # The tool to strip binaries with.
 STRIP = $(TARGET)strip
@@ -164,26 +164,7 @@ clean:
 distclean: clean
 	rm -rf $(DIST)
 
-$(BIN_APP): $(ELF_APP)
-	$(RUN) $(OBJCOPY) -O binary $< $@
-
-$(ELF_APP):  $(OBJ_APP) $(OBJ_PHOBOS) $(OBJ_DRUNTIME) $(LINKER_SCRIPT)
-	@mkdir -p $(dir $@)
-	$(RUN) $(LD) $(LDFLAGS) -o $@ $(call convert_path,$(OBJ_APP) $(OBJ_PHOBOS) $(OBJ_DRUNTIME))
-
-$(OBJ_APP): $(SOURCES_APP)
-	@mkdir -p $(dir $@)
-	$(RUN) $(DC) $(DFLAGS) -c -o $@ $(call convert_path,$^)
-
-$(OBJ_PHOBOS): $(SOURCES_LIBPHOBOS)
-	@mkdir -p $(dir $@)
-	$(RUN) $(DC) $(DFLAGS) -c -o $@ $(call convert_path,$^)
-
-$(OBJ_DRUNTIME): $(SOURCES_DRUNTIME)
-	@mkdir -p $(dir $@)
-	$(RUN) $(DC) $(DFLAGS) -c -o $@ $(call convert_path,$^)
-
-$(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/Makefile.include
+$(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/mcud.mk
 	mkdir -p $(dir $@)
 	$(RUN) $(HOSTDC) $(HOSTDFLAGS) -o $@ $(TESTSOURCES)
 
@@ -191,10 +172,27 @@ $(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/Makefile.include
 dub:
 	$(MCUD)/tools/generate_dub.d "$(MCUD)" $(SUPPORTED_BOARDS) > dub.sdl
 
+define VARIANT_INFO
+	@echo "VERSION_$V=$(VERSIONS_$V)"
+	
+endef
+
 .PHONY: describe
 describe:
 	@echo "MCUD=$(MCUD)"
 	@echo "BOARD=$(BOARD)"
 	@echo "BOARD_DIR=$(BOARD_DIR)"
+	@echo "VARIANTS=$(VARIANTS)"
 	@echo "CPU=$(CPU)"
 	@echo "DIRS=$(DIRS)"
+	$(foreach V,$(VARIANTS),$(call VARIANT_INFO,$V))
+
+ifeq (,$(ARCHETYPE))
+$(error CPU did not set an archetype)
+else
+include $(MCUD)/archetypes/$(ARCHETYPE).mk
+endif
+
+ifneq (,$(wildcard $(CPUS)/$(CPU)/postlude.mk))
+include $(CPUS)/$(CPU)/postlude.mk
+endif

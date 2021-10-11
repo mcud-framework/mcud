@@ -12,6 +12,17 @@ import std.stdio;
 import std.string;
 
 /**
+Describes a board variant.
+*/
+struct Variant
+{
+	/// The name of the variant.
+	string name;
+	/// The version of the variant.
+	string[] versions;
+}
+
+/**
 Describes a board configuration.
 */
 struct Description
@@ -22,6 +33,52 @@ struct Description
 	string boardPath;
 	/// A set of directories to build.
 	string[] dirs;
+	/// A set of version specifiers.
+	Variant[] variants;
+}
+
+Description parseDescribe(string output)
+{
+	Description description;
+	foreach (line; splitLines(output))
+	{
+		if (line.indexOf('=') != -1)
+		{
+			const parts = line.split('=');
+			const key = parts[0];
+			string[] values = parts[1].split(' ');
+			if (key == "BOARD")
+			{
+				description.board = values[0];
+			}
+			else if (key == "DIRS")
+			{
+				description.dirs = values;
+			}
+			else if (key == "VARIANTS")
+			{
+				foreach (name; values)
+				{
+					Variant variant;
+					variant.name = name;
+					description.variants ~= variant;
+				}
+			}
+			else if (key.startsWith("VERSION_"))
+			{
+				const name = key.split("_")[1];
+				foreach (ref variant; description.variants)
+				{
+					if (variant.name == name)
+					{
+						variant.versions ~= values;
+						break;
+					}
+				}
+			}
+		}
+	}
+	return description;
 }
 
 void main(string[] args)
@@ -40,25 +97,28 @@ void main(string[] args)
 		description.board = board;
 		const process = execute(["make", "describe", "BOARD=" ~ board]);
 		string output = process.output;
-		foreach (line; splitLines(output))
-		{
-			if (line.indexOf('=') != -1)
-			{
-				const parts = line.split('=');
-				const key = parts[0];
-				string[] values = parts[1].split(' ');
-				if (key == "DIRS")
-					description.dirs = values;
-			}
-		}
-		descriptions ~= description;
+		descriptions ~= parseDescribe(output);
 	}
 
 	foreach (const description; descriptions)
 	{
-		writefln!(`configuration "%s" {`)(description.board);
-		writefln!(`    sourcePaths "%s"`)(description.dirs.join(`" "`));
-		writefln!(`    importPaths "%s"`)(description.dirs.join(`" "`));
-		writefln!(`}`);
+		if (description.variants.empty)
+		{
+			writefln!(`configuration "%s" {`)(description.board);
+			writefln!(`    sourcePaths "%s"`)(description.dirs.join(`" "`));
+			writefln!(`    importPaths "%s"`)(description.dirs.join(`" "`));
+			writefln!(`}`);
+		}
+		else
+		{
+			foreach (variant; description.variants)
+			{
+				writefln!(`configuration "%s-%s" {`)(description.board, variant.name);
+				writefln!(`    sourcePaths "%s"`)(description.dirs.join(`" "`));
+				writefln!(`    importPaths "%s"`)(description.dirs.join(`" "`));
+				writefln!(`    versions "%s"`)(variant.versions.join(`" "`));
+				writefln!(`}`);
+			}
+		}
 	}
 }

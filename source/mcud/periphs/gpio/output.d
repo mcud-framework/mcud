@@ -2,13 +2,25 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-module mcud.core;
+module mcud.periphs.gpio.output;
 
-public:
-import mcud.core.attributes;
-import mcud.core.errors;
-import mcud.core.event;
-import mcud.core.interrupts;
 import mcud.core.result;
-import mcud.core.system;
-import mcud.core.task;
+import mcud.meta.like;
+
+/**
+Describes a general purpose output.
+*/
+interface GPO
+{
+	/**
+	Turns the GPO on.
+	*/
+	void on();
+
+	/**
+	Turns the GPO off.
+	*/
+	void off();
+}
+
+alias isGPO = isLike!GPO;

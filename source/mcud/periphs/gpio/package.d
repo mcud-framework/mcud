@@ -2,10 +2,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-module mcud.meta;
+module mcud.periphs.gpio;
 
 public:
-import mcud.meta.device;
-import mcud.meta.functions;
-import mcud.meta.like;
-import mcud.meta.startable;
+import mcud.periphs.gpio.edge;
+import mcud.periphs.gpio.input;
+import mcud.periphs.gpio.noop;
+import mcud.periphs.gpio.output;

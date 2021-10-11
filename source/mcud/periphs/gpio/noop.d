@@ -2,20 +2,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-module mcud.core.interrupts;
+/// Contains a mock GPIO.
+module mcud.periphs.gpio.noop;
 
-import mcud.core.system;
-
-public import mcud.core.attributes : interrupt;
-
-version (unittest)
+/**
+A GPIO which does nothing.
+*/
+struct NoOpGPIO
 {
-	enum IRQ
-	{
-		irq1, irq2, irq3
-	}
-}
-else
-{
-	public import cpu.irq : IRQ;
+	static void doNothing() {}
+
+	alias on = doNothing;
+	alias off = doNothing;
+	enum isOn = false;
 }
