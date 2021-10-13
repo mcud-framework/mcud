@@ -15,7 +15,7 @@ private enum FormatType
 private struct FormatSpec
 {
 	FormatType type;
-	uint index;
+	size_t index;
 }
 
 private FormatSpec[] parseFormatString(string fmt)
