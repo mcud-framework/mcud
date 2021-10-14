@@ -51,11 +51,21 @@ Returns:
 Function!(attribute, Arg)[] allFunctions(alias attribute, alias T = system, Arg = void)()
 {
 	Function!(attribute, Arg)[] found = [];
-	allFunctionsFiltered!(attribute, T, Arg)(found);
+	allFunctionsFiltered!(attribute, Arg, T)(found);
 	return found;
 }
 
-private void allFunctionsFiltered(alias attribute, alias T, Arg)(ref Function!(attribute, Arg)[] found)
+/**
+Finds all attributed functions in a 'thing'. The 'thing' will be searched
+recursively.
+Params:
+	attribute = The attribute a function has to be annoted with.
+	Arg = The type of parameter any found function should be able to accept.
+	T = The symbol to search for.
+	found = An array which functions will be appeneded to if they have the
+	attribute.
+*/
+private void allFunctionsFiltered(alias attribute, Arg, alias T)(ref Function!(attribute, Arg)[] found)
 {
 	enum isPublic = __traits(getVisibility, T) == "public";
 	static if (isPublic && hasUDA!(T, attribute))
@@ -81,7 +91,19 @@ private void allFunctionsFiltered(alias attribute, alias T, Arg)(ref Function!(a
 	{
 		static foreach (child; __traits(allMembers, T))
 		{
-			allFunctionsFiltered!(attribute, __traits(getMember, T, child), Arg)(found);
+			allFunctionsFiltered!(attribute, Arg, __traits(getMember, T, child))(found);
 		}
+	}
+}
+
+/**
+Executes `allFunctionsFiltered` for all members of `T`. This allows searching
+through tuples.
+*/
+private void allFunctionsFiltered(alias attribute, Arg, T...)(ref Function!(attribute, Arg)[] found)
+{
+	static foreach (value; T)
+	{
+		allFunctionsFiltered!(attribute, Arg, value)(found);
 	}
 }
