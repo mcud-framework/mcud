@@ -166,7 +166,7 @@ distclean: clean
 
 $(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/mcud.mk
 	mkdir -p $(dir $@)
-	$(RUN) $(HOSTDC) $(HOSTDFLAGS) -o $@ $(TESTSOURCES)
+	$(HOSTDC) $(HOSTDFLAGS) -o $@ $(TESTSOURCES)
 
 .PHONY: dub
 dub:
