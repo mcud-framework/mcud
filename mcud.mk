@@ -97,6 +97,8 @@ COMMONSOURCES += $(shell find $(APP_SRC) -type f -iname "*.d")
 
 # Test-only sources
 TESTSOURCES += $(shell find $(MCUD_SRC) -type f -iname "*.d")
+TESTSOURCES += $(MCUD)/dist/test.d
+TESTSOURCES += $(BIN_DIR)/test_modules.d
 TESTSOURCES := $(COMMONSOURCES) $(TESTSOURCES)
 
 # Build-only sources
@@ -167,6 +169,16 @@ distclean: clean
 $(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/mcud.mk
 	mkdir -p $(dir $@)
 	$(HOSTDC) $(HOSTDFLAGS) -o $@ $(TESTSOURCES)
+
+$(BIN_DIR)/test_modules.d: $(filter-out $(BIN_DIR)/test_modules.d,$(TESTSOURCES))
+	mkdir -p $(dir $@)
+	echo 'module test_modules;' > $@
+	echo 'import std.meta;' >> $@
+	echo 'public:' >> $@
+	grep -h ^module $^ | sed -E 's:module ([a-zA-Z0-9._]+);:static import \1;:' >> $@
+	echo 'alias allModules = AliasSeq!(' >> $@
+	grep -h ^module $^ | sed -E 's:module ([a-zA-Z0-9._]+);:    \1,:' >> $@
+	echo ');' >> $@
 
 .PHONY: dub
 dub:
