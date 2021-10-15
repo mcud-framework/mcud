@@ -4,21 +4,15 @@
 
 module app;
 
-version (unittest)
-{
-}
-else
-{
-	import board : board;
-	import mcud.core;
+import board : board;
+import mcud.core;
 
-	template App()
+template App()
+{
+	@task
+	void loop()
 	{
-		@task
-		void loop()
-		{
-			board.led.on();
-			board.led.off();
-		}
+		board.led.on();
+		board.led.off();
 	}
 }

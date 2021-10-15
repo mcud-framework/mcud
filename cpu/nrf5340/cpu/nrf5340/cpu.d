@@ -7,6 +7,11 @@ module cpu.nrf5340.cpu;
 import cpu.nrf5340.periphs;
 import mcud.core.interrupts;
 
+version (unittest)
+{
+	version = CORE_application;
+}
+
 /**
 The NRF5340 CPU.
 */

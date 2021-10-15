@@ -7,15 +7,4 @@ module mcud.core.interrupts;
 import mcud.core.system;
 
 public import mcud.core.attributes : interrupt;
-
-version (unittest)
-{
-	enum IRQ
-	{
-		irq1, irq2, irq3
-	}
-}
-else
-{
-	public import cpu.irq : IRQ;
-}
+public import cpu.irq : IRQ;

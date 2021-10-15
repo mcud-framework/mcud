@@ -95,12 +95,6 @@ endif
 # Common sources
 COMMONSOURCES += $(shell find $(APP_SRC) -type f -iname "*.d")
 
-# Test-only sources
-TESTSOURCES += $(shell find $(MCUD_SRC) -type f -iname "*.d")
-TESTSOURCES += $(MCUD)/dist/test.d
-TESTSOURCES += $(BIN_DIR)/test_modules.d
-TESTSOURCES := $(COMMONSOURCES) $(TESTSOURCES)
-
 # Build-only sources
 DIRS += $(wildcard $(MCUD_SRC))
 DIRS += $(CPUS)/$(CPU)
@@ -110,6 +104,11 @@ SOURCES_APP += $(shell find $(DIRS) -type f -iname "*.d" )
 SOURCES_APP := $(COMMONSOURCES) $(SOURCES_APP)
 SOURCES_DRUNTIME += $(shell find $(DIR_DRUNTIME) -type f -iname "*.d")
 SOURCES_LIBPHOBOS += $(shell find $(DIR_LIBPHOBOS) -type f -iname "*.d")
+
+# Test-only sources
+TESTSOURCES += $(MCUD)/dist/test.d
+TESTSOURCES += $(BIN_DIR)/test_modules.d
+TESTSOURCES := $(SOURCES_APP) $(TESTSOURCES) 
 
 OBJECTS_APP = $(SOURCES:%.d=$(BIN_DIR)/%.d.o)
 OBJECTS_DRUNTIME = $(SOURCES_DRUNTIME:%.d=$(BIN_DIR)/%.d.o)

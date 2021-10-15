@@ -105,3 +105,13 @@ else version (CORE_network)
 		swi3 = 29,
 	}
 }
+else version (unittest)
+{
+	/**
+	Set of IRQs to use during unit tests.
+	*/
+	enum IRQ
+	{
+		reset,
+	}
+}
