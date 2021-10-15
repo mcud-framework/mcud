@@ -130,6 +130,7 @@ private template mapStep(alias step)
 	}
 }
 
+@("Sequence can combine multiple functions and awaits")
 unittest
 {
 	struct SomeEvent {}
@@ -151,7 +152,7 @@ unittest
 	sequence.start();
 	assert(count == 1, "Expected first state");
 	assert(sequence.isRunning() == true, "Expected to have started");
-	
+
 	fire!(SomeEvent, sequence)();
 	assert(count == 2, "Expected second state");
 	assert(sequence.isRunning() == false, "Expected to have stopped");
