@@ -174,7 +174,7 @@ dub:
 
 define VARIANT_INFO
 	@echo "VERSION_$V=$(VERSIONS_$V)"
-	
+
 endef
 
 .PHONY: describe
