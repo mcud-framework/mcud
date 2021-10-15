@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Prepare
-        run: apt-get install -y gdc
+        run: sudo apt-get install gdc
       - name: Run tests
         run: make -f ci.mk test
 
