@@ -54,6 +54,7 @@ template getDevice(Device device)
 	alias getDevice = __traits(toType, device._mangle);
 }
 
+@("Device struct can act as a simple pointer to a struct")
 unittest
 {
 	struct Test

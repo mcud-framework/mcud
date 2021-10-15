@@ -152,10 +152,9 @@ string format(string fmt, Arg...)(Arg arg)
 	return output;
 }
 
+@("format can generate formatted strings")
 unittest
 {
-	// import std.stdio;
-	// writeln(format!"?%x!"(0xdeadbeef));
 	assert(format!"abc" == "abc", "Simple string was incorrect");
 	assert(format!"a%%b" == "a%b", "Escaped '%' was incorrect");
 	assert(format!"a%db"(52) == "a52b", "Format '%d' was incorrect");
