@@ -95,10 +95,6 @@ endif
 # Common sources
 COMMONSOURCES += $(shell find $(APP_SRC) -type f -iname "*.d")
 
-# Test-only sources
-TESTSOURCES += $(shell find $(MCUD_SRC) -type f -iname "*.d")
-TESTSOURCES := $(COMMONSOURCES) $(TESTSOURCES)
-
 # Build-only sources
 DIRS += $(wildcard $(MCUD_SRC))
 DIRS += $(CPUS)/$(CPU)
@@ -108,6 +104,11 @@ SOURCES_APP += $(shell find $(DIRS) -type f -iname "*.d" )
 SOURCES_APP := $(COMMONSOURCES) $(SOURCES_APP)
 SOURCES_DRUNTIME += $(shell find $(DIR_DRUNTIME) -type f -iname "*.d")
 SOURCES_LIBPHOBOS += $(shell find $(DIR_LIBPHOBOS) -type f -iname "*.d")
+
+# Test-only sources
+TESTSOURCES += $(MCUD)/dist/test.d
+TESTSOURCES += $(BIN_DIR)/test_modules.d
+TESTSOURCES := $(SOURCES_APP) $(TESTSOURCES) 
 
 OBJECTS_APP = $(SOURCES:%.d=$(BIN_DIR)/%.d.o)
 OBJECTS_DRUNTIME = $(SOURCES_DRUNTIME:%.d=$(BIN_DIR)/%.d.o)
@@ -166,7 +167,17 @@ distclean: clean
 
 $(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/mcud.mk
 	mkdir -p $(dir $@)
-	$(RUN) $(HOSTDC) $(HOSTDFLAGS) -o $@ $(TESTSOURCES)
+	$(HOSTDC) $(HOSTDFLAGS) -o $@ $(TESTSOURCES)
+
+$(BIN_DIR)/test_modules.d: $(filter-out $(BIN_DIR)/test_modules.d,$(TESTSOURCES))
+	mkdir -p $(dir $@)
+	echo 'module test_modules;' > $@
+	echo 'import std.meta;' >> $@
+	echo 'public:' >> $@
+	grep -h ^module $^ | sed -E 's:module ([a-zA-Z0-9._]+);:static import \1;:' >> $@
+	echo 'alias allModules = AliasSeq!(' >> $@
+	grep -h ^module $^ | sed -E 's:module ([a-zA-Z0-9._]+);:    \1,:' >> $@
+	echo ');' >> $@
 
 .PHONY: dub
 dub:
@@ -174,7 +185,7 @@ dub:
 
 define VARIANT_INFO
 	@echo "VERSION_$V=$(VERSIONS_$V)"
-	
+
 endef
 
 .PHONY: describe

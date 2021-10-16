@@ -10,9 +10,9 @@ import mcud.core.attributes;
 import mcud.core.task;
 import std.traits;
 
-version(unittest) {}
-else
-{
+//version(unittest) {}
+//else
+//{
 	import app;
 	import board;
 
@@ -85,25 +85,32 @@ else
 	*/
 	void startMCUd()
 	{
-		memset(&__start_bss, 0, &__stop_bss - &__start_bss);
-		memcpy(&__start_data, &__stop_text, &__stop_data - &__start_data);
-
-		static if (is(typeof(system.board.init)))
-			system.board.init();
-		static foreach (setup; allSetup!system)
-			setup.func();
-		for (;;)
+		version(unittest)
 		{
-			static foreach (task; unstoppableTasks)
+			assert(0, "startMCUd is not supported during unit tests");
+		}
+		else
+		{
+			memset(&__start_bss, 0, &__stop_bss - &__start_bss);
+			memcpy(&__start_data, &__stop_text, &__stop_data - &__start_data);
+
+			static if (is(typeof(system.board.init)))
+				system.board.init();
+			static foreach (setup; allSetup!system)
+				setup.func();
+			for (;;)
 			{
-				task.func();
-			}
-			static foreach (task; stoppableTasks)
-			{{
-				enum mangled = task.mangled;
-				if (TaskRuntime!(mangled).running == true)
+				static foreach (task; unstoppableTasks)
+				{
 					task.func();
-			}}
+				}
+				static foreach (task; stoppableTasks)
+				{{
+					enum mangled = task.mangled;
+					if (TaskRuntime!(mangled).running == true)
+						task.func();
+				}}
+			}
 		}
 	}
 
@@ -142,4 +149,4 @@ else
 	{
 		TaskRuntime!(task.mangleof).running = false;
 	}
-}
+//}

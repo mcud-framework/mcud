@@ -51,6 +51,7 @@ Tests if the type is a Volatile or not.
 enum isVolatile(T) = is(T == Volatile!(V, A), V, size_t A);
 enum isVolatile(alias t) = isVolatile!(typeof(t));
 
+@("isVolatile can detect whether variable is volatile")
 unittest
 {
 	struct S {}

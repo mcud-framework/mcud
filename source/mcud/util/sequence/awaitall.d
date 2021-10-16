@@ -39,6 +39,7 @@ template AwaitAll(void function() callback, Events...)
 	}
 }
 
+@("AwaitAll works when waiting on a single event")
 unittest
 {
 	struct SomeEvent {}
@@ -61,6 +62,7 @@ unittest
 	assert(callCount == 2, "Has not been called");
 }
 
+@("AwaitAll works when waiting on multiple events")
 unittest
 {
 	struct EventA {}

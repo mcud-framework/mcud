@@ -35,6 +35,7 @@ template TaskRuntime(string mangledName)
 	static shared bool running = true;
 }
 
+@("allTasks finds task in template")
 unittest
 {
 	template A()
@@ -48,6 +49,15 @@ unittest
 	assert(tasks.length > 0);
 	assert(tasks[0].attribute == task());
 	assert(tasks[0].func == &a.loop);
+}
+
+@("allTask finds tasks recursively")
+unittest
+{
+	template A()
+	{
+		@task static void loop() {}
+	}
 
 	template B()
 	{

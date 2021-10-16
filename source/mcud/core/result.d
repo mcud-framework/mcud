@@ -192,10 +192,16 @@ if (is(T == void))
 	return Result!void(reason);
 }
 
+@("ok!T(...) functions compile")
 unittest
 {
 	ok!int(5);
 	ok!void();
+}
+
+@("fail!T(...) functions compile")
+unittest
+{
 	fail!int(Err.timeout);
 	fail!void(Err.timeout);
 }

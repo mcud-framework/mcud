@@ -2,9 +2,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-module mcud.core.interrupts;
+module mcud.container;
 
-import mcud.core.system;
-
-public import mcud.core.attributes : interrupt;
-public import cpu.irq : IRQ;
+public:
+import mcud.container.array;
+import mcud.container.list;
+import mcud.container.vector;

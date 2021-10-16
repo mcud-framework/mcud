@@ -18,3 +18,6 @@ build_examples: build_$1
 endef
 
 $(foreach EXAMPLE,$(EXAMPLES),$(eval $(call built_example,$(EXAMPLE))))
+
+test:
+	$(MAKE) -C examples/blinky test
