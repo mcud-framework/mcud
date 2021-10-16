@@ -116,22 +116,6 @@ struct UARTConfig
 		m_rx = Device.of!Pin;
 		return this;
 	}
-
-	/**
-	Sets the size of the transmit buffer in bytes.
-	Params:
-		size = The size of the transmit buffer, in bytes.
-	*/
-	UARTConfig transmitBufferSize(size_t size)
-	{
-		m_transmitBufferSize = size;
-		return this;
-	}
-
-	auto opDispatch(string member)()
-	{
-		return mixin("m_"~member);
-	}
 }
 
 /**
@@ -145,9 +129,9 @@ static:
 	enum UARTConfig c = config;
 
 	static if (hasTX)
-		alias tx = getDevice!(config.tx());
+		alias tx = getDevice!(config.m_tx);
 	static if (hasRX)
-		alias rx = getDevice!(config.rx());
+		alias rx = getDevice!(config.m_rx);
 
 	static assert(hasTX || hasRX, "A UART needs at least a TX or RX pin configured");
 
@@ -183,7 +167,7 @@ static:
 	}
 
 	private enum m_cr1 = getDefaultCR1();
-	private Queue!(ubyte, config.transmitBufferSize()) m_transmitBuf;
+	private Queue!(ubyte, config.m_transmitBufferSize) m_transmitBuf;
 
 	void start()
 	{

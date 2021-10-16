@@ -5,7 +5,7 @@
 module cpu.stm32.capabilities;
 
 import mcud.test;
-import std.string;
+import std.format;
 
 struct PortMask
 {
