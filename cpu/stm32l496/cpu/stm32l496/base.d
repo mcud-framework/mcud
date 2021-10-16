@@ -16,6 +16,13 @@ template STM32L496()
 	alias base = STM32!();
 	mixin AliasThis!(base);
 
+	PeriphUART!(0x4000_4400) usart2;
+	PeriphUART!(0x4000_4800) usart3;
+	PeriphUART!(0x4000_4C00) uart3;
+	PeriphUART!(0x4000_5000) uart5;
+	PeriphUART!(0x4000_8000) lpuart1;
+	PeriphUART!(0x4001_3800) usart1;
+
 	PeriphRCC!0x4002_1000 rcc;
 
 	PeriphGPIO!('a', 0x4800_0000) gpioA;

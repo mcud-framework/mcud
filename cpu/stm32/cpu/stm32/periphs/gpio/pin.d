@@ -2,6 +2,7 @@ module cpu.stm32.periphs.gpio.pin;
 
 import board : board;
 import cpu.capabilities;
+import cpu.stm32.capabilities;
 import cpu.stm32.periphs.rcc;
 import mcud.core.attributes;
 import mcud.core.result;
@@ -162,7 +163,13 @@ struct Pin(alias config)
 
 	static if (config._mode == PinMode.alternate)
 	{
+		/// The configured alternative function of the pin.
 		enum alternateFunction = capabilities().getAlternateFunction(config._port._port, config._pin, config._af);
+	}
+	else
+	{
+		/// The configured alternative function of the pin.
+		enum alternateFunction = AFCapability();
 	}
 
 static:

@@ -4,6 +4,9 @@
 
 module cpu.stm32.capabilities;
 
+import mcud.test;
+import std.string;
+
 struct PortMask
 {
 	/// A bitmask of available pins on port A.
@@ -48,71 +51,44 @@ A set of all alternative functions.
 */
 enum AlternateFunction
 {
-	/*
-	can1,
-	can2,
-	comp1,
-	comp2,
-	dcmi,
-	dfsdm,
-	evenout,
-	fmc,
-	i2c1,
-	i2c2,
-	i2c3,
-	i2c4,
-	lcd,
-	lptim2,
-	lpuart1,
-	otg_fs,
-	quadspi,
-	sai1,
-	sai2,
-	sdmmc,
-	spi1,
-	spi2,
-	spi3,
-	swpmi1,
-	sysAf,
-	tim1,
-	tim15,
-	tim16,
-	tim17,
-	tim2,
-	tim3,
-	tim4,
-	tim5,
-	tim8,
-	tsc,
-	uart4,
-	uart5,
-	unset,
-	usart1,
-	usart2,
-	usart3,*/
+	CAN2_RX,
 	DCMI_D0,
 	DCMI_D1,
 	DCMI_PIXCLK,
+	EVENTOUT,
 	I2C1_SMBA,
 	I2C3_SCL,
+	I2C4_SCL,
+	I2C4_SDA,
 	I2C4_SMBA,
 	IR_OUT,
 	JTCK_SWCLK,
 	JTDI,
 	JTMS_SWDIO,
+	LCD_COM1,
+	LCD_COM2,
 	LPTIM1_OUT,
 	LPUART1_CTS,
 	LPUART1_RTS_DE,
 	LPUART1_RX,
 	LPUART1_TX,
 	MCO,
+	OTG_FS_ID,
+	QUADSPI_BK2_IO0,
+	QUADSPI_CLK,
+	SAI1_FS_A,
+	SAI1_SD_A,
 	SPI1_MISO,
 	SPI1_MOSI,
 	SPI1_NSS,
 	SPI1_SCK,
+	SPI2_MOSI,
 	SPI2_SCK,
 	SPI3_NSS,
+	TIM1_BKIN_COMP1,
+	TIM1_BKIN_COMP2,
 	TIM1_BKIN,
+	TIM1_BKIN2_COMP2,
 	TIM1_BKIN2,
 	TIM1_CH1,
 	TIM1_CH1N,
@@ -120,6 +96,8 @@ enum AlternateFunction
 	TIM1_CH3,
 	TIM1_CH4,
 	TIM1_ETR,
+	TIM15_BKIN,
+	TIM17_BKIN,
 	TIM2_CH1,
 	TIM2_CH2,
 	TIM2_CH3,
@@ -132,7 +110,14 @@ enum AlternateFunction
 	TIM5_CH3,
 	TIM5_CH4,
 	TIM8_BKIN,
+	TIM8_BKIN2,
+	TIM8_CH1,
 	TIM8_CH1N,
+	TIM8_CH2,
+	TIM8_CH2N,
+	TIM8_CH3,
+	TIM8_CH3N,
+	TIM8_CH4,
 	TIM8_ETR,
 	UART4_CTS,
 	UART4_RTS_DE,
@@ -159,14 +144,6 @@ enum AlternateFunction
 	USART3_RTS_DE,
 	USART3_RX,
 	USART3_TX,
-	LCD_COM1,
-	SAI1_FS_A,
-	TIM15_BKIN,
-	EVENTOUT,
-	OTG_FS_ID,
-	LCD_COM2,
-	SAI1_SD_A,
-	TIM17_BKIN,
 }
 
 /**
@@ -177,7 +154,7 @@ struct AFCapability
 	/// The GPIO port.
 	GPIOPort port;
 	/// The pin.
-	int pin;
+	int pin = -1;
 	/// The support alternate function.
 	AlternateFunction af;
 	/// The alternate function id (a number from 0 to 15).
@@ -194,6 +171,16 @@ struct AFCapability
 	bool isForPin(GPIOPort port, int pin)
 	{
 		return this.port == port && this.pin == pin;
+	}
+
+	/**
+	Tests if the AF capability is set.
+	Returns: `true` if the AF capability refers to an actual alternate function
+	on a pin, `false` if it refers does not.
+	*/
+	bool isSet()
+	{
+		return pin != -1;
 	}
 }
 
@@ -280,7 +267,8 @@ struct Capabilities
 			if (altFunc.isForPin(port, pin) && altFunc.af == af)
 				return altFunc;
 		}
-		assert(0, "Alternate function not found");
+		string err = format!("Alternate function %s not found for pin (%s.%d)")(af, port, pin);
+		assert(0, err.idup);
 	}
 }
 
@@ -326,4 +314,31 @@ struct AFBuilderPin
 	{
 		return _builder.build();
 	}
+}
+
+@("AFBuilder can configure alternate functions")
+unittest
+{
+	AFBuilder builder;
+	AFCapability[] caps = builder
+		.pin(GPIOPort.a, 2)
+			.af(1, AlternateFunction.JTDI)
+			.af(4, AlternateFunction.LPTIM1_OUT)
+		.pin(GPIOPort.b, 4)
+			.af(2, AlternateFunction.LPUART1_CTS)
+		.build();
+
+	expect(caps[0]).toEqual(AFCapability(GPIOPort.a, 2, AlternateFunction.JTDI, 1));
+	expect(caps[1]).toEqual(AFCapability(GPIOPort.a, 2, AlternateFunction.LPTIM1_OUT, 4));
+	expect(caps[2]).toEqual(AFCapability(GPIOPort.b, 4, AlternateFunction.LPUART1_CTS, 2));
+}
+
+@("Capabilities.getAlternateFunction can find an alternative function")
+unittest
+{
+	Capabilities caps;
+	caps.alternateFunctions ~= AFCapability(GPIOPort.a, 2, AlternateFunction.JTDI, 1);
+
+	AFCapability cap = caps.getAlternateFunction(GPIOPort.a, 2, AlternateFunction.JTDI);
+	expect(cap).toEqual(AFCapability(GPIOPort.a, 2, AlternateFunction.JTDI, 1));
 }
