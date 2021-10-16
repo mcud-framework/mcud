@@ -40,6 +40,15 @@ struct Device
 	}
 
 	/**
+	Gets whether the device is bound to something or not.
+	Returns: `true` if the device is not bound, `false` if the device is bound.
+	*/
+	bool isEmpty()
+	{
+		return _mangle == "";
+	}
+
+	/**
 	Gets the empty device reference.
 	*/
 	enum empty = Device("");

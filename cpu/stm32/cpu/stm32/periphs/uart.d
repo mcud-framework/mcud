@@ -1,6 +1,8 @@
 module cpu.stm32.periphs.uart;
 
+import cpu.capabilities;
 import mcud.mem.volatile;
+import mcud.meta.device;
 
 /**
 The raw UART peripheral.
@@ -33,26 +35,111 @@ struct PeriphUART(uint base)
 	Volatile!(uint, base + 0x28) TDR;
 }
 
-struct UARTConfig(
-	alias tx = void,
-	alias rx = void
-)
+enum USART_CR1
 {
-	alias _tx = tx;
-	alias _rx = rx;
+	UE = 1 << 0,
+	UESM = 1 << 1,
+	RE = 1 << 2,
+	TE = 1 << 3,
+	IDLEIE = 1 << 4,
+	RXNEIE = 1 << 5,
+	TCIE = 1 << 6,
+	TXEIE = 1 << 7,
+	PEIE = 1 << 8,
+	PS = 1 << 9,
+	PCE = 1 << 10,
+	WAKE = 1 << 11,
+	M0 = 1 << 12,
+	MME = 1 << 13,
+	CMIE = 1 << 14,
+	OVER8 = 1 << 15,
+	RTOIE = 1 << 26,
+	EOBIE = 1 << 27,
+	M1 = 1 << 18,
+}
 
-	auto txPin(alias pin)()
+/**
+Describes all supported UART ports.
+*/
+enum UARTPort
+{
+	unset,
+	usart1,
+	usart2,
+	usart3,
+	uart4,
+	uart5,
+	lpuart1
+}
+
+/**
+Configures a UART.
+*/
+struct UARTConfig
+{
+	/// The pin to use as TX.
+	Device _tx = Device.empty;
+	/// The pin to use as RX.
+	Device _rx = Device.empty;
+	/// The UART port to configure.
+	UARTPort _port = UARTPort.unset;
+
+	UARTConfig uart(UARTPort port)
 	{
-		return UARTConfig!(pin, rx);
+		assert(_port == UARTPort.unset, "A UART port is already selected");
+		_port = port;
+		return this;
 	}
 
-	auto rxPin(alias pin)()
+	/**
+	Sets the TX pin.
+	*/
+	UARTConfig txPin(Pin)(Pin pin)
 	{
-		return UARTConfig!(tx, pin);
+		_tx = Device.of!Pin;
+		return this;
+	}
+
+	/**
+	Sets the RX pin.
+	*/
+	UARTConfig rxPin(Pin)(Pin pin)
+	{
+		_rx = Device.of!Pin;
+		return this;
 	}
 }
 
-template UART(UARTConfig config)
+/**
+A UART.
+*/
+struct UART(UARTConfig config)
 {
-	static assert(!is(config._tx == void), "TX must be set");
+static:
+	enum hasTX = !config._tx.isEmpty();
+	enum hasRX = !config._rx.isEmpty();
+
+	static assert(hasTX || hasRX, "A UART needs at least a TX or RX pin configured");
+
+	enum cr1 = getDefaultCR1();
+
+	void start()
+	{
+
+	}
+
+	void stop()
+	{
+
+	}
+
+	private uint getDefaultCR1()
+	{
+		uint cr1 = 0;
+		if (hasTX)
+			cr1 |= USART_CR1.TE;
+		if (hasRX)
+			cr1 |= USART_CR1.RE;
+		return cr1;
+	}
 }

@@ -14,7 +14,7 @@ $(BIN_APP): $(ELF_APP)
 
 $(ELF_APP):  $(OBJ_APP) $(OBJ_PHOBOS) $(OBJ_DRUNTIME) $(LINKER_SCRIPT)
 	@mkdir -p $(dir $@)
-	$(RUN) $(LD) $(LDFLAGS) -o $@ $(call convert_path,$(OBJ_APP) $(OBJ_PHOBOS) $(OBJ_DRUNTIME))
+	$(RUN) $(LD) $(LDFLAGS) -o $@ $(call convert_path,$(OBJ_APP) $(OBJ_PHOBOS) $(OBJ_DRUNTIME)) $(LIBS)
 
 $(OBJ_APP): $(SOURCES_APP)
 	@mkdir -p $(dir $@)

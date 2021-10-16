@@ -8,7 +8,9 @@ import mcud.core.result;
 import mcud.core.system;
 import mcud.mem.volatile;
 import mcud.meta.like;
-import mcud.periphs.input;
+import mcud.periphs.gpio.input;
+
+public import cpu.stm32.capabilities : AlternateFunction;
 
 
 /**
@@ -34,54 +36,6 @@ enum PinPull : uint
 }
 
 /**
-A set of all alternative functions.
-*/
-enum AlternateFunction
-{
-	can1,
-	can2,
-	comp1,
-	comp2,
-	dcmi,
-	dfsdm,
-	evenout,
-	fmc,
-	i2c1,
-	i2c2,
-	i2c3,
-	i2c4,
-	lcd,
-	lptim2,
-	lpuart1,
-	otg_fs,
-	quadspi,
-	sai1,
-	sai2,
-	sdmmc,
-	spi1,
-	spi2,
-	spi3,
-	swpmi1,
-	sysAf,
-	tim1,
-	tim15,
-	tim16,
-	tim17,
-	tim2,
-	tim3,
-	tim4,
-	tim5,
-	tim8,
-	tsc,
-	uart4,
-	uart5,
-	unset,
-	usart1,
-	usart2,
-	usart3,
-}
-
-/**
 Configures a pin.
 */
 struct PinConfigT(Port)
@@ -94,6 +48,8 @@ struct PinConfigT(Port)
 	PinPull _pull = PinPull.none;
 	/// The selected pin.
 	uint _pin = -1;
+	/// The selected alternate function.
+	AlternateFunction _af;
 
 	/**
 	Sets the port the GPIO pin uses.
@@ -156,8 +112,9 @@ struct PinConfigT(Port)
 	/**
 	Configures the pin as an alternative function.
 	*/
-	PinConfigT!Port asAlternateFunction()
+	PinConfigT!Port asAlternateFunction(AlternateFunction af)
 	{
+		_af = af;
 		return mode(PinMode.alternate);
 	}
 
@@ -202,6 +159,11 @@ struct Pin(alias config)
 	static assert(config._mode != PinMode.unset, "Mode not set");
 	static assert(!is(config._port == void), "No port was selected");
 	static assert(capabilities.gpioHasPin(config._port._port, config._pin), "Invalid port");
+
+	static if (config._mode == PinMode.alternate)
+	{
+		enum alternateFunction = capabilities().getAlternateFunction(config._port._port, config._pin, config._af);
+	}
 
 static:
 	/**
@@ -274,9 +236,5 @@ static:
 			enum mask = 1 << config._pin;
 			return ok!bool((idr & mask) != 0);
 		}
-	}
-	else
-	{
-		static assert(false, "Unsupported IO mode");
 	}
 }

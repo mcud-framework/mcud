@@ -35,7 +35,7 @@ $(ELF_APP_$1): $(OBJ_APP_$1) $(OBJ_PHOBOS_$1) $(OBJ_DRUNTIME_$1) $(LINKER_SCRIPT
 	$(RUN) $(LD) -MD -MP -MF $$(@:%.elf=%.elf.dep) \
 		$$(call convert_path,$$(LDFLAGS_$1)) \
 		-o $$@ $$(call convert_path,$(OBJ_APP_$1) \
-		$(OBJ_PHOBOS_$1) $(OBJ_DRUNTIME_$1)) -lc_nano
+		$(OBJ_PHOBOS_$1) $(OBJ_DRUNTIME_$1)) $(LIBS)
 
 $(OBJ_APP_$1): $(SOURCES_APP)
 	@mkdir -p $$(dir $$@)

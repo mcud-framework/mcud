@@ -5,3 +5,4 @@
 TARGET = arm-none-eabi-
 DOCKER = seeseemelk/mcud:arm-none-eabi-2021-10-11
 DIRS += $(CPUS)/arm
+LIBS += -lc_nano

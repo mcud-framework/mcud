@@ -7,6 +7,8 @@ import cpu.stm32.periphs.rcc;
 import mcud.core.attributes;
 import mcud.mem.volatile;
 
+public import cpu.stm32.capabilities : GPIOPort;
+
 /**
 The raw GPIO peripheral.
 
@@ -41,23 +43,6 @@ struct PeriphGPIO(char port, uint base)
 	Volatile!(uint, base + 0x24) afrh;
 	/// Bit Reset Register
 	Volatile!(uint, base + 0x28) brr;
-}
-
-/**
-Set of valid ports.
-*/
-enum GPIOPort
-{
-	unset,
-	a = 'a',
-	b = 'b',
-	c = 'c',
-	d = 'd',
-	e = 'e',
-	f = 'f',
-	g = 'g',
-	h = 'h',
-	i = 'i'
 }
 
 /**
