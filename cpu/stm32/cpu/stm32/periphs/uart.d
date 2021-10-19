@@ -1,6 +1,7 @@
 module cpu.stm32.periphs.uart;
 
 import cpu.capabilities;
+import cpu.stm32.periphs.rcc;
 import mcud.container.queue;
 import mcud.core.system;
 import mcud.core.task;
@@ -126,7 +127,6 @@ struct UART(UARTConfig config)
 static:
 	enum hasTX = !config.m_tx.isEmpty();
 	enum hasRX = !config.m_rx.isEmpty();
-	enum UARTConfig c = config;
 
 	static if (hasTX)
 		alias tx = getDevice!(config.m_tx);
@@ -138,31 +138,37 @@ static:
 	static if (config.m_port == UARTPort.usart1)
 	{
 		alias periph = system.cpu.usart1;
+		alias rcc = RCCPeriph!(RCC_APB2ENR.USART1EN);
 		mixin assertAF!(AlternateFunction.USART1_TX, AlternateFunction.USART1_RX);
 	}
 	else static if (config.m_port == UARTPort.usart2)
 	{
 		alias periph = system.cpu.usart2;
+		alias rcc = RCCPeriph!(RCC_APB1ENR1.USART2EN);
 		mixin assertAF!(AlternateFunction.USART2_TX, AlternateFunction.USART2_RX);
 	}
 	else static if (config.m_port == UARTPort.usart3)
 	{
 		alias periph = system.cpu.usart3;
+		alias rcc = RCCPeriph!(RCC_APB1ENR1.USART3EN);
 		mixin assertAF!(AlternateFunction.USART3_TX, AlternateFunction.USART3_RX);
 	}
 	else static if (config.m_port == UARTPort.uart4)
 	{
 		alias periph = system.cpu.uart4;
+		alias rcc = RCCPeriph!(RCC_APB1ENR1.UART4EN);
 		mixin assertAF!(AlternateFunction.UART4_TX, AlternateFunction.UART4_RX);
 	}
 	else static if (config.m_port == UARTPort.uart5)
 	{
 		alias periph = system.cpu.uart5;
+		alias rcc = RCCPeriph!(RCC_APB1ENR1.UART5EN);
 		mixin assertAF!(AlternateFunction.UART5_TX, AlternateFunction.UART5_RX);
 	}
 	else static if (config.m_port == UARTPort.lpuart1)
 	{
 		alias periph = system.cpu.lpuart1;
+		alias rcc = RCCPeriph!(RCC_APB1ENR2.LPUART1EN);
 		mixin assertAF!(AlternateFunction.LPUART1_TX, AlternateFunction.LPUART1_RX);
 	}
 
@@ -171,11 +177,13 @@ static:
 
 	void start()
 	{
+		rcc.start();
 		periph.CR1 |= m_cr1;
 	}
 
 	void stop()
 	{
+		rcc.stop();
 		periph.CR1.store(0);
 	}
 

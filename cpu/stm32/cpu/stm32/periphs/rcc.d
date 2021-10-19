@@ -71,6 +71,60 @@ enum RCC_AHB2ENR
 	RNGEN   = 1 << 18,
 }
 
+enum RCC_APB1ENR1
+{
+	TIM2EN   = 1 << 0,
+	TIM3EN   = 1 << 1,
+	TIM4EN   = 1 << 2,
+	TIM5EN   = 1 << 3,
+	TIM6EN   = 1 << 4,
+	TIM8EN   = 1 << 5,
+	LCDEN    = 1 << 9,
+	RTCAPBEN = 1 << 10,
+	WWDGEN   = 1 << 11,
+	SPI2EN   = 1 << 14,
+	SPI3EN   = 1 << 15,
+	USART2EN = 1 << 17,
+	USART3EN = 1 << 18,
+	UART4EN  = 1 << 19,
+	UART5EN  = 1 << 20,
+	I2C1EN   = 1 << 21,
+	I2C2EN   = 1 << 22,
+	I2C3EN   = 1 << 23,
+	CRSEN    = 1 << 24,
+	CAN1EN   = 1 << 25,
+	CAN2EN   = 1 << 26,
+	PWREN    = 1 << 28,
+	DAC1EN   = 1 << 29,
+	OPAMPEN  = 1 << 30,
+	LPTIM1EN = 1 << 31,
+}
+
+enum RCC_APB1ENR2
+{
+	LPUART1EN = 1 << 0,
+	I2C4EN    = 1 << 1,
+	SWPMI1EN  = 1 << 2,
+	LPTIM2EN  = 1 << 5,
+}
+
+enum RCC_APB2ENR
+{
+	SYSCFGEN = 1 << 0,
+	FWEN     = 1 << 7,
+	SDMMC1EN = 1 << 10,
+	TIM1EN   = 1 << 11,
+	SPI1EN   = 1 << 12,
+	TIM8EN   = 1 << 13,
+	USART1EN = 1 << 14,
+	TIM15EN  = 1 << 16,
+	TIM16EN  = 1 << 17,
+	TIM17EN  = 1 << 18,
+	SAI1EN   = 1 << 21,
+	SAI2EN   = 1 << 22,
+	DFSDM1EN = 1 << 24,
+}
+
 /**
 Configures the clock.
 */
@@ -242,21 +296,25 @@ template RCC(ClockTree config)
 	}
 }
 
-template RCCPeriph(RCC_AHB2ENR device)
+template RCCPeriph_(alias register, uint mask)
 {
-	@forceinline
-	void start()
+	static void start()
 	{
-		auto value = board.cpu.rcc.ahb2enr.load();
-		value |= device;
-		board.cpu.rcc.ahb2enr.store(value);
+		register.store(register.load() | mask);
 	}
 
-	@forceinline
-	void stop()
+	static void stop()
 	{
-		auto value = board.cpu.rcc.ahb2enr.load();
-		value &= ~device;
-		board.cpu.rcc.ahb2enr.store(value);
+		register.store(register.load() & ~mask);
 	}
+}
+
+template RCCPeriph(RCC_AHB2ENR device)
+{
+	alias RCCPeriph = RCCPeriph_!(board.cpu.rcc.ahb2enr, device);
+}
+
+template RCCPeriph(RCC_APB2ENR device)
+{
+	alias RCCPeriph = RCCPeriph_!(board.cpu.rcc.apb2enr, device);
 }
