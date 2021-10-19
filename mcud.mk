@@ -167,7 +167,13 @@ distclean: clean
 
 $(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/mcud.mk
 	mkdir -p $(dir $@)
-	$(HOSTDC) $(HOSTDFLAGS) -o $@ $(TESTSOURCES)
+	docker run -t --rm --network none \
+		-v $(CURDIR):/src \
+		-v $(abspath $(MCUD)):/mcud \
+		-w /src \
+		-u $(shell id -u):$(shell id -g) \
+		seeseemelk/mcud:test-2021-10-19 \
+		$(HOSTDC) $(HOSTDFLAGS) -o $(call convert_path,$@) $(call convert_path,$(TESTSOURCES))
 
 $(BIN_DIR)/test_modules.d: $(filter-out $(BIN_DIR)/test_modules.d,$(TESTSOURCES))
 	mkdir -p $(dir $@)
