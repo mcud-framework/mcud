@@ -4,8 +4,9 @@
 
 module mcud.container.queue;
 
-import mcud.test;
 import mcud.core.result;
+import mcud.test;
+import mcud.util.frequency;
 
 /**
 A queue can store a predefined items, and allows one to prepend or append data,
@@ -80,6 +81,17 @@ struct Queue(T, size_t capacity)
 			m_write = 0;
 		else
 			m_write++;
+		return ok!void();
+	}
+
+	Result!void push(inout T[] values)
+	{
+		foreach (ref value; values)
+		{
+			auto result = push(value);
+			if (result.isFail)
+				return result;
+		}
 		return ok!void();
 	}
 

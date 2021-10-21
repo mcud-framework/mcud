@@ -92,7 +92,14 @@ struct UARTConfig
 	UARTPort m_port = UARTPort.unset;
 	/// The size of the transmit buffer.
 	size_t m_transmitBufferSize = 128;
+	/// The baud rate of the UART.
+	int m_baudrate = 0;
 
+	/**
+	Sets the UART port to communicate over.
+	Params:
+		port = The UART port to communicate over.
+	*/
 	UARTConfig uart(UARTPort port)
 	{
 		assert(m_port == UARTPort.unset, "A UART port is already selected");
@@ -115,6 +122,15 @@ struct UARTConfig
 	UARTConfig rxPin(Pin)(Pin pin)
 	{
 		m_rx = Device.of!Pin;
+		return this;
+	}
+
+	/**
+	Sets the target baudrate.
+	*/
+	UARTConfig baudrate(uint baudrate)
+	{
+		m_baudrate = baudrate;
 		return this;
 	}
 }
@@ -193,14 +209,16 @@ static:
 
 	}
 
-	void write(ubyte[] data)
+	void write(const(ubyte)[] data)
 	{
-
+		if (m_transmitBuf.available >= data.length)
+			m_transmitBuf.push(data);
+		startTask!transmitTask();
 	}
 
 	void write(string data)
 	{
-
+		write(cast(ubyte[]) data);
 	}
 
 	private uint getDefaultCR1()
