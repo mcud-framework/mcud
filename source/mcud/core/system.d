@@ -80,6 +80,16 @@ import std.traits;
 		.filter!(task => task.attribute.state == TaskState.unstoppable);
 
 	/**
+	Initializes memory. This is needed on systems that do not initialise the bss
+	and data section automatically.
+	*/
+	void initMemory()
+	{
+		memset(&__start_bss, 0, &__stop_bss - &__start_bss);
+		memcpy(&__start_data, &__stop_text, &__stop_data - &__start_data);
+	}
+
+	/**
 	Performs common MCUd initialisation functions and then enters the scheduler.
 	This function should only ever be called by the reset handler.
 	*/
@@ -91,10 +101,7 @@ import std.traits;
 		}
 		else
 		{
-			memset(&__start_bss, 0, &__stop_bss - &__start_bss);
-			memcpy(&__start_data, &__stop_text, &__stop_data - &__start_data);
-
-			static if (is(system.board.init))
+			static if (is(typeof(system.board.init)))
 				system.board.init();
 			static foreach (setup; allSetup!system)
 				setup.func();

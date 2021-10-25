@@ -51,6 +51,9 @@ OBJ_PHOBOS = $(BIN_DIR)/phobos.o
 # The linker script to use.
 LINKER_SCRIPT = $(CPUS)/$(CPU)/linker.ld
 
+# The directory containing build archetypes.
+ARCHETYPES = $(MCUD)/archetypes
+
 # Use docker if docker hasn't been explicitly disabled
 USE_DOCKER ?= yes
 
@@ -207,7 +210,7 @@ describe:
 ifeq (,$(ARCHETYPE))
 $(error CPU did not set an archetype)
 else
-include $(MCUD)/archetypes/$(ARCHETYPE).mk
+include $(ARCHETYPES)/$(ARCHETYPE).mk
 endif
 
 ifneq (,$(wildcard $(CPUS)/$(CPU)/postlude.mk))
