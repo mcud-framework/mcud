@@ -146,7 +146,7 @@ OBJCOPY = $(TARGET)objcopy
 .PHONY: test
 test: $(ELF_TEST_FILE)
 	@echo "Running tests..."
-	@$(ELF_TEST_FILE)
+	$(RUN) $(call convert_path,$(ELF_TEST_FILE))
 	@echo "Tests succeeded!"
 
 .PHONY: info
