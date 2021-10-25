@@ -4,8 +4,19 @@
 
 module mcud.meta.like;
 
+import std.algorithm;
 import std.meta;
 import std.traits;
+
+private template TypeOf(alias func)
+{
+	alias TypeOf = AliasSeq!(ReturnType!func, Parameters!func);
+}
+
+private template isProperty(alias func)
+{
+	enum isProperty = hasFunctionAttributes!(func, "@property");
+}
 
 /**
 Checks that the function `func` has the same signature as the function `candidate`.
@@ -16,21 +27,21 @@ private template isLikeFunction(alias func)
 	template isLikeFunction(alias candidate)
 	if (isCallable!candidate)
 	{
-		enum isLikeFunction = is(typeof(func) == typeof(candidate));
+		enum isLikeFunction = is(TypeOf!func == TypeOf!candidate);
 	}
 
 	/// If `candidate` is not callable and `func` has no parameters (a.k.a. a getter)
 	template isLikeFunction(alias candidate)
 	if (!isCallable!candidate && Parameters!func.length == 0)
 	{
-		enum isLikeFunction = is(ReturnType!func == typeof(candidate));
+		enum isLikeFunction = isProperty!func && is(ReturnType!func == typeof(candidate));
 	}
 
 	/// If `candidate` is not callable and `func` has one parameter (a.k.a. a setter)
 	template isLikeFunction(alias candidate)
 	if (!isCallable!candidate && Parameters!func.length == 1)
 	{
-		enum isLikeFunction = is(Parameters!func[0] == typeof(candidate));
+		enum isLikeFunction = isProperty!func && is(Parameters!func[0] == typeof(candidate));
 	}
 
 	/// Fallback if `candidate` is not callable and `func` is not a setter or getter.
@@ -158,18 +169,46 @@ private template GetType(alias value)
 Is `true` if all members of `Interface` are like members in `Type`.
 Is `false` if even one member is different.
 */
+string[] describeLike(Interface, alias value, string interfacePrefix = "", string valuePrefix = "")()
+{
+	import std.format : format;
+	alias GetMember(string m) = __traits(getMember, Interface, m);
+	alias Type = GetType!value;
+	alias isIn = isInAggregate!Type;
+
+	string[] reasons;
+	static foreach (member; Filter!(templateNot!isFinal, staticMap!(GetMember, __traits(allMembers, Interface))))
+	{
+		static if (is(member == interface))
+		{
+			reasons ~= describeLike!(
+				member,
+				__traits(getMember, value, __traits(identifier, member)),
+				__traits(identifier, Interface) ~ ".",
+				__traits(identifier, value) ~ ".",
+			);
+		}
+		else
+		{
+			static if (!isIn!member)
+				reasons ~= format!("No match found for '%s' from interface '%s' in '%s'")(
+					__traits(identifier, member),
+					interfacePrefix ~ Interface.stringof,
+					valuePrefix ~ __traits(identifier, value)
+				);
+		}
+	}
+	return reasons;
+}
+
+/**
+Is `true` if all members of `Interface` are like members in `Type`.
+Is `false` if even one member is different.
+*/
 template isLike(Interface)
 {
 	alias GetMember(string m) = __traits(getMember, Interface, m);
-
-	template isLike(alias value)
-	{
-		alias Type = GetType!value;
-		enum isLike = allSatisfy!(
-			isInAggregate!Type,
-			Filter!(templateNot!isFinal, staticMap!(GetMember, __traits(allMembers, Interface)))
-		);
-	}
+	enum isLike(alias value) = describeLike!(Interface, value).length == 0;
 }
 
 @("isLike is true for a struct that is like an interface")
@@ -224,6 +263,7 @@ unittest
 {
 	interface Interface
 	{
+		@property
 		long a();
 	}
 
@@ -234,5 +274,62 @@ unittest
 	}
 
 	alias curried = isLike!Interface;
-	assert(curried!Struct == true, "Struct is like Interface");
+	assert(curried!Struct == true, "Struct is not like Interface");
+}
+
+@("isLike is false for a struct that has an property but the interface has no @property")
+unittest
+{
+	interface Interface
+	{
+		int a();
+	}
+
+	struct Struct
+	{
+		int a;
+	}
+
+	alias curried = describeLike!(Interface, Struct);
+	assert(curried.length == 1);
+	assert(curried[0] == "No match found for 'a' from interface 'Interface' in 'Struct'");
+}
+
+@("isLike can work recursively")
+unittest
+{
+	interface Interface
+	{
+		interface Child
+		{
+			long funcChild();
+		}
+		int funcParent();
+	}
+
+	struct Struct
+	{
+		struct Child
+		{
+			long funcChild();
+		}
+		int funcParent();
+	}
+
+	alias curried = isLike!Interface;
+	assert(curried!Struct == true, "Struct is not like Interface");
+}
+
+/**
+Asserts that a type is like an interface.
+Params:
+	Interface = The interface the type should be like.
+	value = The value to test.
+*/
+template assertLike(Interface, alias value)
+{
+	enum results = describeLike!(Interface, value);
+	static if (results.length > 0)
+		static assert(false, results[0]);
+	enum assertLike = results.length == 0;
 }
