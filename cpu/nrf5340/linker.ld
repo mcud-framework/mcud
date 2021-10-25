@@ -15,7 +15,7 @@ SECTIONS
         *(.irq*)
         *(.text)
         *(.text*)
-        
+
         . = ALIGN(4);
 
         *(.rodata)

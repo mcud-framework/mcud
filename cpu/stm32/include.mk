@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 DFLAGS += -mcpu=cortex-m4 -mthumb 
+LDFLAGS += -mcpu=cortex-m4 -mthumb 
 DIRS += $(CPUS)/stm32
 ARCHETYPE = single-core
 

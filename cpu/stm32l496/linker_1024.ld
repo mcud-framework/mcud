@@ -16,30 +16,30 @@ SECTIONS
 {
     .text :
     {
-        _text = .;
+        PROVIDE(__start_text = .);
         LONG(_stackStart);
-        *(.data._irqs)
+        *(.irq*)
         *(.text)
         *(.text*)
-        
+
         . = ALIGN(4);
 
         *(.rodata)
         *(.rodata*)
-        _etext = .;
+        PROVIDE(__stop_text = .);
     } > flash
 
     .data : AT(ADDR(.text) + SIZEOF(.text))
     {
-        _data = .;
+        PROVIDE(__start_data = .);
         *(.data*)
-        _edata = .;
+        PROVIDE(__stop_data = .);
     } > sram
 
     .bss : AT(ADDR(.data) + SIZEOF(.data))
     {
-        _bss = .;
+        PROVIDE(__start_bss = .);
         *(.bss*)
-        _ebss = .;
+        PROVIDE(__stop_bss = .);
     } > sram
 }

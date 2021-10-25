@@ -23,21 +23,21 @@ static:
 	enum T* t = cast(T*) (addr);
 
 	@forceinline
-	T load() nothrow
+	static T load() nothrow
 	{
 		version(unittest) assert(0, "Not supported during unit tests");
 		else return volatileLoad(*t);
 	}
 
 	@forceinline
-	void store(T value) nothrow
+	static void store(T value) nothrow
 	{
 		version(unittest) assert(0, "Not supported during unit tests");
 		else volatileStore(*t, value);
 	}
 
 	@forceinline
-	auto opOpAssign(string op, T)(T value) nothrow
+	static auto opOpAssign(string op, T)(T value) nothrow
 	{
 		T result = mixin("load() " ~ op ~ " value");
 		store(result);

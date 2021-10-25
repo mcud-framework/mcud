@@ -7,6 +7,28 @@ module mcud.core.task;
 import mcud.core.attributes;
 import mcud.meta;
 
+/**
+Describes the states of a task.
+*/
+enum TaskState
+{
+	/// Marks the task as started.
+	started,
+	/// Marks the task as stopped.
+	stopped,
+	/// Marks the task as a task which cannot be stopped.
+	unstoppable
+}
+
+/**
+Declares a function to be a task.
+*/
+struct task
+{
+	/// The state of the task.
+	TaskState state = TaskState.started;
+}
+
 alias Task = Function!task;
 alias Setup = Function!setup;
 

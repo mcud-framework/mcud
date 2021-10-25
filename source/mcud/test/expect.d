@@ -18,8 +18,7 @@ Returns: An expector which can be used to test the given value.
 */
 Expector!T expect(T)(T actual)
 {
-	Expector!T expector;
-	expector.actual = actual;
+	auto expector = Expector!T(actual);
 	return expector;
 }
 
@@ -32,6 +31,11 @@ struct Expector(T)
 {
 	/// The actual value.
 	T actual;
+
+	private this(ref T actual)
+	{
+		this.actual = actual;
+	}
 
 	/**
 	Tests if the actual value equals the expected value.

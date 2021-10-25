@@ -15,6 +15,8 @@ enum Err
 	timeout,
 	/// A buffer was full
 	full,
+	/// A buffer was empty
+	empty,
 	/// An invalid state was reached
 	invalidState,
 }

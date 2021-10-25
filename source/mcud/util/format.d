@@ -4,12 +4,15 @@
 
 module mcud.util.format;
 
+import std.conv;
+
 private enum FormatType
 {
 	literal,
 	integer,
 	hex,
 	upperHex,
+	text,
 }
 
 private struct FormatSpec
@@ -54,6 +57,13 @@ private FormatSpec[] parseFormatString(string fmt)
 			else if (chr == 'X')
 			{
 				spec.type = FormatType.upperHex;
+				spec.index = argIndex++;
+				specs ~= spec;
+				escape = false;
+			}
+			else if (chr == 's')
+			{
+				spec.type = FormatType.text;
 				spec.index = argIndex++;
 				specs ~= spec;
 				escape = false;
@@ -139,6 +149,12 @@ void format(string fmt, void delegate(char) callback, Arg...)(Arg arg)
 			foreach_reverse (i; 0 .. length)
 				callback(chars[i]);
 		}
+		else static if (spec.type == FormatType.text)
+		{
+			string str = arg[spec.index].to!string;
+			foreach (chr; str)
+				callback(chr);
+		}
 	}}
 }
 
@@ -162,4 +178,5 @@ unittest
 	assert(format!"a%db"(-52) == "a-52b", "Format '%d' with negative was incorrect");
 	assert(format!"?%x!"(0xdead1234) == "?dead1234!", "Format '%x' was incorrect");
 	assert(format!"?%X!"(0xdead1234) == "?DEAD1234!", "Format '%x' was incorrect");
+	assert(format!"?%s!"("test") == "?test!", "Format '%s' was incorrect");
 }

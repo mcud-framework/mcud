@@ -16,15 +16,22 @@ template STM32L496()
 	alias base = STM32!();
 	mixin AliasThis!(base);
 
+	PeriphUART!(0x4000_4400) usart2;
+	PeriphUART!(0x4000_4800) usart3;
+	PeriphUART!(0x4000_4C00) uart3;
+	PeriphUART!(0x4000_5000) uart5;
+	PeriphUART!(0x4000_8000) lpuart1;
+	PeriphUART!(0x4001_3800) usart1;
+
 	PeriphRCC!0x4002_1000 rcc;
 
-	PeriphGPIO!0x4800_0000 gpioA;
-	PeriphGPIO!0x4800_0400 gpioB;
-	PeriphGPIO!0x4800_0800 gpioC;
-	PeriphGPIO!0x4800_0C00 gpioD;
-	PeriphGPIO!0x4800_1000 gpioE;
-	PeriphGPIO!0x4800_1400 gpioF;
-	PeriphGPIO!0x4800_1800 gpioG;
-	PeriphGPIO!0x4800_1C00 gpioH;
-	PeriphGPIO!0x4800_2000 gpioI;
+	PeriphGPIO!('a', 0x4800_0000) gpioA;
+	PeriphGPIO!('b', 0x4800_0400) gpioB;
+	PeriphGPIO!('c', 0x4800_0800) gpioC;
+	PeriphGPIO!('d', 0x4800_0C00) gpioD;
+	PeriphGPIO!('e', 0x4800_1000) gpioE;
+	PeriphGPIO!('f', 0x4800_1400) gpioF;
+	PeriphGPIO!('g', 0x4800_1800) gpioG;
+	PeriphGPIO!('h', 0x4800_1C00) gpioH;
+	PeriphGPIO!('i', 0x4800_2000) gpioI;
 }

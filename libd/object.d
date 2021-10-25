@@ -1451,7 +1451,6 @@ struct ModuleInfo
     else
     {
         @disable this();
-        @disable this(this) const;
     }
 
 const:
@@ -1461,7 +1460,7 @@ const:
         assert(flag >= MItlsctor && flag <= MIname);
         assert(!(flag & (flag - 1)) && !(flag & ~(flag - 1) << 1));
     }
-    body
+    do
     {
         import core.stdc.string : strlen;
 

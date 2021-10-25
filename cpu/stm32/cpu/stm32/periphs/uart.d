@@ -1,0 +1,251 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+module cpu.stm32.periphs.uart;
+
+import cpu.capabilities;
+import cpu.stm32.periphs.rcc;
+import mcud.container.queue;
+import mcud.core.system;
+import mcud.core.task;
+import mcud.mem.volatile;
+import mcud.meta.device;
+
+/**
+The raw UART peripheral.
+Params:
+	base = The base address.
+*/
+struct PeriphUART(uint base)
+{
+	/// Control Register 1
+	Volatile!(uint, base + 0x00) CR1;
+	/// Control Register 2
+	Volatile!(uint, base + 0x04) CR2;
+	/// Control Register 3
+	Volatile!(uint, base + 0x08) CR3;
+	/// Baud Rate Register
+	Volatile!(uint, base + 0x0C) BRR;
+	/// Guard Time and Prescaler Register
+	Volatile!(uint, base + 0x10) GPTR;
+	/// Receiver Timeout Register
+	Volatile!(uint, base + 0x14) RTOR;
+	/// Request Register
+	Volatile!(uint, base + 0x18) RQR;
+	/// Interrupt and Status Register
+	Volatile!(uint, base + 0x1C) ISR;
+	/// Interrupt flag Clear Register
+	Volatile!(uint, base + 0x20) ICR;
+	/// Receive Data Register
+	Volatile!(uint, base + 0x24) RDR;
+	/// Transmit Data Register
+	Volatile!(uint, base + 0x28) TDR;
+}
+
+/**
+Bitmask for CR1.
+*/
+enum USART_CR1
+{
+	UE = 1 << 0,
+	UESM = 1 << 1,
+	RE = 1 << 2,
+	TE = 1 << 3,
+	IDLEIE = 1 << 4,
+	RXNEIE = 1 << 5,
+	TCIE = 1 << 6,
+	TXEIE = 1 << 7,
+	PEIE = 1 << 8,
+	PS = 1 << 9,
+	PCE = 1 << 10,
+	WAKE = 1 << 11,
+	M0 = 1 << 12,
+	MME = 1 << 13,
+	CMIE = 1 << 14,
+	OVER8 = 1 << 15,
+	RTOIE = 1 << 26,
+	EOBIE = 1 << 27,
+	M1 = 1 << 18,
+}
+
+/**
+Describes all supported UART ports.
+*/
+enum UARTPort
+{
+	unset,
+	usart1,
+	usart2,
+	usart3,
+	uart4,
+	uart5,
+	lpuart1
+}
+
+/**
+Configures a UART.
+*/
+struct UARTConfig
+{
+	/// The pin to use as TX.
+	Device m_tx = Device.empty;
+	/// The pin to use as RX.
+	Device m_rx = Device.empty;
+	/// The UART port to configure.
+	UARTPort m_port = UARTPort.unset;
+	/// The size of the transmit buffer.
+	size_t m_transmitBufferSize = 128;
+	/// The baud rate of the UART.
+	int m_baudrate = 0;
+
+	/**
+	Sets the UART port to communicate over.
+	Params:
+		port = The UART port to communicate over.
+	*/
+	UARTConfig uart(UARTPort port)
+	{
+		assert(m_port == UARTPort.unset, "A UART port is already selected");
+		m_port = port;
+		return this;
+	}
+
+	/**
+	Sets the TX pin.
+	*/
+	UARTConfig txPin(Pin)(Pin pin)
+	{
+		m_tx = Device.of!Pin;
+		return this;
+	}
+
+	/**
+	Sets the RX pin.
+	*/
+	UARTConfig rxPin(Pin)(Pin pin)
+	{
+		m_rx = Device.of!Pin;
+		return this;
+	}
+
+	/**
+	Sets the target baudrate.
+	*/
+	UARTConfig baudrate(uint baudrate)
+	{
+		m_baudrate = baudrate;
+		return this;
+	}
+}
+
+/**
+A UART.
+*/
+struct UART(UARTConfig config)
+{
+static:
+	enum hasTX = !config.m_tx.isEmpty();
+	enum hasRX = !config.m_rx.isEmpty();
+
+	static if (hasTX)
+		alias tx = getDevice!(config.m_tx);
+	static if (hasRX)
+		alias rx = getDevice!(config.m_rx);
+
+	static assert(hasTX || hasRX, "A UART needs at least a TX or RX pin configured");
+
+	static if (config.m_port == UARTPort.usart1)
+	{
+		alias periph = system.cpu.usart1;
+		alias rcc = RCCPeriph!(RCC_APB2ENR.USART1EN);
+		mixin assertAF!(AlternateFunction.USART1_TX, AlternateFunction.USART1_RX);
+	}
+	else static if (config.m_port == UARTPort.usart2)
+	{
+		alias periph = system.cpu.usart2;
+		alias rcc = RCCPeriph!(RCC_APB1ENR1.USART2EN);
+		mixin assertAF!(AlternateFunction.USART2_TX, AlternateFunction.USART2_RX);
+	}
+	else static if (config.m_port == UARTPort.usart3)
+	{
+		alias periph = system.cpu.usart3;
+		alias rcc = RCCPeriph!(RCC_APB1ENR1.USART3EN);
+		mixin assertAF!(AlternateFunction.USART3_TX, AlternateFunction.USART3_RX);
+	}
+	else static if (config.m_port == UARTPort.uart4)
+	{
+		alias periph = system.cpu.uart4;
+		alias rcc = RCCPeriph!(RCC_APB1ENR1.UART4EN);
+		mixin assertAF!(AlternateFunction.UART4_TX, AlternateFunction.UART4_RX);
+	}
+	else static if (config.m_port == UARTPort.uart5)
+	{
+		alias periph = system.cpu.uart5;
+		alias rcc = RCCPeriph!(RCC_APB1ENR1.UART5EN);
+		mixin assertAF!(AlternateFunction.UART5_TX, AlternateFunction.UART5_RX);
+	}
+	else static if (config.m_port == UARTPort.lpuart1)
+	{
+		alias periph = system.cpu.lpuart1;
+		alias rcc = RCCPeriph!(RCC_APB1ENR2.LPUART1EN);
+		mixin assertAF!(AlternateFunction.LPUART1_TX, AlternateFunction.LPUART1_RX);
+	}
+
+	private enum m_cr1 = getDefaultCR1();
+	private Queue!(ubyte, config.m_transmitBufferSize) m_transmitBuf;
+
+	void start()
+	{
+		rcc.start();
+		periph.CR1 |= m_cr1;
+	}
+
+	void stop()
+	{
+		rcc.stop();
+		periph.CR1.store(0);
+	}
+
+	@task(TaskState.stopped)
+	void transmitTask()
+	{
+
+	}
+
+	void write(const(ubyte)[] data)
+	{
+		if (m_transmitBuf.available >= data.length)
+			m_transmitBuf.push(data);
+		startTask!transmitTask();
+	}
+
+	void write(string data)
+	{
+		write(cast(ubyte[]) data);
+	}
+
+	private uint getDefaultCR1()
+	{
+		uint cr1 = 0;
+		if (hasTX)
+			cr1 |= USART_CR1.TE;
+		if (hasRX)
+			cr1 |= USART_CR1.RE;
+		return cr1;
+	}
+
+	mixin template assertAF(AlternateFunction afTX, AlternateFunction afRX)
+	{
+		static if (hasTX)
+		{
+			static assert(tx.alternateFunction.isSet, "TX is not configured as an alternate function");
+			static assert(tx.alternateFunction.af == afTX, "TX is configured for the incorrect alternate function");
+		}
+		static if (hasRX)
+		{
+			static assert(rx.alternateFunction.isSet, "RX is not configured as an alternate function");
+			static assert(rx.alternateFunction.af == afRX, "RX is configured for the incorrect alternate function");
+		}
+	}
+}
