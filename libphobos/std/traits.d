@@ -1751,22 +1751,22 @@ Returns:
 See_Also:
     $(LREF functionAttributes)
 */
-template hasFunctionAttributes(args...)
-if (args.length > 0 && isCallable!(args[0])
-     && allSatisfy!(isSomeString, typeof(args[1 .. $])))
-{
-    enum bool hasFunctionAttributes = {
-        import std.algorithm.searching : canFind;
-        import std.range : only;
-        enum funcAttribs = only(__traits(getFunctionAttributes, args[0]));
-        static foreach (attribute; args[1 .. $])
-        {
-            if (!funcAttribs.canFind(attribute))
-                return false;
-        }
-        return true;
-    }();
-}
+// template hasFunctionAttributes(args...)
+// if (args.length > 0 && isCallable!(args[0])
+//      && allSatisfy!(isSomeString, typeof(args[1 .. $])))
+// {
+//     enum bool hasFunctionAttributes = {
+//         import std.algorithm.searching : canFind;
+//         import std.range : only;
+//         enum funcAttribs = only(__traits(getFunctionAttributes, args[0]));
+//         static foreach (attribute; args[1 .. $])
+//         {
+//             if (!funcAttribs.canFind(attribute))
+//                 return false;
+//         }
+//         return true;
+//     }();
+// }
 
 ///
 @safe unittest

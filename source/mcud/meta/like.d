@@ -13,6 +13,17 @@ private template TypeOf(alias func)
 	alias TypeOf = AliasSeq!(ReturnType!func, Parameters!func);
 }
 
+private bool hasFunctionAttributes(alias func, string property)()
+{
+	bool hasAttribute = false;
+	static foreach (attribute; __traits(getFunctionAttributes, func))
+	{
+		if (attribute == property)
+			hasAttribute = true;
+	}
+	return hasAttribute;
+}
+
 private template isProperty(alias func)
 {
 	enum isProperty = hasFunctionAttributes!(func, "@property");

@@ -11,9 +11,10 @@ import cpu.stm32.periphs.rcc;
 import mcud.core.attributes;
 import mcud.core.result;
 import mcud.core.system;
+import mcud.events;
+import mcud.interfaces.gpio;
 import mcud.mem.volatile;
 import mcud.meta.like;
-import mcud.periphs.gpio.input;
 
 public import cpu.stm32.capabilities : AlternateFunction;
 
@@ -224,28 +225,39 @@ static:
 
 	static if (config._mode == PinMode.output)
 	{
-		@forceinline
-		Result!void on() nothrow
+		struct ReadyEvent {}
+
+		void on()
 		{
 			periph.bsrr.store(1 << config._pin);
-			return ok!void();
+			fire!ReadyEvent();
 		}
 
-		@forceinline
-		Result!void off() nothrow
+		void off()
 		{
 			periph.bsrr.store(0x0001_0000 << config._pin);
-			return ok!void();
+			fire!ReadyEvent();
 		}
 	}
 	else static if (config._mode == PinMode.input)
 	{
-		@forceinline
-		Result!bool isOn()
+		struct IsOnEvent
+		{
+			bool isOn;
+		}
+
+		bool isOnBlock()
 		{
 			const idr = periph.idr.load();
 			enum mask = 1 << config._pin;
-			return ok!bool((idr & mask) != 0);
+			return (idr & mask) != 0;
+		}
+
+		void isOn()
+		{
+			IsOnEvent event;
+			event.isOn = isOnBlock();
+			fire!IsOnEvent(event);
 		}
 	}
 }

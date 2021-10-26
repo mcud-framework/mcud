@@ -8,6 +8,7 @@ public:
 import mcud.container;
 import mcud.core;
 import mcud.drivers;
+import mcud.events;
 import mcud.interfaces;
 import mcud.mem;
 import mcud.meta;
