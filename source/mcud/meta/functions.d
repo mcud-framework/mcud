@@ -32,6 +32,14 @@ struct Function(T, Arg = void)
 	string mangled;
 }
 
+private template getVisibility(alias T)
+{
+	static if (__traits(compiles, __traits(getVisibility, T)))
+		enum getVisibility = __traits(getVisibility, T);
+	else
+		enum getVisibility = "public";
+}
+
 /**
 Checks if the given type can have child functions.
 */
@@ -51,6 +59,7 @@ Returns:
 Function!(attribute, Arg)[] allFunctions(alias attribute, alias T = system, Arg = void)()
 {
 	Function!(attribute, Arg)[] found = [];
+	pragma(msg, "Function search started");
 	allFunctionsFiltered!(attribute, Arg, T)(found);
 	return found;
 }
@@ -67,7 +76,7 @@ Params:
 */
 private void allFunctionsFiltered(alias attribute, Arg, alias T)(ref Function!(attribute, Arg)[] found)
 {
-	enum isPublic = __traits(getVisibility, T) == "public";
+	enum isPublic = getVisibility!T == "public";
 	static if (isPublic && hasUDA!(T, attribute))
 	{
 		alias udas = getUDAs!(T, attribute);
@@ -87,16 +96,44 @@ private void allFunctionsFiltered(alias attribute, Arg, alias T)(ref Function!(a
 			found ~= [Function!(attribute, Arg)(uda, &T, T.mangleof)];
 		}
 	}
-	else static if (isPublic && canContainFunctions!T)
+	else static if (isPublic && isStruct!(T))
 	{
-		pragma(msg, "T: " ~ T.stringof);
-		static foreach (child; __traits(allMembers, T))
+		static foreach (child; allMembers!T)
 		{
-			//pragma(msg, "Child: " ~ child);
-			static if (__traits(compiles, allFunctionsFiltered!(attribute, Arg, __traits(getMember, T, child))(found)))
-				allFunctionsFiltered!(attribute, Arg, __traits(getMember, T, child))(found);
+			pragma(msg, "Child: " ~ child);
+			//static if (__traits(compiles, __traits(getMember, T, child)))
+			allFunctionsFiltered!(attribute, Arg, __traits(getMember, TypeOf!T, child))(found);
+			//else
+			//	static assert(__traits(getMember, T, child), "Does not compile");
 		}
 	}
+}
+
+private template TypeOf(alias T)
+{
+	static if (is(T))
+		alias TypeOf = T;
+	else
+		alias TypeOf = typeof(T);
+}
+
+private template isStruct(alias T)
+{
+	static if (is(T))
+		enum isStruct = __traits(isPOD, T);
+	else
+		enum isStruct = __traits(isPOD, typeof(T));
+}
+
+private template allMembers(alias T)
+{
+	//pragma(msg, "Members: ", __traits(allMembers, typeof(T)));
+	static if (is(T))
+		alias allMembers = __traits(allMembers, T);
+	else
+		alias allMembers = __traits(allMembers, typeof(T));
+	//else
+	//é	alias allMembers = __traits(allMembers, typeof(T.init));
 }
 
 /**
