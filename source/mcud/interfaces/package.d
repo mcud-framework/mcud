@@ -6,3 +6,4 @@ module mcud.interfaces;
 
 public:
 import mcud.interfaces.gpio;
+import mcud.interfaces.startable;

@@ -10,9 +10,10 @@ import mcud.drivers.gpio.invert;
 /**
 An example definition for a u-blox Nora B1 evaluation kit.
 */
-template Board()
+struct Board
 {
-	alias cpu = NRF5340!();
+static:
+	enum cpu = NRF5340();
 
 	static Pin!(
 		PinConfig()
@@ -101,6 +102,3 @@ template Board()
 		button4.start();
 	}
 }
-
-/// The board.
-alias board = Board!();

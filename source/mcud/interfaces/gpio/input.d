@@ -4,12 +4,13 @@
 
 module mcud.interfaces.gpio.input;
 
+import mcud.interfaces.startable;
 import mcud.meta.like;
 
 /**
 A digital input.
 */
-interface DigitalInput
+interface DigitalInput : Startable
 {
 	/**
 	An event which detects whether an input is on or off.

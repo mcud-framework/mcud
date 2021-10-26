@@ -4,15 +4,15 @@
 
 module app;
 
-import board : board;
 import mcud.core;
 
-template App()
+struct App
 {
+static:
 	@task
 	void loop()
 	{
-		board.led.on();
-		board.led.off();
+		system.board.led.on();
+		system.board.led.off();
 	}
 }

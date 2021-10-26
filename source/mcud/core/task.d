@@ -57,38 +57,39 @@ template TaskRuntime(string mangledName)
 	static shared bool running = true;
 }
 
-@("allTasks finds task in template")
+@("allTasks finds task in struct")
 unittest
 {
-	template A()
+	struct A
 	{
 		@task
 		static void loop() {}
 	}
 
-	alias a = A!();
+	enum a = A();
 	const tasks = allTasks!a;
 	assert(tasks.length > 0);
 	assert(tasks[0].attribute == task());
-	assert(tasks[0].func == &a.loop);
+	assert(tasks[0].func == &A.loop);
 }
 
 @("allTask finds tasks recursively")
 unittest
 {
-	template A()
+	struct A
 	{
 		@task static void loop() {}
 	}
 
-	template B()
+	struct B
 	{
-		alias a = A!();
+		static A a;
+
 		@task
 		static void loop() {}
 	}
 
-	alias b = B!();
+	enum b = B();
 	const taskA2 = Task(task(), &b.a.loop);
 	const taskB = Task(task(), &b.loop);
 

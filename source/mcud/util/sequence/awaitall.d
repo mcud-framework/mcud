@@ -7,8 +7,9 @@ module mcud.util.sequence.awaitall;
 import mcud.events;
 import std.format;
 
-template AwaitAll(void function() callback, Events...)
+struct AwaitAll(void function() callback, Events...)
 {
+static:
 	private int _count = 0;
 
 	static foreach (i, Event; Events)

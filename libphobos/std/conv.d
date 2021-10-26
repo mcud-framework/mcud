@@ -10,3 +10,9 @@ if (is(Target == string) && Input.mangleof[0] == 'E')
 	}
 	assert(0, "Invalid value");
 }
+
+Target to(Target, Input)(Input input)
+if (is(Target == Input))
+{
+	return input;
+}

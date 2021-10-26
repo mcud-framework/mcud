@@ -5,11 +5,12 @@
 module mcud.interfaces.gpio.output;
 
 import mcud.meta.like;
+import mcud.interfaces.startable;
 
 /**
 A digital output.
 */
-interface DigitalOutput
+interface DigitalOutput : Startable
 {
 	/**
 	An event which gets fired when the output has been turned on or off.

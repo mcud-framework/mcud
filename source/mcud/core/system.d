@@ -34,20 +34,20 @@ import std.traits;
 		ubyte __stop_text;
 	}
 
-	private template System()
+	private struct System
 	{
-		public:
+	static:
 		/// The board support layer.
-		alias board = Board!();
+		static Board board;
 		static assert(__traits(hasMember, board, "cpu"), "Board does not define a 'cpu'");
 		/// The CPU used by the board.
-		alias cpu = board.cpu;
+		alias cpu = Board.cpu;
 		/// The user application.
-		alias app = App!();
+		static App app;
 	}
 
 	/// Describes the program and board definition.
-	alias system = System!();
+	enum system = System();
 
 	private auto filter(alias callback, T)(T[] values)
 	{

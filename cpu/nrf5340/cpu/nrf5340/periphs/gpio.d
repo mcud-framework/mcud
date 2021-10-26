@@ -5,8 +5,9 @@
 module cpu.nrf5340.periphs.gpio;
 
 import mcud.events;
-import mcud.mem.volatile;
 import mcud.interfaces.gpio;
+import mcud.mem.volatile;
+import mcud.meta.like;
 import std.format;
 
 /**
@@ -183,16 +184,16 @@ Configures a pin.
 struct Pin(PinConfig config)
 {
 static:
-	import board : board;
+	import mcud.core.system : system;
 
 	static if (config._port == Port.p0)
-		alias periph = board.cpu.p0;
+		enum periph = system.cpu.p0;
 	else static if (config._port == Port.p1)
-		alias periph = board.cpu.p1;
+		enum periph = system.cpu.p1;
 	else
 		static assert(0, "No port to configure was selected");
 
-	mixin(format!"alias cnf = periph.pinCnf%d;"(config._pin));
+	mixin(format!"enum cnf = periph.pinCnf%d;"(config._pin));
 	enum mask = (1 << config._pin);
 	enum pinConfig = {
 		uint cnf = 0;
@@ -208,12 +209,16 @@ static:
 		return cnf;
 	}();
 
+	struct StartedEvent {}
+	struct StoppedEvent {}
+
 	/**
 	Starts the pin.
 	*/
 	void start()
 	{
 		cnf.store(pinConfig);
+		fire!StartedEvent();
 	}
 
 	/**
@@ -222,6 +227,7 @@ static:
 	void stop()
 	{
 		cnf.store(0x0000_0002);
+		fire!StoppedEvent();
 	}
 
 	static if (config._direction == Direction.output)
@@ -245,6 +251,8 @@ static:
 			periph.outClr.store(mask);
 			fire!ReadyEvent();
 		}
+
+		static assert(assertLike!(DigitalOutput, typeof(this)));
 	}
 	else static if (config._direction == Direction.input)
 	{
@@ -268,5 +276,11 @@ static:
 			event.isOn = isOnBlock();
 			fire!IsOnEvent(event);
 		}
+		static assert(assertLike!(DigitalInput, typeof(this)));
 	}
+}
+
+mixin template assertThis(T)
+{
+	static assert(assertLike!(T, typeof(this)));
 }

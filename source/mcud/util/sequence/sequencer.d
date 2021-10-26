@@ -17,8 +17,9 @@ Each step can consist of either:
  - A function which gets executed.
  - An `await` step which waits on one or more events to occur.
 */
-template Sequence(SimpleSteps...)
+struct Sequence(SimpleSteps...)
 {
+static:
 	private int state = 0;
 	private alias steps = staticMap!(mapStep, SimpleSteps);
 

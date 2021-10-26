@@ -15,7 +15,7 @@ version (unittest)
 /**
 The NRF5340 CPU.
 */
-template NRF5340()
+struct NRF5340
 {
 	version (CORE_application)
 	{

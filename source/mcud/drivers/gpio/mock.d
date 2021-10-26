@@ -23,9 +23,13 @@ struct DigitalIOMock
 		bool isOn;
 	}
 
-	struct ReadyEvent
-	{
-	}
+	struct ReadyEvent {}
+	struct StartedEvent {}
+	struct StoppedEvent {}
+
+	void start() {}
+
+	void stop() {}
 
 	void isOn()
 	{

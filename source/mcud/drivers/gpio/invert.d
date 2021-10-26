@@ -14,6 +14,19 @@ import mcud.test;
 struct Invert(alias base)
 if (isDigitalInput!base || isDigitalOutput!base)
 {
+	alias StartedEvent = base.StartedEvent;
+	alias StoppedEvent = base.StoppedEvent;
+
+	void start()
+	{
+		base.start();
+	}
+
+	void stop()
+	{
+		base.stop();
+	}
+
 	static if (isDigitalInput!base)
 	{
 		struct IsOnEvent
