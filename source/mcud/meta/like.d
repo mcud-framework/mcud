@@ -176,6 +176,17 @@ private template GetType(alias value)
 		alias GetType = value;
 }
 
+bool hasMember(alias t, string member)()
+{
+	bool hasMember = false;
+	static foreach (name; __traits(allMembers, typeof(t.init)))
+	{
+		static if (name == member)
+			hasMember = true;
+	}
+	return hasMember;
+}
+
 /**
 Is `true` if all members of `Interface` are like members in `Type`.
 Is `false` if even one member is different.
@@ -192,12 +203,23 @@ string[] describeLike(Interface, alias value, string interfacePrefix = "", strin
 	{
 		static if (is(member == interface))
 		{
-			reasons ~= describeLike!(
-				member,
-				__traits(getMember, value, __traits(identifier, member)),
-				__traits(identifier, Interface) ~ ".",
-				__traits(identifier, value) ~ ".",
-			);
+			static if (hasMember!(value, __traits(identifier, member)))
+			{
+				reasons ~= describeLike!(
+					member,
+					__traits(getMember, value, __traits(identifier, member)),
+					__traits(identifier, Interface) ~ ".",
+					__traits(identifier, value) ~ ".",
+				);
+			}
+			else
+			{
+				reasons ~= format!("Driver '%s' is missing '%s' from interface '%s'")(
+					interfacePrefix ~ Interface.stringof,
+					__traits(identifier, member),
+					valuePrefix ~ __traits(identifier, value)
+				);
+			}
 		}
 		else
 		{

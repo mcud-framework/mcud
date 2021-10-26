@@ -5,8 +5,7 @@
 module board;
 
 import cpu.nrf5340;
-import mcud.periphs.gpio.inverse;
-import mcud.periphs.gpio.noop;
+import mcud.drivers.gpio.invert;
 
 /**
 An example definition for a u-blox Nora B1 evaluation kit.
@@ -52,7 +51,7 @@ template Board()
 		.withPullUp()
 	) button1_raw;
 
-	static Inverse!button1_raw button1;
+	static Invert!button1_raw button1;
 
 	static Pin!(
 		PinConfig()
@@ -62,7 +61,7 @@ template Board()
 		.withPullUp()
 	) button2_raw;
 
-	static Inverse!button2_raw button2;
+	static Invert!button2_raw button2;
 
 	static Pin!(
 		PinConfig()
@@ -72,7 +71,7 @@ template Board()
 		.withPullUp()
 	) button3_raw;
 
-	static Inverse!button3_raw button3;
+	static Invert!button3_raw button3;
 
 	static Pin!(
 		PinConfig()
@@ -82,7 +81,7 @@ template Board()
 		.withPullUp()
 	) button4_raw;
 
-	static Inverse!button4_raw button4;
+	static Invert!button4_raw button4;
 
 	version(CORE_application) void init()
 	{

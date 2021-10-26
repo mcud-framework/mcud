@@ -89,9 +89,12 @@ private void allFunctionsFiltered(alias attribute, Arg, alias T)(ref Function!(a
 	}
 	else static if (isPublic && canContainFunctions!T)
 	{
+		pragma(msg, "T: " ~ T.stringof);
 		static foreach (child; __traits(allMembers, T))
 		{
-			allFunctionsFiltered!(attribute, Arg, __traits(getMember, T, child))(found);
+			//pragma(msg, "Child: " ~ child);
+			static if (__traits(compiles, allFunctionsFiltered!(attribute, Arg, __traits(getMember, T, child))(found)))
+				allFunctionsFiltered!(attribute, Arg, __traits(getMember, T, child))(found);
 		}
 	}
 }

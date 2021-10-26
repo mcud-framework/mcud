@@ -4,9 +4,9 @@
 
 module cpu.nrf5340.periphs.gpio;
 
-import mcud.core.event;
+import mcud.events;
 import mcud.mem.volatile;
-import mcud.periphs.gpio;
+import mcud.interfaces.gpio;
 import std.format;
 
 /**
@@ -226,12 +226,15 @@ static:
 
 	static if (config._direction == Direction.output)
 	{
+		struct ReadyEvent {}
+
 		/**
 		Turn the pin on.
 		*/
 		void on()
 		{
 			periph.outSet.store(mask);
+			fire!ReadyEvent();
 		}
 
 		/**
@@ -240,28 +243,30 @@ static:
 		void off()
 		{
 			periph.outClr.store(mask);
+			fire!ReadyEvent();
 		}
 	}
 	else static if (config._direction == Direction.input)
 	{
+		struct IsOnEvent
+		{
+			bool isOn;
+		}
+
 		/**
 		Gets the state of the pin.
 		Returns: `true` if the pin is high, `false` if the pin is low.
 		*/
-		bool isOnSync()
+		bool isOnBlock()
 		{
 			return (periph.in_.load() & mask) != 0;
 		}
 
-		struct InputHigh {}
-		struct InputLow {}
-
 		void isOn()
 		{
-			if (isOnSync())
-				fire!InputHigh();
-			else
-				fire!InputLow();
+			IsOnEvent event;
+			event.isOn = isOnBlock();
+			fire!IsOnEvent(event);
 		}
 	}
 }
