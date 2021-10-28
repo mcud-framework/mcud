@@ -14,6 +14,21 @@ import mcud.test;
 struct Invert(alias base)
 if (isDigitalInput!base || isDigitalOutput!base)
 {
+	struct StartedEvent {}
+	struct StoppedEvent {}
+
+	void start()
+	{
+		base.start();
+		fire!StartedEvent();
+	}
+
+	void stop()
+	{
+		base.stop();
+		fire!StoppedEvent();
+	}
+
 	static if (isDigitalInput!base)
 	{
 		struct IsOnEvent
@@ -33,7 +48,7 @@ if (isDigitalInput!base || isDigitalOutput!base)
 			newEvent.isOn = !event.isOn;
 			fire!IsOnEvent(newEvent);
 		}
-		
+
 		static assert(assertLike!(DigitalInput, typeof(this)));
 	}
 	static if (isDigitalOutput!base)
