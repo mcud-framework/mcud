@@ -5,8 +5,9 @@
 module cpu.nrf5340.periphs.gpio;
 
 import mcud.events;
-import mcud.mem.volatile;
 import mcud.interfaces.gpio;
+import mcud.mem.volatile;
+import mcud.meta.like;
 import std.format;
 
 /**
@@ -208,12 +209,16 @@ static:
 		return cnf;
 	}();
 
+	struct StartedEvent {}
+	struct StoppedEvent {}
+
 	/**
 	Starts the pin.
 	*/
 	void start()
 	{
 		cnf.store(pinConfig);
+		fire!StartedEvent();
 	}
 
 	/**
@@ -222,6 +227,7 @@ static:
 	void stop()
 	{
 		cnf.store(0x0000_0002);
+		fire!StoppedEvent();
 	}
 
 	static if (config._direction == Direction.output)
@@ -245,6 +251,8 @@ static:
 			periph.outClr.store(mask);
 			fire!ReadyEvent();
 		}
+
+		static assert(assertLike!(DigitalOutput, typeof(this)));
 	}
 	else static if (config._direction == Direction.input)
 	{
@@ -268,5 +276,7 @@ static:
 			event.isOn = isOnBlock();
 			fire!IsOnEvent(event);
 		}
+
+		static assert(assertLike!(DigitalInput, typeof(this)));
 	}
 }
