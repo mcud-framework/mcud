@@ -9,6 +9,7 @@ import mcud.interfaces.gpio;
 import mcud.mem.volatile;
 import mcud.meta.like;
 import std.format;
+import std.meta;
 
 /**
 Manages a GPIO port.
@@ -26,8 +27,27 @@ struct PeriphGPIO(uint base)
 	Volatile!(uint, base + 0x024) detectMode;
 	Volatile!(uint, base + 0x028) detectModeSec;
 
-	static foreach (i; 0 .. 32)
-		mixin(format!"Volatile!(uint, base + 0x%X) pinCnf%d;"(0x200 + i * 4, i));
+	alias pinCnf = PinCnfs!(0);
+
+	private template PinCnfs(uint i)
+	if (i < 31)
+	{
+		alias PinCnfs = AliasSeq!(
+			PinCnf!(i),
+			PinCnfs!(i + 1)
+		);
+	}
+
+	private template PinCnfs(uint i)
+	if (i == 31)
+	{
+		alias PinCnfs = PinCnf!(i);
+	}
+
+	private template PinCnf(uint i)
+	{
+		alias PinCnf = Volatile!(uint, base + 0x200 + i * 4);
+	}
 }
 
 /**
@@ -99,7 +119,7 @@ struct PinConfig
 		_port = port;
 		return this;
 	}
-	
+
 	/**
 	Sets the pin to configure.
 	Params:
@@ -187,13 +207,14 @@ static:
 	import board : board;
 
 	static if (config._port == Port.p0)
-		alias periph = board.cpu.p0;
+		private alias periph = board.cpu.p0;
 	else static if (config._port == Port.p1)
-		alias periph = board.cpu.p1;
+		private alias periph = board.cpu.p1;
 	else
 		static assert(0, "No port to configure was selected");
 
-	mixin(format!"alias cnf = periph.pinCnf%d;"(config._pin));
+	private alias cnf = periph.pinCnf[config._pin];
+
 	enum mask = (1 << config._pin);
 	enum pinConfig = {
 		uint cnf = 0;
@@ -254,7 +275,7 @@ static:
 
 		static assert(assertLike!(DigitalOutput, typeof(this)));
 	}
-	else static if (config._direction == Direction.input)
+	static if (config._direction == Direction.input)
 	{
 		struct IsOnEvent
 		{
@@ -276,7 +297,5 @@ static:
 			event.isOn = isOnBlock();
 			fire!IsOnEvent(event);
 		}
-
-		static assert(assertLike!(DigitalInput, typeof(this)));
 	}
 }

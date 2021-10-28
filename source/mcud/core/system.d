@@ -36,7 +36,7 @@ import std.traits;
 
 	private template System()
 	{
-		public:
+	public:
 		/// The board support layer.
 		alias board = Board!();
 		static assert(__traits(hasMember, board, "cpu"), "Board does not define a 'cpu'");
@@ -94,7 +94,7 @@ import std.traits;
 			memset(&__start_bss, 0, &__stop_bss - &__start_bss);
 			memcpy(&__start_data, &__stop_text, &__stop_data - &__start_data);
 
-			static if (is(typeof(system.board.init)))
+			static if (is(system.board.init))
 				system.board.init();
 			static foreach (setup; allSetup!system)
 				setup.func();
