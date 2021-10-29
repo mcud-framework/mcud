@@ -4,7 +4,7 @@
 
 module mcud.util.sequence.sequencer;
 
-import mcud.core.event;
+import mcud.events;
 import mcud.util.sequence.awaitall;
 import std.format;
 import std.meta;

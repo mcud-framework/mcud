@@ -2,7 +2,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-module mcud.periphs;
+module mcud.drivers.gpio;
 
 public:
-import mcud.periphs.stream;
+import mcud.drivers.gpio.edge;
+import mcud.drivers.gpio.invert;
+import mcud.drivers.gpio.mock;

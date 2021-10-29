@@ -2,17 +2,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-/// Contains a mock GPIO.
-module mcud.periphs.gpio.noop;
+module mcud.events;
 
-/**
-A GPIO which does nothing.
-*/
-struct NoOpGPIO
+version(unittest)
 {
-	static void doNothing() {}
-
-	alias on = doNothing;
-	alias off = doNothing;
-	enum isOn = false;
+	public import mcud.events.test;
+}
+else
+{
+	public import mcud.events.standard;
 }

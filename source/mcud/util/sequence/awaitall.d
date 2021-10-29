@@ -4,7 +4,7 @@
 
 module mcud.util.sequence.awaitall;
 
-import mcud.core.event;
+import mcud.events;
 import std.format;
 
 template AwaitAll(void function() callback, Events...)
