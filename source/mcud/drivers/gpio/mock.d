@@ -66,7 +66,7 @@ static assert(assertLike!(DigitalOutput, DigitalIOMock));
 @("DigitalIOMock#isOn fires events")
 unittest
 {
-	DigitalIOMock mock;
+	static DigitalIOMock mock;
 
 	bool called = false;
 	Events.addHandlers!(mock);

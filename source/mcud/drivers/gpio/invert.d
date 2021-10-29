@@ -73,7 +73,7 @@ static:
 @("Invert inverts digital inputs")
 unittest
 {
-	DigitalIOMock mock;
+	static DigitalIOMock mock;
 	Invert!mock input;
 
 	bool called = false;
@@ -91,7 +91,7 @@ unittest
 @("Invert inverts digital outputs")
 unittest
 {
-	DigitalIOMock mock;
+	static DigitalIOMock mock;
 	Invert!mock output;
 
 	expect(mock.isOnBlock).toEqual(false);
