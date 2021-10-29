@@ -67,8 +67,7 @@ Params:
 */
 private void allFunctionsFiltered(alias attribute, Arg, alias T)(ref Function!(attribute, Arg)[] found)
 {
-	enum isPublic = __traits(getVisibility, T) == "public";
-	static if (isPublic && hasUDA!(T, attribute))
+	static if (isPublic!T && hasUDA!(T, attribute))
 	{
 		alias udas = getUDAs!(T, attribute);
 		assert(udas.length == 1, "A function should not have duplicate annotations");
@@ -87,13 +86,49 @@ private void allFunctionsFiltered(alias attribute, Arg, alias T)(ref Function!(a
 			found ~= [Function!(attribute, Arg)(uda, &T, T.mangleof)];
 		}
 	}
-	else static if (isPublic && canContainFunctions!T)
+	else static if (isPublic!T && canContainFunctions!T)
 	{
 		static foreach (child; __traits(allMembers, T))
-		{
-			allFunctionsFiltered!(attribute, Arg, __traits(getMember, T, child))(found);
-		}
+		{{
+			alias symbol = __traits(getMember, T, child);
+			static if (!__traits(isScalar, symbol))
+				allFunctionsFiltered!(attribute, Arg, symbol)(found);
+		}}
 	}
+}
+
+/**
+Tests if a symbol is public or not.
+Params:
+	t = The symbol to test.
+Returns: `true` if the symbol is public or cannot have any visibility,
+otherwise `false`
+*/
+private template isPublic(alias t)
+{
+	static if (__traits(compiles, __trait(getVisibility, t)))
+		enum isPublic = __traits(getVisibilty, t) == "public";
+	else
+		enum isPublic = true;
+}
+
+/**
+Tests if a symbol is a template or not.
+Params:
+	t = The symbol to test.
+Returns: `true` if the symbol is a template, `false` if it is not a template.
+*/
+private template isTemplate(alias t)
+{
+	enum isTemplate = !is(TemplateOf!t == void);
+}
+
+/**
+Ditto.
+*/
+private template isTemplate(T...)
+{
+	enum isTemplate = true;
 }
 
 /**

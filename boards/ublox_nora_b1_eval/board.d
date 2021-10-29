@@ -5,84 +5,82 @@
 module board;
 
 import cpu.nrf5340;
-import mcud.periphs.gpio.inverse;
-import mcud.periphs.gpio.noop;
+import mcud.drivers.gpio.invert;
 
 /**
 An example definition for a u-blox Nora B1 evaluation kit.
 */
-template Board()
+struct Board()
 {
+static:
 	alias cpu = NRF5340!();
 
-	static Pin!(
+	alias led1 = Pin!(
 		PinConfig()
 		.port(Port.p0)
 		.pin(28)
 		.asOutput()
-	) led1;
+	);
 	alias led = led1;
 
-	static Pin!(
+	alias led2 = Pin!(
 		PinConfig()
 		.port(Port.p0)
 		.pin(29)
 		.asOutput()
-	) led2;
+	);
 
-	static Pin!(
+	alias led3 = Pin!(
 		PinConfig()
 		.port(Port.p0)
 		.pin(30)
 		.asOutput()
-	) led3;
+	);
 
-	static Pin!(
+	alias led4 = Pin!(
 		PinConfig()
 		.port(Port.p0)
 		.pin(31)
 		.asOutput()
-	) led4;
+	);
 
-	static Pin!(
+	alias button1_raw = Pin!(
 		PinConfig()
 		.port(Port.p0)
 		.pin(23)
 		.asInput()
 		.withPullUp()
-	) button1_raw;
+	);
+	alias button1 = Invert!button1_raw;
 
-	static Inverse!button1_raw button1;
-
-	static Pin!(
+	alias button2_raw = Pin!(
 		PinConfig()
 		.port(Port.p0)
 		.pin(24)
 		.asInput()
 		.withPullUp()
-	) button2_raw;
+	);
+	alias button2 = Invert!button2_raw;
 
-	static Inverse!button2_raw button2;
-
-	static Pin!(
+	alias button3_raw = Pin!(
 		PinConfig()
 		.port(Port.p0)
 		.pin(8)
 		.asInput()
 		.withPullUp()
-	) button3_raw;
+	);
 
-	static Inverse!button3_raw button3;
+	alias button3 = Invert!button3_raw;
 
-	static Pin!(
+	alias button4_raw = Pin!(
 		PinConfig()
 		.port(Port.p0)
 		.pin(9)
 		.asInput()
 		.withPullUp()
-	) button4_raw;
+	);
 
-	static Inverse!button4_raw button4;
+	alias button4 = Invert!button4_raw;
 
 	version(CORE_application) void init()
 	{
