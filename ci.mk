@@ -3,7 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 EXAMPLES = $(patsubst examples/%,%,$(wildcard examples/*))
-$(info Examples: $(EXAMPLES))
 
 .PHONY: all build_examples
 all: build_examples
@@ -13,12 +12,10 @@ define build_example_board =
 build_$1_$2:
 	@echo === Building $1 for $2 ===
 	BOARD=$2 $(MAKE) -C examples/$1
-
 .PHONY: test_$1_$2
 test_$1_$2:
 	@echo === Testing $1 for $2 ===
 	BOARD=$2 $(MAKE) -C examples/$1 test
-
 build_$1: build_$1_$2
 test_$1: test_$1_$2
 endef

@@ -81,8 +81,8 @@ endif
 include $(CPUS)/$(CPU)/include.mk
 
 convert_path_docker = $(subst $(MCUD),/mcud,$1)
-$(info Docker: $(DOCKER))
 ifeq (yes,$(USE_DOCKER))
+$(info Docker: $(DOCKER))
 convert_path = $(call convert_path_docker,$1)
 RUN := $(call RUN_ARGS)
 RUN_ARGS = docker run -t --rm --network none \
@@ -153,7 +153,13 @@ OBJCOPY = $(TARGET)objcopy
 .PHONY: test
 test: $(ELF_TEST_FILE)
 	@echo "Running tests..."
-	$(RUN) $(call convert_path,$(ELF_TEST_FILE))
+	docker run -t --rm --network none \
+		-v $(CURDIR):/src \
+		-v $(abspath $(MCUD)):/mcud \
+		-w /src \
+		-u $(shell id -u):$(shell id -g) \
+		seeseemelk/mcud:test-2021-10-19 \
+		$(call convert_path,$(ELF_TEST_FILE))
 	@echo "Tests succeeded!"
 
 .PHONY: info
