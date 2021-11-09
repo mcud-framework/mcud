@@ -4,7 +4,6 @@
 
 PROJECT_NAME := mcud_application
 
+$(info IDF_PATH: $(IDF_PATH))
 include $(IDF_PATH)/make/project.mk
-
-#COMPONENT_DIRS += /home/seeseemelk/dev/brava-d/mcud/dist/esp-idf-project
 

@@ -83,16 +83,19 @@ include $(CPUS)/$(CPU)/include.mk
 convert_path_docker = $(subst $(MCUD),/mcud,$1)
 $(info Docker: $(DOCKER))
 ifeq (yes,$(USE_DOCKER))
-convert_path = $(call convert_path_docker, $1)
-RUN := docker run -t --rm --network none \
+convert_path = $(call convert_path_docker,$1)
+RUN := $(call RUN_ARGS)
+RUN_ARGS = docker run -t --rm --network none \
 	-v $(CURDIR):/src \
 	-v $(abspath $(MCUD)):/mcud \
 	-w /src \
 	-u $(shell id -u):$(shell id -g) \
+	$1 \
 	$(DOCKER)
 else
 convert_path = $1
 RUN :=
+RUN_ARGS :=
 endif
 
 # Find all the sources to build.

@@ -13,7 +13,11 @@ ESP_IDF_OBJ = $(OBJ_APP) $(OBJ_PHOBOS) $(OBJ_DRUNTIME)
 
 $(ELF_APP): $(ESP_IDF_OBJ) get-esp-idf
 	rm -f $(ELF_APP)
-	IDF_PATH=$(MCUD)/dist/esp-idf MCUD_OBJECTS="$(ESP_IDF_OBJ)" $(MAKE) -f $(IDF_PROJECT)/Makefile BATCH_BUILD=1 all
+		$(call RUN_ARGS, \
+			-e IDF_PATH=$(call convert_path,$(MCUD)/dist/esp-idf) \
+			-e MCUD_OBJECTS="$(call convert_path,$(ESP_IDF_OBJ))" \
+		) \
+		$(MAKE) -f $(call convert_path,$(IDF_PROJECT)/Makefile) BATCH_BUILD=1 all
 
 include $(ARCHETYPES)/base-objects.mk
 
