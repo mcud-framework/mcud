@@ -57,6 +57,9 @@ ARCHETYPES = $(MCUD)/archetypes
 # Use docker if docker hasn't been explicitly disabled
 USE_DOCKER ?= yes
 
+# Set to yes if the docker container needs a network connection.
+DOCKER_NEEDS_NETWORK ?= no
+
 # Set of variants, used by the dub generator to generate configurations.
 VARIANTS :=
 
@@ -82,15 +85,16 @@ include $(CPUS)/$(CPU)/include.mk
 
 convert_path_docker = $(subst $(MCUD),/mcud,$1)
 ifeq (yes,$(USE_DOCKER))
+DOCKER_NETWORK_OPTIONS = $(if $(filter-out yes,$(DOCKER_NEEDS_NETWORK)),--network none,)
 $(info Docker: $(DOCKER))
 convert_path = $(call convert_path_docker,$1)
-RUN = docker run -t --rm --network none \
+RUN = docker run -t --rm $(DOCKER_NETWORK_OPTIONS) \
 	-v $(CURDIR):/src \
 	-v $(abspath $(MCUD)):/mcud \
 	-w /src \
 	-u $(shell id -u):$(shell id -g) \
 	$(DOCKER)
-RUN_ARGS = docker run -t --rm --network none \
+RUN_ARGS = docker run -t --rm $(DOCKER_NETWORK_OPTIONS) \
 	-v $(CURDIR):/src \
 	-v $(abspath $(MCUD)):/mcud \
 	-w /src \

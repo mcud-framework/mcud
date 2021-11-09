@@ -5,7 +5,7 @@
 # This archetype defines a target which builds the firmware using the ESP-IDF
 # SDK.
 
-
+DOCKER_NEEDS_NETWORK = yes
 IDF_PROJECT = $(MCUD)/dist/esp-idf-project
 ELF_APP = $(IDF_PROJECT)/build/mcud_application.elf
 
