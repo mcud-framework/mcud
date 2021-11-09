@@ -84,7 +84,12 @@ convert_path_docker = $(subst $(MCUD),/mcud,$1)
 ifeq (yes,$(USE_DOCKER))
 $(info Docker: $(DOCKER))
 convert_path = $(call convert_path_docker,$1)
-RUN := $(call RUN_ARGS)
+RUN = docker run -t --rm --network none \
+	-v $(CURDIR):/src \
+	-v $(abspath $(MCUD)):/mcud \
+	-w /src \
+	-u $(shell id -u):$(shell id -g) \
+	$(DOCKER)
 RUN_ARGS = docker run -t --rm --network none \
 	-v $(CURDIR):/src \
 	-v $(abspath $(MCUD)):/mcud \
