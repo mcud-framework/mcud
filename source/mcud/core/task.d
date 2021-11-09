@@ -6,6 +6,7 @@ module mcud.core.task;
 
 import mcud.core.attributes;
 import mcud.meta;
+import mcud.test;
 
 /**
 Describes the states of a task.
@@ -97,4 +98,19 @@ unittest
 	assert(tasks2[1].attribute == task());
 	assert(tasks2[0].func == &b.a.loop);
 	assert(tasks2[1].func == &b.loop);
+}
+
+@("allSetup finds setup functions recursively")
+unittest
+{
+	template A()
+	{
+		@setup static void onSetup() {}
+	}
+
+	alias a = A!();
+	const setups = allSetup!a;
+	expect(setups.length).toEqual(1);
+	assert(setups[0].attribute == setup());
+	assert(setups[0].func == &a.onSetup);
 }

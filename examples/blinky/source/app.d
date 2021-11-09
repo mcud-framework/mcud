@@ -9,6 +9,12 @@ import mcud.core;
 
 template App()
 {
+	@setup
+	void onSetup()
+	{
+		board.led.start();
+	}
+
 	@task
 	void loop()
 	{

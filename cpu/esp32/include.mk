@@ -3,6 +3,5 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 TARGET = xtensa-esp32-elf-
-#DOCKER ?= seeseemelk/mcud:avr-2021-07-30
-USE_DOCKER = no
+DOCKER ?= seeseemelk/mcud:xtensa-esp32-elf-2021-10-21
 ARCHETYPE = esp-idf

@@ -1,4 +1,4 @@
-module cpu.esp32;
+module cpu.esp32.cpu;
 
 template ESP32()
 {
