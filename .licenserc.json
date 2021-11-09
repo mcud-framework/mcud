@@ -12,6 +12,7 @@
 	"ignore": [
 		"tools/generate_dub.d",
 		"libd/",
-		"libphobos/"
+		"libphobos/",
+		"dist/"
 	]
 }
