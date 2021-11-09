@@ -98,12 +98,4 @@ real strtold(scope inout(char)* nptr, scope inout(char)** endptr);
 }
 
 ///
-version (GNU)
-{
-    void* alloca(size_t size) pure; // compiler intrinsic
-}
-else version (LDC)
-{
-    pragma(LDC_alloca)
-    void* alloca(size_t size) pure;
-}
+void* alloca(size_t size) pure; // compiler intrinsic

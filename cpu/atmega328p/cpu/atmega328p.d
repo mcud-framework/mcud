@@ -4,9 +4,9 @@
 
 module cpu.atmega328p;
 
+import cpu.irq;
 import cpu.periphs.gpio;
 import mcud.core.attributes;
-import mcud.core.interrupts;
 import mcud.core.system;
 
 /**

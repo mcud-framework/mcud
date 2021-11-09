@@ -2,23 +2,19 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-module app;
+module board;
 
-import board : board;
-import mcud.core;
+import cpu.esp32;
+import cpu.esp32;
 
-template App()
+struct Board()
 {
-	@setup
-	void onSetup()
-	{
-		board.led.start();
-	}
+	alias cpu = ESP32!();
 
-	@task
-	void loop()
-	{
-		board.led.on();
-		board.led.off();
-	}
+	alias led = Pin!(PinConfig()
+		.pin(13)
+		.asOutput()
+	);
 }
+
+alias board = Board!();

@@ -16,14 +16,4 @@ $(ELF_APP):  $(OBJ_APP) $(OBJ_PHOBOS) $(OBJ_DRUNTIME) $(LINKER_SCRIPT)
 	@mkdir -p $(dir $@)
 	$(RUN) $(LD) $(LDFLAGS) -o $@ $(call convert_path,$(OBJ_APP) $(OBJ_PHOBOS) $(OBJ_DRUNTIME)) $(LIBS)
 
-$(OBJ_APP): $(SOURCES_APP)
-	@mkdir -p $(dir $@)
-	$(RUN) $(DC) $(DFLAGS) -c -o $@ $(call convert_path,$^)
-
-$(OBJ_PHOBOS): $(SOURCES_LIBPHOBOS)
-	@mkdir -p $(dir $@)
-	$(RUN) $(DC) $(DFLAGS) -c -o $@ $(call convert_path,$^)
-
-$(OBJ_DRUNTIME): $(SOURCES_DRUNTIME)
-	@mkdir -p $(dir $@)
-	$(RUN) $(DC) $(DFLAGS) -c -o $@ $(call convert_path,$^)
+include $(ARCHETYPES)/base-objects.mk

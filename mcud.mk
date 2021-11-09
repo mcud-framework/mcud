@@ -51,8 +51,14 @@ OBJ_PHOBOS = $(BIN_DIR)/phobos.o
 # The linker script to use.
 LINKER_SCRIPT = $(CPUS)/$(CPU)/linker.ld
 
+# The directory containing build archetypes.
+ARCHETYPES = $(MCUD)/archetypes
+
 # Use docker if docker hasn't been explicitly disabled
 USE_DOCKER ?= yes
+
+# Set to yes if the docker container needs a network connection.
+DOCKER_NEEDS_NETWORK ?= no
 
 # Set of variants, used by the dub generator to generate configurations.
 VARIANTS :=
@@ -77,18 +83,28 @@ endif
 # Include CPU targets
 include $(CPUS)/$(CPU)/include.mk
 
-$(info Docker: $(DOCKER))
+convert_path_docker = $(subst $(MCUD),/mcud,$1)
 ifeq (yes,$(USE_DOCKER))
-convert_path = $(subst $(MCUD),/mcud,$1)
-RUN := docker run -t --rm --network none \
+DOCKER_NETWORK_OPTIONS = $(if $(filter-out yes,$(DOCKER_NEEDS_NETWORK)),--network none,)
+$(info Docker: $(DOCKER))
+convert_path = $(call convert_path_docker,$1)
+RUN = docker run -t --rm $(DOCKER_NETWORK_OPTIONS) \
 	-v $(CURDIR):/src \
 	-v $(abspath $(MCUD)):/mcud \
 	-w /src \
 	-u $(shell id -u):$(shell id -g) \
 	$(DOCKER)
+RUN_ARGS = docker run -t --rm $(DOCKER_NETWORK_OPTIONS) \
+	-v $(CURDIR):/src \
+	-v $(abspath $(MCUD)):/mcud \
+	-w /src \
+	-u $(shell id -u):$(shell id -g) \
+	$1 \
+	$(DOCKER)
 else
 convert_path = $1
 RUN :=
+RUN_ARGS :=
 endif
 
 # Find all the sources to build.
@@ -146,7 +162,13 @@ OBJCOPY = $(TARGET)objcopy
 .PHONY: test
 test: $(ELF_TEST_FILE)
 	@echo "Running tests..."
-	$(RUN) $(call convert_path,$(ELF_TEST_FILE))
+	docker run -t --rm --network none \
+		-v $(CURDIR):/src \
+		-v $(abspath $(MCUD)):/mcud \
+		-w /src \
+		-u $(shell id -u):$(shell id -g) \
+		seeseemelk/mcud:test-2021-10-19 \
+		$(call convert_path,$(ELF_TEST_FILE))
 	@echo "Tests succeeded!"
 
 .PHONY: info
@@ -173,7 +195,7 @@ $(ELF_TEST_FILE): $(TESTSOURCES) $(MCUD)/mcud.mk
 		-w /src \
 		-u $(shell id -u):$(shell id -g) \
 		seeseemelk/mcud:test-2021-10-19 \
-		$(HOSTDC) $(HOSTDFLAGS) -o $(call convert_path,$@) $(call convert_path,$(TESTSOURCES))
+		$(HOSTDC) $(HOSTDFLAGS) -o $(call convert_path_docker,$@) $(call convert_path_docker,$(TESTSOURCES))
 
 $(BIN_DIR)/test_modules.d: $(filter-out $(BIN_DIR)/test_modules.d,$(TESTSOURCES))
 	mkdir -p $(dir $@)
@@ -202,12 +224,13 @@ describe:
 	@echo "VARIANTS=$(VARIANTS)"
 	@echo "CPU=$(CPU)"
 	@echo "DIRS=$(DIRS)"
+	@echo "SUPPORTED_BOARDS=$(SUPPORTED_BOARDS)"
 	$(foreach V,$(VARIANTS),$(call VARIANT_INFO,$V))
 
 ifeq (,$(ARCHETYPE))
 $(error CPU did not set an archetype)
 else
-include $(MCUD)/archetypes/$(ARCHETYPE).mk
+include $(ARCHETYPES)/$(ARCHETYPE).mk
 endif
 
 ifneq (,$(wildcard $(CPUS)/$(CPU)/postlude.mk))

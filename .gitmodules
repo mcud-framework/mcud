@@ -1,0 +1,3 @@
+[submodule "dist/esp-idf"]
+	path = dist/esp-idf
+	url = https://github.com/mcud-framework/esp-idf.git

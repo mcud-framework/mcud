@@ -4,8 +4,9 @@
 
 module cpu.nrf5340.cpu;
 
+import cpu.irq;
 import cpu.nrf5340.periphs;
-import mcud.core.interrupts;
+import mcud.core.attributes;
 
 version (unittest)
 {

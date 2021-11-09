@@ -4,7 +4,8 @@
 
 module cpu.stm32.base;
 
-import mcud.core.interrupts;
+import cpu.irq;
+import mcud.core.attributes;
 
 /**
 The base template for any STM32 microcontroller.

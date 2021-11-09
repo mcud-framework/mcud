@@ -25,7 +25,7 @@ private FormatSpec[] parseFormatString(string fmt)
 {
 	FormatSpec[] specs;
 	bool escape = false;
-	int argIndex = 0;
+	size_t argIndex = 0;
 	size_t escapeStart = 0;
 	FormatSpec spec;
 	for (size_t i = 0; i < fmt.length; i++)
