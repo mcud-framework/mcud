@@ -9,11 +9,16 @@
 IDF_PROJECT = $(MCUD)/dist/esp-idf-project
 ELF_APP = $(IDF_PROJECT)/build/mcud_application.elf
 
-$(ELF_APP):  $(OBJ_APP) $(OBJ_PHOBOS) $(OBJ_DRUNTIME)
+ESP_IDF_OBJ = $(OBJ_APP) $(OBJ_PHOBOS) $(OBJ_DRUNTIME)
+
+$(ELF_APP): $(ESP_IDF_OBJ) get-esp-idf
 	rm -f $(ELF_APP)
-	IDF_PATH=$(MCUD)/dist/esp-idf MCUD_OBJECTS="$^" $(MAKE) -f $(IDF_PROJECT)/Makefile BATCH_BUILD=1 all
+	IDF_PATH=$(MCUD)/dist/esp-idf MCUD_OBJECTS="$(ESP_IDF_OBJ)" $(MAKE) -f $(IDF_PROJECT)/Makefile BATCH_BUILD=1 all
 
 include $(ARCHETYPES)/base-objects.mk
+
+get-esp-idf:
+	git submodule update --init $(MCUD)/dist/esp-idf
 
 all: $(ELF_APP)
 
