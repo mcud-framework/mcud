@@ -53,6 +53,13 @@ Params:
 Returns: Always return `ESP_OK`.
 */
 esp_err_t gpio_reset_pin(gpio_num_t gpio_num);
+version(unittest)
+{
+	esp_err_t gpio_reset_pin(gpio_num_t gpio_num)
+	{
+		return ESP_OK;
+	}
+}
 
 /**
 GPIO set interrupt trigger type
@@ -111,6 +118,13 @@ Returns:
 	- `ESP_ERR_INVALID_ARG` GPIO number error
 */
 esp_err_t gpio_set_level(gpio_num_t gpio_num, uint level);
+version (unittest)
+{
+	esp_err_t gpio_set_level(gpio_num_t gpio_num, uint level)
+	{
+		return ESP_OK;
+	}
+}
 
 /**
  * @brief  GPIO get input level
@@ -140,6 +154,13 @@ Returns:
 	- `ESP_ERR_INVALID_ARG` GPIO error
 */
 esp_err_t gpio_set_direction(gpio_num_t gpio_num, gpio_mode_t mode);
+version(unittest)
+{
+	esp_err_t gpio_set_direction(gpio_num_t gpio_num, gpio_mode_t mode)
+	{
+		return ESP_OK;
+	}
+}
 
 /**
  * @brief  Configure GPIO pull-up/pull-down resistors
@@ -207,205 +228,205 @@ esp_err_t gpio_set_direction(gpio_num_t gpio_num, gpio_mode_t mode);
 // esp_err_t gpio_isr_register(void (*fn)(void *), void *arg, int intr_alloc_flags, gpio_isr_handle_t *handle);
 
 /**
-  * @brief Enable pull-up on GPIO.
-  *
-  * @param gpio_num GPIO number
-  *
-  * @return
-  *     - ESP_OK Success
-  *     - ESP_ERR_INVALID_ARG Parameter error
-  */
+	* @brief Enable pull-up on GPIO.
+	*
+	* @param gpio_num GPIO number
+	*
+	* @return
+	*     - ESP_OK Success
+	*     - ESP_ERR_INVALID_ARG Parameter error
+	*/
 // esp_err_t gpio_pullup_en(gpio_num_t gpio_num);
 
 /**
-  * @brief Disable pull-up on GPIO.
-  *
-  * @param gpio_num GPIO number
-  *
-  * @return
-  *     - ESP_OK Success
-  *     - ESP_ERR_INVALID_ARG Parameter error
-  */
+	* @brief Disable pull-up on GPIO.
+	*
+	* @param gpio_num GPIO number
+	*
+	* @return
+	*     - ESP_OK Success
+	*     - ESP_ERR_INVALID_ARG Parameter error
+	*/
 // esp_err_t gpio_pullup_dis(gpio_num_t gpio_num);
 
 /**
-  * @brief Enable pull-down on GPIO.
-  *
-  * @param gpio_num GPIO number
-  *
-  * @return
-  *     - ESP_OK Success
-  *     - ESP_ERR_INVALID_ARG Parameter error
-  */
+	* @brief Enable pull-down on GPIO.
+	*
+	* @param gpio_num GPIO number
+	*
+	* @return
+	*     - ESP_OK Success
+	*     - ESP_ERR_INVALID_ARG Parameter error
+	*/
 // esp_err_t gpio_pulldown_en(gpio_num_t gpio_num);
 
 /**
-  * @brief Disable pull-down on GPIO.
-  *
-  * @param gpio_num GPIO number
-  *
-  * @return
-  *     - ESP_OK Success
-  *     - ESP_ERR_INVALID_ARG Parameter error
-  */
+	* @brief Disable pull-down on GPIO.
+	*
+	* @param gpio_num GPIO number
+	*
+	* @return
+	*     - ESP_OK Success
+	*     - ESP_ERR_INVALID_ARG Parameter error
+	*/
 // esp_err_t gpio_pulldown_dis(gpio_num_t gpio_num);
 
 /**
-  * @brief Install the driver's GPIO ISR handler service, which allows per-pin GPIO interrupt handlers.
-  *
-  * This function is incompatible with gpio_isr_register() - if that function is used, a single global ISR is registered for all GPIO interrupts. If this function is used, the ISR service provides a global GPIO ISR and individual pin handlers are registered via the gpio_isr_handler_add() function.
-  *
-  * @param intr_alloc_flags Flags used to allocate the interrupt. One or multiple (ORred)
-  *            ESP_INTR_FLAG_* values. See esp_intr_alloc.h for more info.
-  *
-  * @return
-  *     - ESP_OK Success
-  *     - ESP_ERR_NO_MEM No memory to install this service
-  *     - ESP_ERR_INVALID_STATE ISR service already installed.
-  *     - ESP_ERR_NOT_FOUND No free interrupt found with the specified flags
-  *     - ESP_ERR_INVALID_ARG GPIO error
-  */
+	* @brief Install the driver's GPIO ISR handler service, which allows per-pin GPIO interrupt handlers.
+	*
+	* This function is incompatible with gpio_isr_register() - if that function is used, a single global ISR is registered for all GPIO interrupts. If this function is used, the ISR service provides a global GPIO ISR and individual pin handlers are registered via the gpio_isr_handler_add() function.
+	*
+	* @param intr_alloc_flags Flags used to allocate the interrupt. One or multiple (ORred)
+	*            ESP_INTR_FLAG_* values. See esp_intr_alloc.h for more info.
+	*
+	* @return
+	*     - ESP_OK Success
+	*     - ESP_ERR_NO_MEM No memory to install this service
+	*     - ESP_ERR_INVALID_STATE ISR service already installed.
+	*     - ESP_ERR_NOT_FOUND No free interrupt found with the specified flags
+	*     - ESP_ERR_INVALID_ARG GPIO error
+	*/
 // esp_err_t gpio_install_isr_service(int intr_alloc_flags);
 
 /**
-  * @brief Uninstall the driver's GPIO ISR service, freeing related resources.
-  */
+	* @brief Uninstall the driver's GPIO ISR service, freeing related resources.
+	*/
 // void gpio_uninstall_isr_service(void);
 
 /**
-  * @brief Add ISR handler for the corresponding GPIO pin.
-  *
-  * Call this function after using gpio_install_isr_service() to
-  * install the driver's GPIO ISR handler service.
-  *
-  * The pin ISR handlers no longer need to be declared with IRAM_ATTR,
-  * unless you pass the ESP_INTR_FLAG_IRAM flag when allocating the
-  * ISR in gpio_install_isr_service().
-  *
-  * This ISR handler will be called from an ISR. So there is a stack
-  * size limit (configurable as "ISR stack size" in menuconfig). This
-  * limit is smaller compared to a global GPIO interrupt handler due
-  * to the additional level of indirection.
-  *
-  * @param gpio_num GPIO number
-  * @param isr_handler ISR handler function for the corresponding GPIO number.
-  * @param args parameter for ISR handler.
-  *
-  * @return
-  *     - ESP_OK Success
-  *     - ESP_ERR_INVALID_STATE Wrong state, the ISR service has not been initialized.
-  *     - ESP_ERR_INVALID_ARG Parameter error
-  */
+	* @brief Add ISR handler for the corresponding GPIO pin.
+	*
+	* Call this function after using gpio_install_isr_service() to
+	* install the driver's GPIO ISR handler service.
+	*
+	* The pin ISR handlers no longer need to be declared with IRAM_ATTR,
+	* unless you pass the ESP_INTR_FLAG_IRAM flag when allocating the
+	* ISR in gpio_install_isr_service().
+	*
+	* This ISR handler will be called from an ISR. So there is a stack
+	* size limit (configurable as "ISR stack size" in menuconfig). This
+	* limit is smaller compared to a global GPIO interrupt handler due
+	* to the additional level of indirection.
+	*
+	* @param gpio_num GPIO number
+	* @param isr_handler ISR handler function for the corresponding GPIO number.
+	* @param args parameter for ISR handler.
+	*
+	* @return
+	*     - ESP_OK Success
+	*     - ESP_ERR_INVALID_STATE Wrong state, the ISR service has not been initialized.
+	*     - ESP_ERR_INVALID_ARG Parameter error
+	*/
 // esp_err_t gpio_isr_handler_add(gpio_num_t gpio_num, gpio_isr_t isr_handler, void *args);
 
 /**
-  * @brief Remove ISR handler for the corresponding GPIO pin.
-  *
-  * @param gpio_num GPIO number
-  *
-  * @return
-  *     - ESP_OK Success
-  *     - ESP_ERR_INVALID_STATE Wrong state, the ISR service has not been initialized.
-  *     - ESP_ERR_INVALID_ARG Parameter error
-  */
+	* @brief Remove ISR handler for the corresponding GPIO pin.
+	*
+	* @param gpio_num GPIO number
+	*
+	* @return
+	*     - ESP_OK Success
+	*     - ESP_ERR_INVALID_STATE Wrong state, the ISR service has not been initialized.
+	*     - ESP_ERR_INVALID_ARG Parameter error
+	*/
 // esp_err_t gpio_isr_handler_remove(gpio_num_t gpio_num);
 
 /**
-  * @brief Set GPIO pad drive capability
-  *
-  * @param gpio_num GPIO number, only support output GPIOs
-  * @param strength Drive capability of the pad
-  *
-  * @return
-  *     - ESP_OK Success
-  *     - ESP_ERR_INVALID_ARG Parameter error
-  */
+	* @brief Set GPIO pad drive capability
+	*
+	* @param gpio_num GPIO number, only support output GPIOs
+	* @param strength Drive capability of the pad
+	*
+	* @return
+	*     - ESP_OK Success
+	*     - ESP_ERR_INVALID_ARG Parameter error
+	*/
 // esp_err_t gpio_set_drive_capability(gpio_num_t gpio_num, gpio_drive_cap_t strength);
 
 /**
-  * @brief Get GPIO pad drive capability
-  *
-  * @param gpio_num GPIO number, only support output GPIOs
-  * @param strength Pointer to accept drive capability of the pad
-  *
-  * @return
-  *     - ESP_OK Success
-  *     - ESP_ERR_INVALID_ARG Parameter error
-  */
+	* @brief Get GPIO pad drive capability
+	*
+	* @param gpio_num GPIO number, only support output GPIOs
+	* @param strength Pointer to accept drive capability of the pad
+	*
+	* @return
+	*     - ESP_OK Success
+	*     - ESP_ERR_INVALID_ARG Parameter error
+	*/
 // esp_err_t gpio_get_drive_capability(gpio_num_t gpio_num, gpio_drive_cap_t *strength);
 
 /**
-  * @brief Enable gpio pad hold function.
-  *
-  * The gpio pad hold function works in both input and output modes, but must be output-capable gpios.
-  * If pad hold enabled:
-  *   in output mode: the output level of the pad will be force locked and can not be changed.
-  *   in input mode: the input value read will not change, regardless the changes of input signal.
-  *
-  * The state of digital gpio cannot be held during Deep-sleep, and it will resume the hold function
-  * when the chip wakes up from Deep-sleep. If the digital gpio also needs to be held during Deep-sleep,
-  * `gpio_deep_sleep_hold_en` should also be called.
-  *
-  * Power down or call gpio_hold_dis will disable this function.
-  *
-  * @param gpio_num GPIO number, only support output-capable GPIOs
-  *
-  * @return
-  *     - ESP_OK Success
-  *     - ESP_ERR_NOT_SUPPORTED Not support pad hold function
-  */
+	* @brief Enable gpio pad hold function.
+	*
+	* The gpio pad hold function works in both input and output modes, but must be output-capable gpios.
+	* If pad hold enabled:
+	*   in output mode: the output level of the pad will be force locked and can not be changed.
+	*   in input mode: the input value read will not change, regardless the changes of input signal.
+	*
+	* The state of digital gpio cannot be held during Deep-sleep, and it will resume the hold function
+	* when the chip wakes up from Deep-sleep. If the digital gpio also needs to be held during Deep-sleep,
+	* `gpio_deep_sleep_hold_en` should also be called.
+	*
+	* Power down or call gpio_hold_dis will disable this function.
+	*
+	* @param gpio_num GPIO number, only support output-capable GPIOs
+	*
+	* @return
+	*     - ESP_OK Success
+	*     - ESP_ERR_NOT_SUPPORTED Not support pad hold function
+	*/
 // esp_err_t gpio_hold_en(gpio_num_t gpio_num);
 
 /**
-  * @brief Disable gpio pad hold function.
-  *
-  * When the chip is woken up from Deep-sleep, the gpio will be set to the default mode, so, the gpio will output
-  * the default level if this function is called. If you don't want the level changes, the gpio should be configured to
-  * a known state before this function is called.
-  *  e.g.
-  *     If you hold gpio18 high during Deep-sleep, after the chip is woken up and `gpio_hold_dis` is called,
-  *     gpio18 will output low level(because gpio18 is input mode by default). If you don't want this behavior,
-  *     you should configure gpio18 as output mode and set it to hight level before calling `gpio_hold_dis`.
-  *
-  * @param gpio_num GPIO number, only support output-capable GPIOs
-  *
-  * @return
-  *     - ESP_OK Success
-  *     - ESP_ERR_NOT_SUPPORTED Not support pad hold function
-  */
+	* @brief Disable gpio pad hold function.
+	*
+	* When the chip is woken up from Deep-sleep, the gpio will be set to the default mode, so, the gpio will output
+	* the default level if this function is called. If you don't want the level changes, the gpio should be configured to
+	* a known state before this function is called.
+	*  e.g.
+	*     If you hold gpio18 high during Deep-sleep, after the chip is woken up and `gpio_hold_dis` is called,
+	*     gpio18 will output low level(because gpio18 is input mode by default). If you don't want this behavior,
+	*     you should configure gpio18 as output mode and set it to hight level before calling `gpio_hold_dis`.
+	*
+	* @param gpio_num GPIO number, only support output-capable GPIOs
+	*
+	* @return
+	*     - ESP_OK Success
+	*     - ESP_ERR_NOT_SUPPORTED Not support pad hold function
+	*/
 // esp_err_t gpio_hold_dis(gpio_num_t gpio_num);
 
 /**
-  * @brief Enable all digital gpio pad hold function during Deep-sleep.
-  *
-  * When the chip is in Deep-sleep mode, all digital gpio will hold the state before sleep, and when the chip is woken up,
-  * the status of digital gpio will not be held. Note that the pad hold feature only works when the chip is in Deep-sleep mode,
-  * when not in sleep mode, the digital gpio state can be changed even you have called this function.
-  *
-  * Power down or call gpio_hold_dis will disable this function, otherwise, the digital gpio hold feature works as long as the chip enter Deep-sleep.
-  */
+	* @brief Enable all digital gpio pad hold function during Deep-sleep.
+	*
+	* When the chip is in Deep-sleep mode, all digital gpio will hold the state before sleep, and when the chip is woken up,
+	* the status of digital gpio will not be held. Note that the pad hold feature only works when the chip is in Deep-sleep mode,
+	* when not in sleep mode, the digital gpio state can be changed even you have called this function.
+	*
+	* Power down or call gpio_hold_dis will disable this function, otherwise, the digital gpio hold feature works as long as the chip enter Deep-sleep.
+	*/
 // void gpio_deep_sleep_hold_en(void);
 
 /**
-  * @brief Disable all digital gpio pad hold function during Deep-sleep.
-  *
-  */
+	* @brief Disable all digital gpio pad hold function during Deep-sleep.
+	*
+	*/
 // void gpio_deep_sleep_hold_dis(void);
 
 /**
-  * @brief Set pad input to a peripheral signal through the IOMUX.
-  * @param gpio_num GPIO number of the pad.
-  * @param signal_idx Peripheral signal id to input. One of the ``*_IN_IDX`` signals in ``soc/gpio_sig_map.h``.
-  */
+	* @brief Set pad input to a peripheral signal through the IOMUX.
+	* @param gpio_num GPIO number of the pad.
+	* @param signal_idx Peripheral signal id to input. One of the ``*_IN_IDX`` signals in ``soc/gpio_sig_map.h``.
+	*/
 // void gpio_iomux_in(uint32_t gpio_num, uint32_t signal_idx);
 
 /**
-  * @brief Set peripheral output to an GPIO pad through the IOMUX.
-  * @param gpio_num gpio_num GPIO number of the pad.
-  * @param func The function number of the peripheral pin to output pin.
-  *        One of the ``FUNC_X_*`` of specified pin (X) in ``soc/io_mux_reg.h``.
-  * @param oen_inv True if the output enable needs to be inverted, otherwise False.
-  */
+	* @brief Set peripheral output to an GPIO pad through the IOMUX.
+	* @param gpio_num gpio_num GPIO number of the pad.
+	* @param func The function number of the peripheral pin to output pin.
+	*        One of the ``FUNC_X_*`` of specified pin (X) in ``soc/io_mux_reg.h``.
+	* @param oen_inv True if the output enable needs to be inverted, otherwise False.
+	*/
 // void gpio_iomux_out(uint8_t gpio_num, int func, bool oen_inv);
 
 // #if SOC_GPIO_SUPPORT_FORCE_HOLD
