@@ -3,8 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 SUPPORTED_BOARDS = \
-	rgbduino \
-	nucleo_wb55_dongle \
+	fri3d-badge-2020-00 \
 	ublox_nora_b1_eval
 BOARD ?= ublox_nora_b1_eval
 

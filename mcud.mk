@@ -206,6 +206,7 @@ describe:
 	@echo "VARIANTS=$(VARIANTS)"
 	@echo "CPU=$(CPU)"
 	@echo "DIRS=$(DIRS)"
+	@echo "SUPPORTED_BOARDS=$(SUPPORTED_BOARDS)"
 	$(foreach V,$(VARIANTS),$(call VARIANT_INFO,$V))
 
 ifeq (,$(ARCHETYPE))
