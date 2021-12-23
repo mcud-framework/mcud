@@ -12,7 +12,7 @@ define build_example_board =
 cache_$1_$2:
 	@echo === Building $1 for $2 ===
 	BOARD=$2 $(MAKE) -C examples/$1 download_buildcache
-build_$1_$2:
+build_$1_$2: cache_$1_$2
 	@echo === Building $1 for $2 ===
 	BOARD=$2 $(MAKE) -C examples/$1
 .PHONY: test_$1_$2
