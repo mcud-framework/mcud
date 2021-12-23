@@ -1,2 +1,8 @@
-# Ignore IDE settings
+# Directory containing compiled objects
+/bin
+
+# IDE settings
 .vscode
+
+# macOS files
+.DS_Store
