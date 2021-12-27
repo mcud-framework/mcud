@@ -11,10 +11,11 @@ IDF_PROJECT = $(MCUD)/dist/esp-idf-project
 ELF_APP = $(IDF_PROJECT)/build/mcud_application.elf
 
 ESP_IDF_OBJ = $(OBJ_APP) $(OBJ_PHOBOS) $(OBJ_DRUNTIME)
+ESP_IDF_DEP = $(MCUD)/dist/esp-idf/README.md
 
 ESP_IDF_JOBS = $(filter -j%,$(MAKEFLAGS))
 
-$(ELF_APP): $(ESP_IDF_OBJ) get-esp-idf
+$(ELF_APP): $(ESP_IDF_OBJ) $(ESP_IDF_DEP)
 	rm -f $(ELF_APP)
 	$(call RUN_ARGS, \
 		-e IDF_PATH=$(call convert_path,$(MCUD)/dist/esp-idf) \
@@ -24,16 +25,18 @@ $(ELF_APP): $(ESP_IDF_OBJ) get-esp-idf
 
 include $(ARCHETYPES)/base-objects.mk
 
-get-esp-idf:
+$(ESP_IDF_DEP):
 	cd $(MCUD) && git submodule update --init --recursive dist/esp-idf
+	find $(MCUD)/dist/esp-idf -type f -exec touch -t 202112230000 {} \;
 # === END OF BUILD TARGETS ===
 
 # === BUILD CACHE TARGETS ===
 BUILDCACHE_ARCHIVE = esp-idf-2021-12-23.tar.xz
 BUILDCACHE_DIR = $(MCUD)/dist/buildcache
 BUILDCACHE_PATH = $(BUILDCACHE_DIR)/$(BUILDCACHE_ARCHIVE)
-download_buildcache: $(BUILDCACHE_PATH) get-esp-idf
+download_buildcache: $(BUILDCACHE_PATH) $(ESP_IDF_DEP)
 	tar -x -f $(BUILDCACHE_PATH) -C $(IDF_PROJECT)
+#	find $(IDF_PROJECT)/build -type f -exec touch {} \;
 
 $(BUILDCACHE_PATH):
 	mkdir -p $(BUILDCACHE_DIR)
