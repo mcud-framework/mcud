@@ -29,7 +29,7 @@ get-esp-idf:
 # === END OF BUILD TARGETS ===
 
 # === BUILD CACHE TARGETS ===
-BUILDCACHE_ARCHIVE = 2021-12-23.tar.xz
+BUILDCACHE_ARCHIVE = esp-idf-2021-12-23.tar.xz
 BUILDCACHE_DIR = $(MCUD)/dist/buildcache
 BUILDCACHE_PATH = $(BUILDCACHE_DIR)/$(BUILDCACHE_ARCHIVE)
 download_buildcache: $(BUILDCACHE_PATH)
@@ -37,7 +37,7 @@ download_buildcache: $(BUILDCACHE_PATH)
 
 $(BUILDCACHE_PATH):
 	mkdir -p $(BUILDCACHE_DIR)
-	curl -o $(BUILDCACHE_PATH).download https://raw.githubusercontent.com/mcud-framework/buildcache-esp-idf/main/$(BUILDCACHE_ARCHIVE)
+	curl -o $(BUILDCACHE_PATH).download https://raw.githubusercontent.com/mcud-framework/buildcache/main/$(BUILDCACHE_ARCHIVE)
 	mv $(BUILDCACHE_PATH).download $(BUILDCACHE_PATH)
 # === END OF BUILD CACHE TARGETS ===
 
