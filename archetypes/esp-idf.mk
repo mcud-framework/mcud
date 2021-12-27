@@ -32,7 +32,7 @@ get-esp-idf:
 BUILDCACHE_ARCHIVE = esp-idf-2021-12-23.tar.xz
 BUILDCACHE_DIR = $(MCUD)/dist/buildcache
 BUILDCACHE_PATH = $(BUILDCACHE_DIR)/$(BUILDCACHE_ARCHIVE)
-download_buildcache: $(BUILDCACHE_PATH)
+download_buildcache: $(BUILDCACHE_PATH) get-esp-idf
 	tar -x -f $(BUILDCACHE_PATH) -C $(IDF_PROJECT)
 
 $(BUILDCACHE_PATH):
