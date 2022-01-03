@@ -227,6 +227,9 @@ describe:
 	@echo "SUPPORTED_BOARDS=$(SUPPORTED_BOARDS)"
 	$(foreach V,$(VARIANTS),$(call VARIANT_INFO,$V))
 
+.PHONY: download_buildcache
+download_buildcache:
+
 ifeq (,$(ARCHETYPE))
 $(error CPU did not set an archetype)
 else
