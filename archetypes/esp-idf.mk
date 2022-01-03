@@ -21,7 +21,7 @@ $(ELF_APP): $(ESP_IDF_OBJ) $(ESP_IDF_DEP)
 		-e IDF_PATH=$(call convert_path,$(MCUD)/dist/esp-idf) \
 		-e MCUD_OBJECTS="$(call convert_path,$(ESP_IDF_OBJ))" \
 	) \
-	make -f $(call convert_path,$(IDF_PROJECT)/Makefile) BATCH_BUILD=1 $(ESP_IDF_JOBS) all
+	make -f $(call convert_path,$(IDF_PROJECT)/Makefile) BATCH_BUILD=1 $(ESP_IDF_JOBS) all --trace
 
 include $(ARCHETYPES)/base-objects.mk
 
