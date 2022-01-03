@@ -27,7 +27,7 @@ include $(ARCHETYPES)/base-objects.mk
 
 $(ESP_IDF_DEP):
 	cd $(MCUD) && git submodule update --init --recursive dist/esp-idf
-	find $(MCUD)/dist/esp-idf -type f -exec touch -t 202112220000 {} \;
+	find $(MCUD)/dist/esp-idf $(MCUD)/dist/esp-idf-project -type f -exec touch -t 202112220000 {} \;
 # === END OF BUILD TARGETS ===
 
 # === BUILD CACHE TARGETS ===
