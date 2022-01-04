@@ -5,3 +5,4 @@
 module mcud.interfaces.spi;
 
 public:
+import mcud.interfaces.spi.master;
