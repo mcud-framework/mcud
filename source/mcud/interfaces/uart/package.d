@@ -2,10 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-module mcud.interfaces;
+module mcud.interfaces.uart;
 
 public:
-import mcud.interfaces.gpio;
-import mcud.interfaces.uart;
-import mcud.interfaces.spi;
-import mcud.interfaces.startable;
+import mcud.interfaces.uart.standard;
